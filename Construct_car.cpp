@@ -35,7 +35,7 @@ Construct_car::Construct_car(){
 // Tests whether a given pre-product P is admissable, 
 // i.e. that gcd(p-1, P) = 1 for all p | P, and squarefree
 // returns 0 if not admissable
-int64 Construct_car::admissable(int64 P, vector<int64> Pprimes){
+int64 Construct_car::admissable(int64 P, int64* Pprimes, long Pprimes_len){
   // construct product of the prime factors of P
   // and compute lcm L at the same time
   int64 P_product = 1;
@@ -43,13 +43,13 @@ int64 Construct_car::admissable(int64 P, vector<int64> Pprimes){
   int64 prime;    // stores a prime
   int64 g;        // stores gcd
 
-  for(long i = 0; i < Pprimes.size(); ++i){
+  for(long i = 0; i < Pprimes_len; ++i){
     // grow the product P
-    P_product = P_product * Pprimes.at(i);
+    P_product = P_product * Pprimes[i];
 
     // grow the LCM
     // first compute gcd(p-1, P)
-    prime = Pprimes.at(i);
+    prime = Pprimes[i];
     g = gcd(prime - 1, P_product);
 
     // Not admissable if gcd not 1
@@ -75,7 +75,7 @@ int64 Construct_car::admissable(int64 P, vector<int64> Pprimes){
 // Inputs are factorizations of P and P-1, along with L = lcm_{p | P} (p-1)
 // This version not tied to F.  Would be slightly more efficient if it was.
 */
-vector<pair<int64, bigint>> Construct_car::preproduct_construction(vector<int64> P, vector<int64> Pminus, int64 L){
+vector<pair<int64, bigint>> Construct_car::preproduct_construction(int64* P, long P_len, int64* Pminus, long Pminus_len, int64 L){
   vector<pair<int64, bigint>> output;
   int64 p;     // stores a temp prime
   long e;      // stores a temp exponent
@@ -83,8 +83,8 @@ vector<pair<int64, bigint>> Construct_car::preproduct_construction(vector<int64>
 
   // Generate P as a single integer
   int64 P_product = 1;
-  for(long i = 0; i < P.size(); ++i){
-    P_product = P_product * P.at(i);
+  for(long i = 0; i < P_len; ++i){
+    P_product = P_product * P[i];
   }
   int64 q_temp;  // will store (P-1)(P+D)/2
   int64 div = 1;     // will store divisors of (P-1)(P+D)/2
@@ -98,6 +98,14 @@ vector<pair<int64, bigint>> Construct_car::preproduct_construction(vector<int64>
   }
   cout << "\n";
   */
+
+  // variables to help store and compute factorization of (P-1)(P+D)/2
+  int64* PplusD;     // unique prime dividing P+D
+  long PplusD_len;   // number of such primes
+  int64* q_primes;   // unique primes dividing q_temp = (P-1)(P+D)/2
+  long q_primes_len; // number of such primes
+  long* q_exps;      // exponents of primes dividing q_temp
+  pair<int64*, long> merge_output;
 
   // We need a Factgen object for factorizations of P+D
   // Initialize to match D in [2 .. P-1]
@@ -115,28 +123,26 @@ vector<pair<int64, bigint>> Construct_car::preproduct_construction(vector<int64>
 
     // We set up an odometer, which requires primes and powers
     q_temp = (P_product - 1) * (P_product + D) / 2;
-    // P_minus has the unique prime factors dividing P-1.
-    // This code gets unique prime factors dividing P+D. 
-    vector<int64> PplusD;       // stores unique primes dividing P+D
-    vector<int64> q_primes;     // stores unique primes dividing q_temp
-    vector<long> q_exps;        // stores exponents of primes dividing q_temp
 
-    // copy over divisors of prev into a vector
-    for(long i = 0; i < FD.prevlen; ++i){
-      PplusD.push_back( FD.prev[i] );
-    }
+    // P_minus has the unique prime factors dividing P-1.
+    // copy over prev into PplusD
+    PplusD = FD.prev;
+    PplusD_len = FD.prevlen;   
+ 
     // merge PplusD and Pminus to get prime factors of q_temp
-    q_primes = merge(Pminus, PplusD);
+    merge_output = merge_array(Pminus, Pminus_len, PplusD, PplusD_len);
+    q_primes = merge_output.first;
+    q_primes_len = merge_output.second;
 
     // loop over prime divisors of (P-1)(P+D) / 2, compute exponent  
-    for(long i = 0; i < q_primes.size(); ++i){
-      p = q_primes.at(i);
+    for(long i = 0; i < q_primes_len; ++i){
+      p = q_primes[i];
       e = 0;
       while(q_temp % p == 0){
         e++;
         q_temp = q_temp / p;
       }
-      q_exps.push_back(e);
+      q_exps[i] = e;
     }
 
     // end computation of factorization of (P_1)(P+D)/2, testing
@@ -154,14 +160,14 @@ vector<pair<int64, bigint>> Construct_car::preproduct_construction(vector<int64>
     // end testing
 
     // Set up odometer to run through divisors of (P-1)(P+D)/2
-    Odometer q_od = Odometer(q_primes, q_exps);
+    Odometer q_od = Odometer(q_primes, q_exps, q_primes_len);
     div = q_od.get_div();
 
     //cout << "div = " << div << "\n";
 
     // Run the code for divisor Delta = 1
     // apply completion check subroutine to see if this divisor Delta creates Carmichael
-    pair<int64, bigint> qr = completion_check(P_product, div, D, L, Pminus, PplusD);
+    pair<int64, bigint> qr = completion_check(P_product, div, D, L, q_primes, q_primes_len);
     //cout << "qr: " << qr.first << " " << qr.second << endl;
     if(qr.first != 0 && qr.second != 0){
       //cout << "Carmichael found in divs " << qr.first << " " << qr.second << "\n";
@@ -175,7 +181,7 @@ vector<pair<int64, bigint>> Construct_car::preproduct_construction(vector<int64>
     // The appropriate bound is Delta < (P-1)(P+D)/(p_{d-2}-1)
     // So we add 1 to the quotient, since integer division rounds down.
     Delta_bound = (P_product - 1) * (P_product + D);
-    Delta_bound = Delta_bound / (P.at(P.size()-1) - 1);
+    Delta_bound = Delta_bound / (P[P_len-1] - 1);
     
     // continue looking at divisors until it is back to 1
     while(div != 1){
@@ -185,7 +191,7 @@ vector<pair<int64, bigint>> Construct_car::preproduct_construction(vector<int64>
       if(div < Delta_bound){
 
         // apply completion check subroutine to see if this divisor Delta creates Carmichael
-        pair<int64, bigint> qr = completion_check(P_product, div, D, L, Pminus, PplusD);
+        pair<int64, bigint> qr = completion_check(P_product, div, D, L, q_primes, q_primes_len);
         //cout << "qr: " << qr.first << " " << qr.second << endl;
         if(qr.first != 0 && qr.second != 0){
           //cout << "Carmichael found in divs " << qr.first << " " << qr.second << "\n";
@@ -210,12 +216,12 @@ vector<pair<int64, bigint>> Construct_car::preproduct_construction(vector<int64>
     4) Compute q = (P-1)(P+D)/Delta + 1, check primality.  Don't check integrality, we know because div = Delta.
     5) Compute r = (P-1)(P+C)/Delta + 1, check integrality
   Note that I know q is integral, because Delta chosen as divisor of (P-1)(P+D).
-  Other input: factorizations of P-1 and P+D, which we use to do primality via q-1 factorization.
+  Other input: unique primes dividing (P-1)(P+D)/2, which we use to do primality via q-1 factorization.
   Note that r is not proven prime, that will be dealt with in post-processing.
 
   Returns a pair (q, r) if the completion works.  Returns (0, 0) if it doesn't
 */
-pair<int64, bigint> Construct_car::completion_check(int64 P, int64 Delta, int64 D, int64 L, vector<int64> Pminus, vector<int64> PplusD){
+pair<int64, bigint> Construct_car::completion_check(int64 P, int64 Delta, int64 D, int64 L, int64* q_primes, long q_primes_len){
   // setup output.  By default set it to (0, 0) which means false
   pair<int64, bigint> output;
   output.first = 0;   output.second = 0;
@@ -315,8 +321,10 @@ pair<int64, bigint> Construct_car::completion_check(int64 P, int64 Delta, int64 
 /* Construct Carmichaels for a range of pre-products P < B
  */
 void Construct_car::tabulate_car(int64 B, long processor, long num_threads, string cars_file, string admissable_file){
-  vector<int64> P_factors;
-  vector<int64> Pminus_factors;
+  int64* P_factors;
+  long   P_factors_len;
+  int64* Pminus_factors;
+  long   Pminus_factors_len;
   vector<pair<int64, bigint>> qrs;
   int64 LCM;
 
@@ -339,27 +347,21 @@ void Construct_car::tabulate_car(int64 B, long processor, long num_threads, stri
 
       //cout << "P = " << P << " current = " << F.currentval << " prev = " << F.prevval << "\n";
 
-      // clear prime vectors for P, Pminus
-      P_factors.clear();
-      Pminus_factors.clear();
-
       // retrieve factorizations of P, P-1
-      for(long i = 0; i < F.currentlen; ++i){
-        P_factors.push_back(F.current[i]);
-      } 
-      for(long i = 0; i < F.prevlen; ++i){
-        Pminus_factors.push_back(F.prev[i]);
-      }
-     
+      P_factors = F.current;
+      P_factors_len = F.currentlen;
+      Pminus_factors = F.prev;
+      Pminus_factors_len = F.prevlen;
+
       // check admissability
-      LCM = admissable(F.currentval, P_factors);
+      LCM = admissable(F.currentval, P_factors, P_factors_len);
  
       // if admissable, construct Carmichaels
       if(LCM != 0){
      
         // Construct all Carmichael numbers with pre-product P
         qrs.clear();
-        qrs = preproduct_construction(P_factors, Pminus_factors, LCM);
+        qrs = preproduct_construction(P_factors, P_factors_len, Pminus_factors, Pminus_factors_len, LCM);
 
         // if no carmichales constructed, write pre-product to other file
         if(qrs.size() == 0){
