@@ -52,8 +52,8 @@ vector<long> inc_sieve(long B);
 vector<int64> merge(vector<int64>& fst, vector<int64>& snd);
 
 // same as previous merge, but now for arrays instead
-// output an array along with its length
-pair<int64*, long> merge_array(int64* fst, long fst_len, int64* snd, long snd_len);
+// output is long, which represents length.  Values stored in parameter output
+long merge_array(int64* fst, long fst_len, int64* snd, long snd_len, int64* output);
 
 /* Tabulate all Carmichael numbers up to a bound B.
  * Apply Korselt condition to each n.  Factorizations from a factor sieve

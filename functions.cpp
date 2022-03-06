@@ -221,11 +221,9 @@ vector<int64> merge(vector<int64>& fst, vector<int64>& snd){
   return output;
 }
 
-// another merge, but this time arrays.  Output pair of pointer and length
-pair<int64*, long> merge_array(int64* fst, long fst_len, int64* snd, long snd_len){
-  int64* output_nums = new int64[fst_len + snd_len];
-  long output_length = 0;
-  pair<int64*, long> output;
+// another merge, but this time arrays.  Output is long, which represents the length of the output array, 
+// instead the array is filled in with output parameter
+long merge_array(int64* fst, long fst_len, int64* snd, long snd_len, int64* output){
 
   // use built-in sort on fst and snd
   sort(fst, fst + fst_len);
@@ -240,17 +238,17 @@ pair<int64*, long> merge_array(int64* fst, long fst_len, int64* snd, long snd_le
   
     // if fst is smaller, add that one
     if(fst[fst_i] < snd[snd_i]){
-      output_nums[output_i] = fst[fst_i];
+      output[output_i] = fst[fst_i];
       fst_i++;
       output_i++;
     // if snd is smaller, add that one
     }else if(snd[snd_i] < fst[fst_i]){
-      output_nums[output_i] = snd[snd_i];
+      output[output_i] = snd[snd_i];
       snd_i++;
       output_i++;
     // otherwise they are the same, push one and advance both
     }else{
-      output_nums[output_i] = fst[fst_i];
+      output[output_i] = fst[fst_i];
       fst_i++;
       snd_i++;
       output_i++;
@@ -260,22 +258,18 @@ pair<int64*, long> merge_array(int64* fst, long fst_len, int64* snd, long snd_le
   // now append the remainder of the other list
   if(fst_i == fst_len){
     for(snd_i; snd_i < snd_len; snd_i++){
-      output_nums[output_i] = snd[snd_i];
+      output[output_i] = snd[snd_i];
       output_i++;
     } 
   }else{
     for(fst_i; fst_i < fst_len; fst_i++){
-      output_nums[output_i] = fst[fst_i];
+      output[output_i] = fst[fst_i];
       output_i++;
     }
   }
-  
-  // put together output pair
-  output.first = output_nums;
-  output_length = output_i;
-  output.second = output_length;
-
-  return output;
+ 
+  // return output_i as the output length 
+  return output_i;
 }
   
 

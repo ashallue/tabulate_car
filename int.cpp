@@ -75,6 +75,22 @@ int64 powmod(int64 xin, int64 e, int64 m)
   return (int64)y;
 }
 
+// written by Andrew Shallue, same strategy as powmod above.
+// Be carefule: no check that xin^e actually fits in an int64
+int64 pow(int64 xin, long e){
+  int64 y = 1;
+  int64 x = xin;
+ 
+  while(e > 0){
+    // if e is odd, multiply by x, which is appropriate power of 2
+    if(e % 2 == 1) y = y * x;
+    // if e even or odd, divide it by 2 and square
+    e >>= 1;
+    x = x * x;
+  }
+  return y;
+}
+
 inline int16 legendre(int32 a, int32 p)
   { return powmod(a, (p-1)/2, p); }
   

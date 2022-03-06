@@ -32,10 +32,10 @@ class Pinch{
     // Tests whether a given pre-product P is admissable, 
     // i.e. that gcd(p-1, P) = 1 for all p | P, and squarefree
     // returns 0 if not admissable
-    int64 admissable(int64 P, vector<int64> Pprimes);
+    int64 admissable(int64 P, int64* Pprimes, long Pprimes_len);
 
 
-    vector<pair<int64, bigint>> pinch_preproduct(vector<int64> P, int64 L);
+    vector<pair<int64, bigint>> pinch_preproduct(int64* P, long P_len, int64 L);
 
     /* Construct Carmichaels for a range of pre-products P
  *  *   We use a factgen2 object, write to a file.  Only process pre-products that fall into residue class of the core.

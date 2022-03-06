@@ -64,6 +64,10 @@ int32 powmod(int32 xin, int32 e, int32 m);
 
 int64 powmod(int64 xin, int64 e, int64 m);
 
+// written by Andrew Shallue, same strategy as powmod above.
+// Be careful: no check that xin^e actually fits in an int64
+int64 pow(int64 xin, long e);
+
 inline int16 legendre(int32 a, int32 p);
 
 inline int16 legendre(int64 a, int64 p);

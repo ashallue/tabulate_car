@@ -40,6 +40,9 @@ class Odometer{
     // set the prime and powers
     Odometer(int64* ps, long* pows, long len);
 
+    // destructor frees memory for primes, powers, div_exp
+    ~Odometer();
+
     // rotate odometer, then update div
     void next_div();
 

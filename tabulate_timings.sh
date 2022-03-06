@@ -9,8 +9,8 @@
 # overall job name
 #PBS -N tabulate_timings
 
-# limit walltime to 12 hour
-#PBS -l walltime=12:00:00
+# limit walltime to 24 hour
+#PBS -l walltime=24:00:00
 
 # change directory
 cd ~ashallue/tabulate_car

@@ -93,8 +93,8 @@ vector<pair<int64, bigint>> Construct_car::preproduct_construction(int64* P, lon
   /*
   cout << "P_product: " << P_product << "\n";
   cout << "P_minus: ";
-  for(long i = 0; i < Pminus.size(); ++i){
-    cout << Pminus.at(i) << " ";
+  for(long i = 0; i < Pminus_len; ++i){
+    cout << Pminus[i] << " ";
   }
   cout << "\n";
   */
@@ -130,9 +130,10 @@ vector<pair<int64, bigint>> Construct_car::preproduct_construction(int64* P, lon
     PplusD_len = FD.prevlen;   
  
     // merge PplusD and Pminus to get prime factors of q_temp
-    merge_output = merge_array(Pminus, Pminus_len, PplusD, PplusD_len);
-    q_primes = merge_output.first;
-    q_primes_len = merge_output.second;
+    q_primes = new int64[PplusD_len + Pminus_len];
+    q_primes_len = merge_array(Pminus, Pminus_len, PplusD, PplusD_len, q_primes);   
+ 
+    q_exps = new long[q_primes_len];
 
     // loop over prime divisors of (P-1)(P+D) / 2, compute exponent  
     for(long i = 0; i < q_primes_len; ++i){
@@ -144,20 +145,6 @@ vector<pair<int64, bigint>> Construct_car::preproduct_construction(int64* P, lon
       }
       q_exps[i] = e;
     }
-
-    // end computation of factorization of (P_1)(P+D)/2, testing
-    /*
-    cout << "(P-1)(P+D)/2 primes: ";
-    for(long i = 0; i < q_primes.size(); ++i){
-      cout << q_primes.at(i) << " ";
-    }
-    cout << "\n(P-1)(P+D)/2 exps: ";
-    for(long i = 0; i < q_exps.size(); ++i){
-      cout << q_exps.at(i) << " ";
-    }
-    cout << "\n";
-    */
-    // end testing
 
     // Set up odometer to run through divisors of (P-1)(P+D)/2
     Odometer q_od = Odometer(q_primes, q_exps, q_primes_len);
@@ -203,6 +190,11 @@ vector<pair<int64, bigint>> Construct_car::preproduct_construction(int64* P, lon
       q_od.next_div();
       div = q_od.get_div();
     } //end while div != 1
+
+    // free memory for q_primes and q_exps before next cycle
+    // Update: discovered with valgrind this wasn't needed, memory freed by ~Odometer
+    //delete[] q_primes;
+    //delete[] q_exps;
 
   } // end for D
   

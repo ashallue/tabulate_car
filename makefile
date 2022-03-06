@@ -1,5 +1,5 @@
 paths = -I/usr/local/include -L/usr/local/lib
-tags = -lntl -lm -lgmp -O3 -pg 
+tags = -lntl -lm -lgmp -O3  
 objects = bigint.o Pinch.o Construct_car.o Factgen.o functions.o int.o Odometer.o primetest.o 
 
 all: main

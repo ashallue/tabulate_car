@@ -9,18 +9,20 @@ using namespace std;
 // Given admissable pre-product, construct all Carmichaels of the form Pqr
 // output is a list of pairs (qr).
 // Note q, r only probably prime, tested by trial division of primes < 1000
-vector<pair<int64, bigint>> Pinch::pinch_preproduct(vector<int64> P, int64 L){
+vector<pair<int64, bigint>> Pinch::pinch_preproduct(int64* P, long P_len, int64 L){
   vector<pair<int64, bigint>> output;
 
   // construct product of all distinct primes in P
   int64 P_product = 1;
-  for(long i = 0; i < P.size(); ++i){
-    P_product = P_product * P.at(i);
+  for(long i = 0; i < P_len; ++i){
+    P_product = P_product * P[i];
   }
+
+  //cout << "Pinch on preproduct = " << P_product << "\n";
 
   bigint C_lower;  // lower and upper bounds on C
   bigint C_upper;
-  int64 largestp = P.at( P.size()-1 );
+  int64 largestp = P[ P_len-1 ];
   
   // stores the potential last 2 prime factors q, r
   int64 q;
@@ -44,9 +46,10 @@ vector<pair<int64, bigint>> Pinch::pinch_preproduct(vector<int64> P, int64 L){
     C_lower = 1 + (P_product * P_product) / D ;
     C_upper = (P_product * P_product * (largestp + 3)) / (D * (largestp + 1)) ;
 
-    for(int64 C = C_lower; C < C_upper; ++C){
+    // surprised it is C <= C_upper, but testing reveals < misses Carmichaels
+    for(int64 C = C_lower; C <= C_upper; ++C){
 
-      //cout << "Tabulating according to Pinch, D = " << D << " C = " << C << "\n";
+      //cout << "Tabulating according to Pinch, P = " << P_product << " D = " << D << " C = " << C << "\n";
  
       // compute Delta, along with numerators of q, r
       Delta = C * D - P_product * P_product;
@@ -70,7 +73,7 @@ vector<pair<int64, bigint>> Pinch::pinch_preproduct(vector<int64> P, int64 L){
         // now primality testing on q, r.  Currently just doing trial division by primes up to 1000
         q_prime = trial_thousand(q);
         r_prime = trial_thousand(r);
-        
+      
         // if both are prime, check korselt
         if(q_prime && r_prime){
           
@@ -103,7 +106,8 @@ vector<pair<int64, bigint>> Pinch::pinch_preproduct(vector<int64> P, int64 L){
  *  *   We use a factgen2 object, write to a file.  Only process pre-products that fall into residue class of the core.
  *   */
 void Pinch::tabulate_car(int64 B, long processor, long num_threads, string cars_file, string admissable_file){
-  vector<int64> P_factors;
+  int64* P_factors;
+  long   P_len;
   vector<pair<int64, bigint>> qrs;
   int64 LCM;
 
@@ -125,16 +129,20 @@ void Pinch::tabulate_car(int64 B, long processor, long num_threads, string cars_
     if(P % num_threads != processor){
       F.next();
     } else{
-      // clear P_factors and qrs
-      P_factors.clear();
+      // clear qrs
       qrs.clear();
+
+      // allocate memory for P_factors;
+      P_len = F.prevlen;
+      P_factors = new int64[P_len];
 
       // retrieve factorizations of P
       for(long i = 0; i < F.prevlen; ++i){
-        P_factors.push_back(F.prev[i]);
+        P_factors[i] = F.prev[i];
       }
+
       // check admissability
-      LCM = admissable(F.prevn, P_factors);
+      LCM = admissable(F.prevn, P_factors, P_len);
   
       // testing
       /*
@@ -147,7 +155,7 @@ void Pinch::tabulate_car(int64 B, long processor, long num_threads, string cars_
 
       // if admissable, construct Carmichaels
       if(LCM != 0){
-        qrs = pinch_preproduct(P_factors, LCM);
+        qrs = pinch_preproduct(P_factors, P_len, LCM);
 
         // if no carmichaels, write pre-product to other file
         if(qrs.size() == 0){
@@ -160,8 +168,9 @@ void Pinch::tabulate_car(int64 B, long processor, long num_threads, string cars_
         }// end if no carmichaels
 
       } // end if LCM != 0
-      // move factorization window
+      // move factorization window and free memory for P_factors
       F.next();
+      delete[] P_factors;
 
     } // end if correct thread
   } // end for P
@@ -173,11 +182,11 @@ void Pinch::tabulate_car(int64 B, long processor, long num_threads, string cars_
 // Tests whether a given pre-product P is admissable, 
 // i.e. that gcd(p-1, P) = 1 for all p | P, and squarefree
 // returns 0 if not admissable
-int64 Pinch::admissable(int64 P, vector<int64> Pprimes){
+int64 Pinch::admissable(int64 P, int64* Pprimes, long Pprimes_len){
   // construct product of the prime factors of P
   int64 P_product = 1;
-  for(long i = 0; i < Pprimes.size(); ++i){
-    P_product = P_product * Pprimes.at(i);
+  for(long i = 0; i < Pprimes_len; ++i){
+    P_product = P_product * Pprimes[i];
   }
 
   // not squarefree if this product is not P
@@ -188,10 +197,10 @@ int64 Pinch::admissable(int64 P, vector<int64> Pprimes){
   // assume true, and check for evidence otherwise
   // As we go along, compute the lcm L
   int64 L = 1;
-  for(long i = 0; i < Pprimes.size(); ++i){
+  for(long i = 0; i < Pprimes_len; ++i){
 
     // compute gcd(p-1, P).  
-    int64 prime = Pprimes.at(i);
+    int64 prime = Pprimes[i];
     g = gcd(prime - 1, P_product);
 
     // Not admissable if gcd not 1

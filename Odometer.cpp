@@ -39,6 +39,13 @@ Odometer::Odometer(int64* ps, long* pows, long len){
   div = 1;
 }
 
+// destructor frees memory for primes, powers, div_exp
+Odometer::~Odometer(){
+  delete[] primes;
+  delete[] powers;
+  delete[] div_exp;
+}
+
 // rotate odometer, then update div
 void Odometer::next_div(){
   // stores prime power
