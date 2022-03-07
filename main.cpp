@@ -127,7 +127,7 @@ int main() {
   
   // timing code from geeksforgeeks.org
   
-  int64 num_thousands = 10;
+  int64 num_thousands = 2;
   int64 bound = num_thousands * 1000;
   cout << "timings for tabulation of Carmichaels with pre-product up to " << bound << "\n";
 
@@ -135,17 +135,17 @@ int main() {
   C.tabulate_car(bound, 0, 1, "cars.txt", "cars_none.txt");
   auto end_new = high_resolution_clock::now();
  
-   
+  /*
   auto start_pinch = high_resolution_clock::now();
   CP.tabulate_car(bound, 0, 1, "cars_pinch.txt", "cars_none_pinch.txt");
   auto end_pinch = high_resolution_clock::now();
-  
+  */
 
   auto duration_new = duration_cast<seconds>(end_new - start_new);
-  auto duration_pinch = duration_cast<seconds>(end_pinch - start_pinch);
+  //auto duration_pinch = duration_cast<seconds>(end_pinch - start_pinch);
 
   cout << "new timing: " << duration_new.count() << "\n";
-  cout << "pinch timing: " << duration_pinch.count() << "\n";
+  //cout << "pinch timing: " << duration_pinch.count() << "\n";
   
  
   /* 

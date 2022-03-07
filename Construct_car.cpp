@@ -192,9 +192,8 @@ vector<pair<int64, bigint>> Construct_car::preproduct_construction(int64* P, lon
     } //end while div != 1
 
     // free memory for q_primes and q_exps before next cycle
-    // Update: discovered with valgrind this wasn't needed, memory freed by ~Odometer
-    //delete[] q_primes;
-    //delete[] q_exps;
+    delete[] q_primes;
+    delete[] q_exps;
 
   } // end for D
   

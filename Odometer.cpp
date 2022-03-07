@@ -25,9 +25,16 @@ Odometer::Odometer(){
 // set the prime and powers
 Odometer::Odometer(int64* ps, long* pows, long len){
   num_length = len;
-  primes = ps;
-  powers = pows;
+  
+  // allocate memory for primes, powers
+  primes = new int64[num_length];
+  powers = new long[num_length];
 
+  // copy over the elements
+  for(long i = 0; i < num_length; ++i){
+    primes[i] = ps[i];
+    powers[i] = pows[i];
+  }
   curr_prime = 0;
   curr_power = 0;
   
