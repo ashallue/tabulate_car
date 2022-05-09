@@ -329,24 +329,27 @@ void Construct_car::tabulate_car(int64 B, long processor, long num_threads, stri
   // initialize the Factgen2 object that stores factorizations of P, P-1
   F.init(2, B);
 
+  // count the number of admissable pre-products
+  int64 num_admissable = 0;
+
   // Now loop over pre-products P
   for(int64 P = 3; P < B; ++P){
-    // if P has the correct residue, do work, otherwise continue
-    if(P % num_threads != processor){
+
+    // retrieve factorizations of P, P-1
+    P_factors = F.current;
+    P_factors_len = F.currentlen;
+    Pminus_factors = F.prev;
+    Pminus_factors_len = F.prevlen;
+
+    // check admissability.  If so, add to count
+    LCM = admissable(F.currentval, P_factors, P_factors_len);
+    if(LCM != 0) num_admissable++;
+
+    // if num_admissable has the correct residue, do work, otherwise continue
+    if(num_admissable % num_threads != processor){
       F.next();
     }else{
 
-      //cout << "P = " << P << " current = " << F.currentval << " prev = " << F.prevval << "\n";
-
-      // retrieve factorizations of P, P-1
-      P_factors = F.current;
-      P_factors_len = F.currentlen;
-      Pminus_factors = F.prev;
-      Pminus_factors_len = F.prevlen;
-
-      // check admissability
-      LCM = admissable(F.currentval, P_factors, P_factors_len);
- 
       // if admissable, construct Carmichaels
       if(LCM != 0){
      
@@ -377,50 +380,318 @@ void Construct_car::tabulate_car(int64 B, long processor, long num_threads, stri
   admissable_w_zero.close();
 }
 
-/* Reads in a file of Carmichael numbers of the form P q r, computes the product, sorts resulting vector
+/* Construct Carmichaels for prime pre-products P
  */
-vector<bigint> Construct_car::product_and_sort(string cars_file){
-  vector<bigint> sorted_cars;
-  
-  // open input file
-  ifstream cars;
-  cars.open(cars_file);
+void Construct_car::tabulate_car_primeP(int64 B, long processor, long num_threads, string cars_file){
+  int64* P_factors;
+  long   P_factors_len;
+  int64* Pminus_factors;
+  long   Pminus_factors_len;
+  vector<pair<int64, bigint>> qrs;
+  int64 LCM;
 
-  // store line and the numbers in that line
-  string line;
-  vector<bigint> linenums;
-  bigint product;
-  bigint num;
+  // file stream object
+  ofstream output;
+  output.open(cars_file);
 
-  // while there is a line to get, keep getting lines
-  while(getline(cars, line)){
-    // access each number in the line and place into a vector
-    // this solution from stackoverflow: reading-line-of-integers-into-a-vector
-    istringstream numbers_stream(line);
-    linenums.clear();
+  // initialize Factgen2 object
+  F.init(2, B);
 
-    while(numbers_stream >> num){
-      linenums.push_back(num);
-    }
-    // now multiply numbers in the line
-    product = 1;
-    for(long i = 0; i < linenums.size(); ++i){
-      product = product * linenums.at(i);
-    }
+  // count the number of prime pre-products
+  int64 num_prime_P = 0;
 
-    // push product onto the output vector
-    sorted_cars.push_back(product);
+  // loop over pre-products
+  for(int64 P = 3; P < B; ++P){
+    // check if P is prime.  If not, continue
+    if(!F.isprime_current()){
+      F.next();
+    }else{
+      //cout << "Found prime P = " << P << "\n";     
 
-  } // end while reading lines from file
+      // found a prime.  Increment count, set Pminus
+      num_prime_P++;
+      P_factors = F.current;
+      P_factors_len = F.currentlen;
+      Pminus_factors = F.prev;
+      Pminus_factors_len = F.prevlen;
 
-  // sort vector of carmichaels
-  sort(sorted_cars.begin(), sorted_cars.end());
+      // if P is prime, the LCM is just P-1
+      LCM = P - 1;
+      
+      // if prime count in correct residue class, construct cars
+      if(num_prime_P % num_threads != processor){
+        F.next();
+      }else{
+        qrs.clear();
+        qrs = preproduct_construction(P_factors, P_factors_len, Pminus_factors, Pminus_factors_len, LCM);
 
-  // close file and return the cars
-  cars.close();
-  return sorted_cars;
+        // write to file
+        for(long j = 0; j < qrs.size(); ++j){
+          output << P << " " << qrs.at(j).first << " " << qrs.at(j).second << "\n";
+        }
+ 
+        // advance window
+        F.next();
+      }
+   
+    }// end if P prime
+
+  } // end for P
+  // close file
+  output.close();
 }
 
+/* Version that calls the cross-over function
+ */
+void Construct_car::tabulate_car_primeP_crossover(int64 B, long processor, long num_threads, string cars_file){
+  int64* P_factors;
+  long   P_factors_len;
+  int64* Pminus_factors;
+  long   Pminus_factors_len;
+  vector<pair<int64, bigint>> qrs;
+  int64 LCM;
 
+  // file stream object
+  ofstream output;
+  output.open(cars_file);
 
+  // initialize Factgen2 object
+  F.init(2, B);
+
+  // count the number of prime pre-products
+  int64 num_prime_P = 0;
+
+  // loop over pre-products
+  for(int64 P = 3; P < B; ++P){
+    // check if P is prime.  If not, continue
+    if(!F.isprime_current()){
+      F.next();
+    }else{
+      //cout << "Found prime P = " << P << "\n";     
+
+      // found a prime.  Increment count, set Pminus
+      num_prime_P++;
+      P_factors = F.current;
+      P_factors_len = F.currentlen;
+      Pminus_factors = F.prev;
+      Pminus_factors_len = F.prevlen;
+
+      // if P is prime, the LCM is just P-1
+      LCM = P - 1;
+      
+      // if prime count in correct residue class, construct cars
+      if(num_prime_P % num_threads != processor){
+        F.next();
+      }else{
+        qrs.clear();
+        qrs = preproduct_crossover(P_factors, P_factors_len, Pminus_factors, Pminus_factors_len, LCM);
+
+        // write to file
+        for(long j = 0; j < qrs.size(); ++j){
+          output << P << " " << qrs.at(j).first << " " << qrs.at(j).second << "\n";
+        }
  
+        // advance window
+        F.next();
+      }
+   
+    }// end if P prime
+
+  } // end for P
+  // close file
+  output.close();
+}
+
+/* Another version, but this one has the D crossover strategy
+ */
+vector<pair<int64, bigint>> Construct_car::preproduct_crossover(int64* P, long P_len, int64* Pminus, long Pminus_len, int64 L){
+  vector<pair<int64, bigint>> output;
+  int64 p;     // stores a temp prime
+  long e;      // stores a temp exponent
+  int64 Delta_bound;  // stores upper bound on Delta to ensure it isn't too big
+
+  // Generate P as a single integer
+  int64 P_product = 1;
+  for(long i = 0; i < P_len; ++i){
+    P_product = P_product * P[i];
+  }
+  int64 q_temp;  // will store (P-1)(P+D)/2
+  int64 div = 1;     // will store divisors of (P-1)(P+D)/2
+
+  // testing
+  /*
+  cout << "P_product: " << P_product << "\n";
+  cout << "P_minus: ";
+  for(long i = 0; i < Pminus_len; ++i){
+    cout << Pminus[i] << " ";
+  }
+  cout << "\n";
+  */
+
+  // variables to help store and compute factorization of (P-1)(P+D)/2
+  int64* PplusD;     // unique prime dividing P+D
+  long PplusD_len;   // number of such primes
+  int64* q_primes;   // unique primes dividing q_temp = (P-1)(P+D)/2
+  long q_primes_len; // number of such primes
+  long* q_exps;      // exponents of primes dividing q_temp
+  pair<int64*, long> merge_output;
+
+  int64 D_bound = P_product / ( floor(log(P_product)) * floor(log(P_product)) );
+  //cout << "D_bound = " << D_bound << "\n";
+
+  // constants needed for CD method
+  bigint C_lower;
+  bigint C_upper;
+  int64 largestp = P[ P_len - 1 ];
+  int64 q;
+  bigint r;
+  int64 Delta;
+  // boolean values for whether q, r are integral, prime
+  bool q_integral, r_integral;
+  bool q_prime, r_prime;
+  // reduced values for Korselt
+  bigint modL, modqminus, modrminus;
+
+  // We need a Factgen object for factorizations of P+D
+  // Initialize to match D in [2 .. P-1]
+  FD.init(P_product + 2, 2 * P_product);
+
+  // Basic loop structure: for all D in [2..(P-1)], for all divisors
+  // of the expression (P-1)(P+D)/2, do stuff.
+  for(int64 D = 2; D < P_product; ++D){
+    // if D is small, do the D-Delta method
+    if(D < D_bound){
+      // testing
+      //cout << "P = " << P_product << " " << "D = " << D << "\n";
+
+      // go to the next P+D through the Factgen object
+      FD.next();
+
+      // We set up an odometer, which requires primes and powers
+      q_temp = (P_product - 1) * (P_product + D) / 2;
+
+      // P_minus has the unique prime factors dividing P-1.
+      // copy over prev into PplusD
+      PplusD = FD.prev;
+      PplusD_len = FD.prevlen;   
+ 
+      // merge PplusD and Pminus to get prime factors of q_temp
+      q_primes = new int64[PplusD_len + Pminus_len];
+      q_primes_len = merge_array(Pminus, Pminus_len, PplusD, PplusD_len, q_primes);   
+ 
+      q_exps = new long[q_primes_len];
+
+      // loop over prime divisors of (P-1)(P+D) / 2, compute exponent  
+      for(long i = 0; i < q_primes_len; ++i){
+        p = q_primes[i];
+        e = 0;
+        while(q_temp % p == 0){
+          e++;
+          q_temp = q_temp / p;
+        }
+        q_exps[i] = e;
+      }
+
+      // Set up odometer to run through divisors of (P-1)(P+D)/2
+      Odometer q_od = Odometer(q_primes, q_exps, q_primes_len);
+      div = q_od.get_div();
+
+      //cout << "div = " << div << "\n";
+
+      // Run the code for divisor Delta = 1
+      // apply completion check subroutine to see if this divisor Delta creates Carmichael
+      pair<int64, bigint> qr = completion_check(P_product, div, D, L, q_primes, q_primes_len);
+      //cout << "qr: " << qr.first << " " << qr.second << endl;
+      if(qr.first != 0 && qr.second != 0){
+        //cout << "Carmichael found in divs " << qr.first << " " << qr.second << "\n";
+        output.push_back(qr);
+      }
+      // now go to next divisor
+      q_od.next_div();
+      div = q_od.get_div();
+    
+      // Throw out the divisor if it is too big.  It needs to be small enough so q is bigger than p_{d-2}.
+      // The appropriate bound is Delta < (P-1)(P+D)/(p_{d-2}-1)
+      // So we add 1 to the quotient, since integer division rounds down.
+      Delta_bound = (P_product - 1) * (P_product + D);
+      Delta_bound = Delta_bound / (P[P_len-1] - 1);
+    
+      // continue looking at divisors until it is back to 1
+      while(div != 1){
+
+        //cout << "div = " << div << "\n";
+
+        if(div < Delta_bound){
+
+          // apply completion check subroutine to see if this divisor Delta creates Carmichael
+          pair<int64, bigint> qr = completion_check(P_product, div, D, L, q_primes, q_primes_len);
+          //cout << "qr: " << qr.first << " " << qr.second << endl;
+          if(qr.first != 0 && qr.second != 0){
+            //cout << "Carmichael found in divs " << qr.first << " " << qr.second << "\n";
+            output.push_back(qr);
+          }
+        } // end if div < Delta_bound
+      
+        // next iteration
+        q_od.next_div();
+        div = q_od.get_div();
+      } //end while div != 1
+
+      // free memory for q_primes and q_exps before next cycle
+      delete[] q_primes;
+      delete[] q_exps;
+    } // end if D small
+    else{
+      // Otherwise D is large, do CD method
+      C_lower = 1 + (P_product * P_product) / D;
+      C_upper = (P_product * P_product * (largestp + 3)) / (D * (largestp + 1));
+
+      // loop over C
+      for(int64 C = C_lower; C <= C_upper; ++C){
+        // compute Delta, along with numerators of q, r
+        Delta = C * D - P_product * P_product;
+        q = (P_product - 1) * (P_product + D);
+        r = (P_product - 1) * (P_product + C);
+ 
+       // Delta bound to ensure q > p_{d-2}
+       int64 Delta_bound = (P_product - 1) * (P_product + D);
+       Delta_bound = Delta_bound / (largestp - 1);
+
+       // test q, r for integrality
+       q_integral = q % Delta == 0;
+       r_integral = r % Delta == 0;
+
+       // only do further work if both are integral, Delta small enough
+       if(q_integral && r_integral && Delta < Delta_bound){
+         q = 1 + q / Delta;
+         r = 1 + r / Delta;
+
+         // now primality testing
+         q_prime = trial_thousand(q);
+         r_prime = trial_thousand(r);
+
+         // check korselt
+         if(q_prime && r_prime){
+           modL = ( (q % L) * (r % L) % L) * (P_product % L) % L;
+           modqminus = (r % (q-1)) * (P_product % (q-1)) % (q-1);
+           modrminus = (q * P_product) % (r-1);
+
+           // if all three are 1, add (q, r) to output pairs
+           if(modL == 1 && modqminus == 1 && modrminus == 1){
+             pair<int64, bigint> qr_found;
+             qr_found.first = q;
+             qr_found.second = r;
+             output.push_back(qr_found);
+           }
+         } // end if korselt
+
+       } // end if
+
+      } // end for C      
+
+    } // end if D large
+
+  } // end for D
+  
+  return output;
+} 

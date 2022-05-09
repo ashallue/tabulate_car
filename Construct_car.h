@@ -16,6 +16,7 @@
 #include <iostream>
 #include <fstream>
 #include <sstream>
+#include <math.h>
 
 using namespace std;
 
@@ -71,9 +72,17 @@ class Construct_car{
  */
     void tabulate_car(int64 B, long processor, long num_threads, string cars_file, string admissable_file);
 
-    /* Reads in a file of Carmichael numbers of the form P q r, computes the product, then sorts resulting list
- *  */
-    vector<bigint> product_and_sort(string cars_file);
+    /* Construct Carmichaels for prime pre-products P.  Similar to tabulate_car */
+    void tabulate_car_primeP(int64 B, long processor, long num_threads, string cars_file);
+
+    /* version that calls the crossover version
+ */
+    void tabulate_car_primeP_crossover(int64 B, long processor, long num_threads, string cars_file);
+
+    /* preproduct construction with a crossover strategy
+ *     This version implements a basic version: switch from D-Delta to CD at D = P / (ln P)^2
+ */
+    vector<pair<int64, bigint>> preproduct_crossover(int64* P, long P_len, int64* Pminus, long Pminus_len, int64 L);
 
     /* prints out admissable pre-products in a given range */
     //void find_admissable(int64 low, int64 high);
