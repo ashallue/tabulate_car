@@ -484,7 +484,7 @@ void Construct_car::tabulate_car_primeP_crossover(int64 B, long processor, long 
         F.next();
       }else{
         qrs.clear();
-        qrs = preproduct_crossover(P_factors, P_factors_len, Pminus_factors, Pminus_factors_len, LCM);
+        qrs = preproduct_crossover(P_factors, P_factors_len, Pminus_factors, Pminus_factors_len, LCM, true);
 
         // write to file
         for(long j = 0; j < qrs.size(); ++j){
@@ -503,8 +503,10 @@ void Construct_car::tabulate_car_primeP_crossover(int64 B, long processor, long 
 }
 
 /* Another version, but this one has the D crossover strategy
- */
-vector<pair<int64, bigint>> Construct_car::preproduct_crossover(int64* P, long P_len, int64* Pminus, long Pminus_len, int64 L){
+ * If the bool dynamic is true, we dynamically switch between strategies
+ * If the bool is false, the crossover is set at P / (ln P)^2 
+*/
+vector<pair<int64, bigint>> Construct_car::preproduct_crossover(int64* P, long P_len, int64* Pminus, long Pminus_len, int64 L, bool dynamic){
   vector<pair<int64, bigint>> output;
   int64 p;     // stores a temp prime
   long e;      // stores a temp exponent
@@ -536,8 +538,17 @@ vector<pair<int64, bigint>> Construct_car::preproduct_crossover(int64* P, long P
   long* q_exps;      // exponents of primes dividing q_temp
   pair<int64*, long> merge_output;
 
+  // static crossover bound calculated at P / (ln P)^2
   int64 D_bound = P_product / ( floor(log(P_product)) * floor(log(P_product)) );
+  
   //cout << "D_bound = " << D_bound << "\n";
+
+  // For the dynamic version we need L_p, defined by 
+  // P^2 + L_p = P^2 (p_{d-2} + 3)/(p_{d-2} + 1), where p_{d-2} is largest prime in P
+  // So L_p = P^2 ( (p_{d-2} + 3)/(p_{d-2} + 1) - 1)
+  int64 largest_p = P[P_len - 1];
+  double term = (double) (largest_p + 3) / (largest_p + 1);
+  int64 L_p = floor(P_product * P_product * ( term  - 1) ); 
 
   // constants needed for CD method
   bigint C_lower;
@@ -556,25 +567,46 @@ vector<pair<int64, bigint>> Construct_car::preproduct_crossover(int64* P, long P
   // Initialize to match D in [2 .. P-1]
   FD.init(P_product + 2, 2 * P_product);
 
+  // count the number of times we do C-D
+  int64 count_CD = 0;
+  bool DDelta = true;
+
   // Basic loop structure: for all D in [2..(P-1)], for all divisors
   // of the expression (P-1)(P+D)/2, do stuff.
   for(int64 D = 2; D < P_product; ++D){
-    // if D is small, do the D-Delta method
-    if(D < D_bound){
-      // testing
-      //cout << "P = " << P_product << " " << "D = " << D << "\n";
+    // Start with code to decide whether to do D-Delta or C-D method
+    // if count_CD > 20, do C-D.  20 chosen without investigation.
+    if(count_CD > 20){
+      DDelta = false;
+    }else{
+      // if we are in the DDelta method, then turn the FD incremental sieve
+      if(DDelta){
+        FD.next();
+        // then FD.prev corresponds to P+D
+        PplusD = FD.prev;
+        PplusD_len = FD.prevlen;
+      }
+      // Code to determine when to switch from D-Delta to C-D
+      // If not dynamic, switch when D > D_bound
+      if(!dynamic){
+        if(D > D_bound){
+          DDelta = false;
+        }
+      }else{
+        // in the dynamic case, switch if L_P / D is less than the count of divisors
+        // We will approximate the count of divisors
+        if( L_p / D < pow(2, PplusD_len + Pminus_len) ){
+          DDelta = false;
+        }
+      }
+    } // end deciding which method
 
-      // go to the next P+D through the Factgen object
-      FD.next();
+    // if D is small, do the D-Delta method
+    if(DDelta){
 
       // We set up an odometer, which requires primes and powers
       q_temp = (P_product - 1) * (P_product + D) / 2;
 
-      // P_minus has the unique prime factors dividing P-1.
-      // copy over prev into PplusD
-      PplusD = FD.prev;
-      PplusD_len = FD.prevlen;   
- 
       // merge PplusD and Pminus to get prime factors of q_temp
       q_primes = new int64[PplusD_len + Pminus_len];
       q_primes_len = merge_array(Pminus, Pminus_len, PplusD, PplusD_len, q_primes);   
@@ -645,6 +677,9 @@ vector<pair<int64, bigint>> Construct_car::preproduct_crossover(int64* P, long P
       // Otherwise D is large, do CD method
       C_lower = 1 + (P_product * P_product) / D;
       C_upper = (P_product * P_product * (largestp + 3)) / (D * (largestp + 1));
+
+      // turn counter
+      count_CD++;
 
       // loop over C
       for(int64 C = C_lower; C <= C_upper; ++C){
