@@ -60,5 +60,9 @@ long merge_array(int64* fst, long fst_len, int64* snd, long snd_len, int64* outp
  */
 vector<long> trivial_car_tab(long B); 
 
+/* This function returns the exponent e such that p^e || n.  If p does not divide n, returns 0.
+ */
+long exp_in_factorization(int64 p, int64 n);
+
 
 #endif

@@ -325,3 +325,18 @@ vector<long> trivial_car_tab(long B){
 
   return output;
 }
+
+
+/* This function returns the exponent e such that p^e || n.  If p does not divide n, returns 0.
+ */
+long exp_in_factorization(int64 p, int64 n){
+  long exp = 0;
+  int64 power = p;
+
+  // continue while n mod power is 0
+  while(n % power == 0){
+    exp++;
+    power *= p;
+  }
+  return exp;
+}

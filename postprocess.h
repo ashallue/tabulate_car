@@ -3,10 +3,12 @@
  * Author: Andrew Shallue, Illinois Wesleyan University, written May 2020
  */
 #include <iostream>
+#include <sstream>
 #include <string>
 #include <fstream>
 #include <vector>
 #include "bigint.h"
+#include <algorithm>
 
 using namespace std;
 

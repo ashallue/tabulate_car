@@ -13,6 +13,7 @@ Analysis suggests it should give improvements overall, but it is especially inte
 
 * If D is even, a divisor Delta of (P-1)(P+D) may not have 2 as a prime factor.
 Generalization: Let p be a prime divisor of D.  For the construction to succeed, it is necessary that (P^2 + Delta)/D be an integer.  Since p divides the bottom, it must divide the top.
+Status: DONE with D even, not implemented for other factors of D
 
 case a) if p divides P, we must have p | Delta.  So we can discard all divisors of (P-1)(P+D) where the exponent on p is 0.
 case b) if p does not divid P, then p not | Delta.  So we can discard all divisors of (P-1)(P+D) where the exponent on p is > 0.
@@ -28,13 +29,17 @@ https://sourceforge.net/projects/gmp-ecpp
 or could try pari
 https://pari.math.u-bordeaux.fr
 
-* Implement Pinch
+* Implement Pinch - DONE, at least in case where "P small"
 Summary.  First generate pre-products.  Though Pinch generates these through back-tracking search, to keep timing comparisions "fair" I will generate pre-products with the same incremental sieve as for the D-Delta algorithm.
-"If P is mall enough, then proceed by using Proposition 2"
+"If P is small enough, then proceed by using Proposition 2"
 "If the value of P at level d-2 is large, then we loop overall values of p_{d-1} permitted by Proposition 1(1) and Proposition 3(1). The innermost loop runs over all primes p with Pp = 1 mod L for which p-1 | P-1 and satisfies bounds."
 
 * Crossover - dynamic choice between CD and D-Delta
 For a given D, how many C values vs how many divisors?
 If fewer C, do Pinch's method.  If fewer divisors, do new method.
 
+Update - DONE with trivial cross-over dependent on parameter bounds.  Need to still implement an alternate version where the actual size of the divisor set is calculated.
+
 * I need to update preproduct_construction so that instead of passing in prime factors of P-1, P+D, I pass in the merged set of unique prime factors.
+
+Update - DONE

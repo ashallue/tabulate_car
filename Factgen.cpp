@@ -225,5 +225,10 @@ void Factgen2::print(){
     cout << current[i] << " ";
   }
   cout << "\n";
-
 }
+
+// prime if currentlen is 1, and the prime in that spot equals currentval
+bool Factgen2::isprime_current(){
+  return (currentlen == 1 && current[0] == currentval);
+}
+

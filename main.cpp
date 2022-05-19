@@ -14,8 +14,10 @@
 using namespace std::chrono;
 
 
-int main() {
+int main(int argc, char* argv[]) {
   std::cout << "Hello World!\n";
+  cout << "Argument 1: " << argv[1] << "\n";
+  cout << "Argument 2: " << argv[2] << "\n";
   
   // could also try 10000991  = [ 7, 11, 13, 97, 103 ]
 
@@ -64,75 +66,31 @@ int main() {
   delete[] ps;
   delete[] es;
 
+  // Code for tabulating Carmichael numbers with fixed pre-product
+
+  // retrieve thread number and total from input
+  long thread = atoi(argv[1]);
+  long num_threads = atoi(argv[2]);
+
+  // create file names for carmichaels, and admissable pre-products w/o carmichaels
+  string cars_file = "cars" + to_string(thread) + ".txt";
+  string none_file = "cars_none" + to_string(thread) + ".txt";
+
   Pinch CP = Pinch();
   Construct_car C = Construct_car();
 
-
-  /*
-  // testing carmichael_completion with pre-product 617
-  // 617 is prime.  616 = 2^3 * 7 * 11. L = 616
-  int64* P = new int64[1];
-  P[0] = 617;
-  int64* Pm = new int64[3];
-  Pm[0] = 2; Pm[1] = 7; Pm[2] = 11;
-  int64 L = 616;
-  vector<pair<int64, bigint>> cars = C.preproduct_construction(P, 1, Pm, 3, 616);
-  
-  for(long i = 0; i < cars.size(); i++){
-    cout << cars.at(i).first << " " << cars.at(i).second << "\n";
-  }
-  cout << "\n";
- 
-  cars.clear(); 
- 
-  cars = CP.pinch_preproduct(P, 1, L);
-  for(long i = 0; i < cars.size(); i++){
-    cout << cars.at(i).first << " " << cars.at(i).second << "\n";
-  }
-  */
-
-  /*
-  cout << "Testing carmichael_completion with given pre-product 10^7 + 127\n";
-  vector<int64> P;   P.push_back(167); P.push_back(233); P.push_back(257);
-  vector<int64> Pm;  Pm.push_back(2); Pm.push_back(151); Pm.push_back(33113);
-  int64 L = C.admissable(10000127, P);
-
-  auto start_new = high_resolution_clock::now(); 
-  vector<pair<int64, bigint>> qrs = C.preproduct_construction(P, Pm, L);
-  auto end_new = high_resolution_clock::now();
-  auto duration_new = duration_cast<seconds>(end_new - start_new);
-  
-
-  // checki
-  cout << "Carmichaels from the new algorithm\n";
-  cout << "Took " << duration_new.count() << " seconds\n";
-  for(long i = 0; i < qrs.size(); i++){
-    cout << qrs.at(i).first << " " << qrs.at(i).second << "\n";
-  }
-  cout << "\n";
-  
-  qrs.clear();
-  auto start_pinch = high_resolution_clock::now();
-  qrs = CP.pinch_preproduct(P, L);
-  auto end_pinch = high_resolution_clock::now();
-  auto duration_pinch = duration_cast<seconds>(end_pinch - start_pinch);
-
-  cout << "Carmichaels from pinch algorithm\n";
-  cout << "Took " << duration_pinch.count() << "seconds\n";
-  for(long i = 0; i < qrs.size(); i++){
-    cout << qrs.at(i).first << " " << qrs.at(i).second << "\n";
-  }
-  */
-
-  
   // timing code from geeksforgeeks.org
   
-  int64 num_thousands = 2;
+  int64 num_thousands = 10000;
   int64 bound = num_thousands * 1000;
-  cout << "timings for tabulation of Carmichaels with pre-product up to " << bound << "\n";
+  cout << "Timings for tabulation of Carmichaels with pre-product up to " << bound << "\n";
+  cout << "This is thread " << thread << " of " << num_threads << " total\n";
 
   auto start_new = high_resolution_clock::now();
-  C.tabulate_car(bound, 0, 1, "cars.txt", "cars_none.txt");
+
+  //C.tabulate_car(bound, 0, 1, "cars.txt", "cars_none.txt");
+  C.tabulate_car(bound, thread, num_threads, cars_file, none_file);
+
   auto end_new = high_resolution_clock::now();
  
   /*

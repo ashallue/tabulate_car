@@ -12,8 +12,10 @@
 # limit walltime to 24 hour
 #PBS -l walltime=24:00:00
 
+# creation of job array
+
 # change directory
 cd ~ashallue/tabulate_car
 
 # run command
-LD_LIBRARY_PATH=/share/apps/lib64 ./tabulate
+LD_LIBRARY_PATH=/share/apps/lib64 ./test 30 

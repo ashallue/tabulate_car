@@ -179,6 +179,60 @@ void Pinch::tabulate_car(int64 B, long processor, long num_threads, string cars_
   admissable_w_zero.close();
 }
 
+/* similar, but restrict to prime pre-products
+ */
+void Pinch::tabulate_car_primeP(int64 B, long processor, long num_threads, string cars_file){
+  int64* P_factors;
+  long   P_factors_len;
+  int64* Pminus_factors;
+  long   Pminus_factors_len;
+  vector<pair<int64, bigint>> qrs;
+
+  // file stream object
+  ofstream output;
+  output.open(cars_file);
+
+  //initialize Factgen object
+  F.init(3, B);
+
+  // count the number of prime pre-products
+  int64 num_prime_P = 0;
+
+  // loop over pre-products
+  for(int64 P = 2; P < B; ++P){
+    //cout << "P = " << P << " vs prevn = " << F.prevn << " vs " << F.isprime() << "\n"; 
+
+    // check if P is prime.  If not, continue
+    if(F.prevlen != 1 || F.prev[0] != F.prevn){
+      F.next();
+    }else{
+      //cout << "Found prime P = " << P << "\n";
+
+      // found a prime.  Increment count, set Pminus
+      num_prime_P++;
+      P_factors = F.prev;
+      P_factors_len = F.prevlen;
+
+      // if prime count in correct residue class, construct cars
+      if(num_prime_P % num_threads != processor){
+        F.next();
+      }else{
+        qrs.clear();
+        qrs = pinch_preproduct(P_factors, P_factors_len, P-1);
+
+        // write to file
+        for(long j = 0; j < qrs.size(); ++j){
+          output << P << " " << qrs.at(j).first << " " << qrs.at(j).second << "\n";
+        }
+
+        // advance window
+        F.next();
+      }  // end if correct processor
+
+    } // end if prime   
+  } // end for P
+}
+
 // Tests whether a given pre-product P is admissable, 
 // i.e. that gcd(p-1, P) = 1 for all p | P, and squarefree
 // returns 0 if not admissable

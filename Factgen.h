@@ -101,6 +101,9 @@ public:
   // print both prev and current factorizations
   void print();
 
+  // returns true if current is prime
+  bool isprime_current();
+
 };
 
 

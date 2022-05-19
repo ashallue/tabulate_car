@@ -41,6 +41,10 @@ class Pinch{
  *  *   We use a factgen2 object, write to a file.  Only process pre-products that fall into residue class of the core.
  *   */
     void tabulate_car(int64 B, long processor, long num_threads, string cars_file, string admissable_file);
+
+    /* Same, but restricted to prime pre-products
+ */
+    void tabulate_car_primeP(int64 B, long processor, long num_threads, string cars_file);
  
 };
 

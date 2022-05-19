@@ -12,7 +12,7 @@ using namespace std;
 
 /* Reads in a file of Carmichael numbers of the form P q r, computes the product, sorts resulting vector
  */
-vector<bigint> Construct_car::product_and_sort(string cars_file){
+vector<bigint> product_and_sort(string cars_file){
   vector<bigint> sorted_cars;
   
   // open input file
