@@ -10,6 +10,7 @@
 #include "Factgen.h"
 #include "int.h"
 #include "bigint.h"
+#include "gmp.h"
 #include "Odometer.h"
 #include <vector>
 #include <string>
@@ -18,10 +19,18 @@
 #include <sstream>
 #include <math.h>
 
+
 using namespace std;
 
 #ifndef CONSTRUCT_CAR
 #define CONSTRUCT_CAR
+
+// Sometimes we need to convert from 128-bit words to two 64-bit words
+// This union structure allows the two representations to occupy same spot in memory
+union Dual_rep{
+  bigint double_word;
+  unsigned long int two_words[2];
+};
 
 class Construct_car{
   private:
@@ -61,8 +70,7 @@ class Construct_car{
     5) Compute r = (P-1)(P+C)/Delta + 1, check integrality, 
   Note that I know q is integral, because Delta chosen as divisor of (P-1)(P+D).
   Other input: unique primes dividing (P-1)(P+D)/2, which we use to do primality via q-1 factorization.
-  Note that r is not proven prime, that will be dealt within post-processing.
-
+  primality of q, r is determined through gmp func: mpz_probab_prime_p, which does Baillie-PSW
   Returns a pair (q, r) if the completion works.  Returns (0, 0) if it doesn't
   */
     pair<int64, bigint> completion_check(int64 P, int64 Delta, int64 D, int64 L, int64* q_primes, long q_primes_len);

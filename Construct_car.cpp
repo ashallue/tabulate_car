@@ -208,8 +208,7 @@ vector<pair<int64, bigint>> Construct_car::preproduct_construction(int64* P, lon
     5) Compute r = (P-1)(P+C)/Delta + 1, check integrality
   Note that I know q is integral, because Delta chosen as divisor of (P-1)(P+D).
   Other input: unique primes dividing (P-1)(P+D)/2, which we use to do primality via q-1 factorization.
-  Note that r is not proven prime, that will be dealt with in post-processing.
-
+  primality of q, r determined through mpz_probab_prime_p, a gmp func which does Baillie-PSW
   Returns a pair (q, r) if the completion works.  Returns (0, 0) if it doesn't
 */
 pair<int64, bigint> Construct_car::completion_check(int64 P, int64 Delta, int64 D, int64 L, int64* q_primes, long q_primes_len){
@@ -253,56 +252,31 @@ pair<int64, bigint> Construct_car::completion_check(int64 P, int64 Delta, int64 
   bigint modrminus = (q * P) % (r-1);
   if(modL != 1 || modqminus != 1 || modrminus != 1) return output;
   
-  /*
-  // next build the vector of unique prime factors of q - 1 = (P-1)(P+D)/Delta
-  // It will take several lines, but we will apply pocklington primality proof to q
-  // we merge the vectors of unique prime factors, which removes duplicates
-  vector<int64> temp_qminus = merge(Pminus, PplusD);
-  vector<int64> qminus;
-  int64 tempDelta = Delta;
-  int64 tempq = (P - 1) * (P + D);
+  // primality testing on q, r.  Will use a gmp func, so requires conversion to mpz
+  mpz_t q_big;
+  mpz_t r_big;
+  mpz_inits(q_big, r_big); 
 
-  // variables for exponents
-  long D_e;
-  long D_P;
+  // q can be converted directly.  r is possibly 128 bits, we need to use Dual_rep
+  mpz_set_si(q_big, q);
+  Dual_rep d;
+  d.double_word = r;
 
-  // loop over prime divisors of (P-1)(P+D).  
-  for(long i = 0; i < temp_qminus.size(); ++i){
+  // set the high bits, multiply by 2**64, then add over low bits
+  mpz_set_si(r_big, d.two_words[1]);
+  mpz_mul_2exp(r_big, r_big, 64);
+  mpz_add_ui(r_big, r_big, d.two_words[0]);
 
-    // if the prime divides Delta, compute respective exponents
-    if(tempDelta % temp_qminus.at(i) == 0){
+  // testing
+  cout << "q in two different reps: " << q << " ";
+  mpz_out_str(nullptr, 10, q_big);
+  cout << "\n r in two different reps: " << r << " ";
+  mpz_out_str(nullptr, 10, r_big);
+  cout << "\n";
 
-      // compute power of the prime dividing Delta
-      D_e = 1;
-      while(tempDelta % temp_qminus.at(i) == 0){
-        D_e++;
-        tempDelta = tempDelta / temp_qminus.at(i);
-      }
-
-      // compute power of the prime dividing tempq = (P-1)*(P+D)
-      D_P = 1;
-      while(tempq % temp_qminus.at(i) == 0){
-        D_P++;
-        tempq = tempq / temp_qminus.at(i);
-      }
-      // now if the exponent on (P-1)(P+D) is bigger, include that prime
-      if(D_P > D_e) qminus.push_back(temp_qminus.at(i));
-    }else{
-      // in the case where the prime doesn't divide Delta, include that prime
-      qminus.push_back(temp_qminus.at(i));
-    }
-  } // end for
-  
-  // Now that we have unique prime factors of q-1, call pocklington primality on q
-  if(!pocklington(q, qminus)) return output;
-  */
-
-  // check pseudo-primality of q.  Done through trial division
-  if(!trial_thousand(q)) return output;
-
-  // next check pseudo-primality of r.  This will be done through trial division
-  // primes array of length 168 found in int.h
-  if(!trial_thousand(r)) return output;  
+  // check pseudo-primality of q, r.  mpz_probab_prime_p could return 0, 1, or 2.  0 for composite
+  if(mpz_probab_prime_p(q_big, 0) == 0) return output;
+  if(mpz_probab_prime_p(r_big, 0) == 0) return output;  
 
   // If we have gotten to this point we have passed all the checks above
   output.first = q;   output.second = r;
@@ -702,6 +676,7 @@ vector<pair<int64, bigint>> Construct_car::preproduct_crossover(int64* P, long P
          r = 1 + r / Delta;
 
          // now primality testing
+         // mpz_probab_prime_p does trial-division, then Baillie-PSW
          q_prime = trial_thousand(q);
          r_prime = trial_thousand(r);
 
