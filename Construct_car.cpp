@@ -267,12 +267,14 @@ pair<int64, bigint> Construct_car::completion_check(int64 P, int64 Delta, int64 
   mpz_mul_2exp(r_big, r_big, 64);
   mpz_add_ui(r_big, r_big, d.two_words[0]);
 
+  /*
   // testing
   cout << "q in two different reps: " << q << " ";
   mpz_out_str(nullptr, 10, q_big);
   cout << "\n r in two different reps: " << r << " ";
   mpz_out_str(nullptr, 10, r_big);
   cout << "\n";
+  */
 
   // check pseudo-primality of q, r.  mpz_probab_prime_p could return 0, 1, or 2.  0 for composite
   if(mpz_probab_prime_p(q_big, 0) == 0) return output;
@@ -330,6 +332,9 @@ void Construct_car::tabulate_car(int64 B, long processor, long num_threads, stri
         // Construct all Carmichael numbers with pre-product P
         qrs.clear();
         qrs = preproduct_construction(P_factors, P_factors_len, Pminus_factors, Pminus_factors_len, LCM);
+
+        // testing
+        //cout << "P = " << P << " generates " << qrs.size() << " many carmichaels\n";
 
         // if no carmichales constructed, write pre-product to other file
         if(qrs.size() == 0){
@@ -677,11 +682,27 @@ vector<pair<int64, bigint>> Construct_car::preproduct_crossover(int64* P, long P
 
          // now primality testing
          // mpz_probab_prime_p does trial-division, then Baillie-PSW
-         q_prime = trial_thousand(q);
-         r_prime = trial_thousand(r);
+         // primality testing on q, r.  Will use a gmp func, so requires conversion to mpz
+         mpz_t q_big;
+         mpz_t r_big;
+         mpz_inits(q_big, r_big); 
 
-         // check korselt
-         if(q_prime && r_prime){
+         // q can be converted directly.  r is possibly 128 bits, we need to use Dual_rep
+         mpz_set_si(q_big, q);
+         Dual_rep d;
+         d.double_word = r;
+
+         // set the high bits, multiply by 2**64, then add over low bits
+         mpz_set_si(r_big, d.two_words[1]);
+         mpz_mul_2exp(r_big, r_big, 64);
+         mpz_add_ui(r_big, r_big, d.two_words[0]);
+
+         // Note output is 0 if composite, 1 if prob prime, 2 if provably prime
+         q_prime = mpz_probab_prime_p(q_big, 0);
+         r_prime = mpz_probab_prime_p(r_big, 0);
+
+         // check korselt if both are prime
+         if(q_prime > 0 && r_prime > 0){
            modL = ( (q % L) * (r % L) % L) * (P_product % L) % L;
            modqminus = (r % (q-1)) * (P_product % (q-1)) % (q-1);
            modrminus = (q * P_product) % (r-1);

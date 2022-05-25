@@ -2,7 +2,7 @@ paths = -I/usr/local/include -L/usr/local/lib
 tags = -lntl -lm -lgmp -O3  
 objects = bigint.o Pinch.o Construct_car.o Factgen.o functions.o int.o Odometer.o primetest.o postprocess.o 
 
-all: main test
+all: main test int_testing
 
 %.o:	%.cpp
 	g++ $(paths) -c $<
@@ -18,6 +18,12 @@ test.o:	test.cpp
 
 test:	test.o $(objects)
 	g++ $(paths) test.o $(objects) -o test $(tags)
+
+int_testing.o:	int_testing.cpp
+	g++ $(paths) -c int_testing.cpp
+
+int_testing:	int_testing.o $(objects)
+	g++ $(paths) int_testing.o $(objects) -o int_testing $(tags)
 
 clean:
 	rm *.o
