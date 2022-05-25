@@ -37,7 +37,7 @@ int main(int argc, char* argv[]) {
   // timing code from geeksforgeeks.org
   
   // we want all pre-products up to 10^8, which is 10^5 thousands
-  int64 num_thousands = 100000;
+  int64 num_thousands = 2;
   int64 bound = num_thousands * 1000;
   cout << "Timings for tabulation of Carmichaels with pre-product up to " << bound << "\n";
   cout << "This is thread " << thread << " of " << num_threads << " total\n";
@@ -53,7 +53,7 @@ int main(int argc, char* argv[]) {
 
   cout << "new timing: " << duration_new.count() << "\n";
   
-  /*
+  
   // This code computes Carmichaels in two different ways as a check
   long car_bound = 500000;
   vector<bigint> cars = product_and_sort("cars0.txt");
@@ -67,7 +67,7 @@ int main(int argc, char* argv[]) {
     cout << "new: " << cars.at(i) << " vs trivial: " << trivial_cars.at(i) << "\n";
     
   }
-  */ 
+   
    
  
 }

@@ -59,6 +59,8 @@ class Construct_car{
     // up to X of the form Pqr where q and r are primes.
     // Returns list of pairs (q,r) such that Pqr is Carmichael (except for primality test on r)
     // Inputs are factorizations of P and P-1.
+    // This does only D-Delta method, which isn't as efficient as switching between D-Delta and C-D
+    // Left here for timings and for historical interest.
     */
     vector<pair<int64, bigint>> preproduct_construction(int64* P, long P_len, int64* Pminus, long Pminus_len, int64 L);
 
@@ -76,7 +78,9 @@ class Construct_car{
     pair<int64, bigint> completion_check(int64 P, int64 Delta, int64 D, int64 L, int64* q_primes, long q_primes_len);
    
   /* Construct Carmichaels for a range of pre-products P
- *   We use a factgen2 object, write to a file.  Only process pre-products that fall into residue class of the core.
+ *   We use a factgen2 object, write to a file.  Only process admissable pre-products, divide up work among
+ *   residue classes (processor modulo num_threads).
+ *   Calls preproduct_crossover, which does a mix of D-Delta and C-D methods.
  */
     void tabulate_car(int64 B, long processor, long num_threads, string cars_file, string admissable_file);
 

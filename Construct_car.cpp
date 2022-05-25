@@ -322,7 +322,7 @@ void Construct_car::tabulate_car(int64 B, long processor, long num_threads, stri
     if(LCM != 0) num_admissable++;
 
     // if num_admissable has the correct residue, do work, otherwise continue
-    if(num_admissable % num_threads != processor){
+    if( (num_admissable % num_threads) != (processor % num_threads)){
       F.next();
     }else{
 
@@ -331,7 +331,7 @@ void Construct_car::tabulate_car(int64 B, long processor, long num_threads, stri
      
         // Construct all Carmichael numbers with pre-product P
         qrs.clear();
-        qrs = preproduct_construction(P_factors, P_factors_len, Pminus_factors, Pminus_factors_len, LCM);
+        qrs = preproduct_crossover(P_factors, P_factors_len, Pminus_factors, Pminus_factors_len, LCM, true);
 
         // testing
         //cout << "P = " << P << " generates " << qrs.size() << " many carmichaels\n";
