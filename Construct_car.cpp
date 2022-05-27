@@ -255,7 +255,7 @@ pair<int64, bigint> Construct_car::completion_check(int64 P, int64 Delta, int64 
   // primality testing on q, r.  Will use a gmp func, so requires conversion to mpz
   mpz_t q_big;
   mpz_t r_big;
-  mpz_inits(q_big, r_big); 
+  mpz_init(q_big); mpz_init(r_big); 
 
   // q can be converted directly.  r is possibly 128 bits, we need to use Dual_rep
   mpz_set_si(q_big, q);
@@ -279,6 +279,9 @@ pair<int64, bigint> Construct_car::completion_check(int64 P, int64 Delta, int64 
   // check pseudo-primality of q, r.  mpz_probab_prime_p could return 0, 1, or 2.  0 for composite
   if(mpz_probab_prime_p(q_big, 0) == 0) return output;
   if(mpz_probab_prime_p(r_big, 0) == 0) return output;  
+
+  // clear mpz
+  mpz_clear(q_big);   mpz_clear(r_big);
 
   // If we have gotten to this point we have passed all the checks above
   output.first = q;   output.second = r;
@@ -311,6 +314,9 @@ void Construct_car::tabulate_car(int64 B, long processor, long num_threads, stri
   // Now loop over pre-products P
   for(int64 P = 3; P < B; ++P){
 
+    // testing
+    cout << "tabulate_car, loops with P = " << P << "\n";
+
     // retrieve factorizations of P, P-1
     P_factors = F.current;
     P_factors_len = F.currentlen;
@@ -334,7 +340,7 @@ void Construct_car::tabulate_car(int64 B, long processor, long num_threads, stri
         qrs = preproduct_crossover(P_factors, P_factors_len, Pminus_factors, Pminus_factors_len, LCM, true);
 
         // testing
-        //cout << "P = " << P << " generates " << qrs.size() << " many carmichaels\n";
+        cout << "P = " << P << " generates " << qrs.size() << " many carmichaels\n";
 
         // if no carmichales constructed, write pre-product to other file
         if(qrs.size() == 0){
@@ -491,6 +497,11 @@ vector<pair<int64, bigint>> Construct_car::preproduct_crossover(int64* P, long P
   long e;      // stores a temp exponent
   int64 Delta_bound;  // stores upper bound on Delta to ensure it isn't too big
 
+  // variables for primality testing, using gmp function so need to convert to mpz_t
+  mpz_t q_big;
+  mpz_t r_big;
+  mpz_init(q_big);  mpz_init(r_big);
+  
   // Generate P as a single integer
   int64 P_product = 1;
   for(long i = 0; i < P_len; ++i){
@@ -499,8 +510,8 @@ vector<pair<int64, bigint>> Construct_car::preproduct_crossover(int64* P, long P
   int64 q_temp;  // will store (P-1)(P+D)/2
   int64 div = 1;     // will store divisors of (P-1)(P+D)/2
 
-  // testing
   /*
+  // testing 
   cout << "P_product: " << P_product << "\n";
   cout << "P_minus: ";
   for(long i = 0; i < Pminus_len; ++i){
@@ -580,6 +591,8 @@ vector<pair<int64, bigint>> Construct_car::preproduct_crossover(int64* P, long P
       }
     } // end deciding which method
 
+    //cout << "D = " << D << " value of DDelta is " << DDelta << "\n";
+
     // if D is small, do the D-Delta method
     if(DDelta){
 
@@ -606,8 +619,6 @@ vector<pair<int64, bigint>> Construct_car::preproduct_crossover(int64* P, long P
       // Set up odometer to run through divisors of (P-1)(P+D)/2
       Odometer q_od = Odometer(q_primes, q_exps, q_primes_len);
       div = q_od.get_div();
-
-      //cout << "div = " << div << "\n";
 
       // Run the code for divisor Delta = 1
       // apply completion check subroutine to see if this divisor Delta creates Carmichael
@@ -653,6 +664,7 @@ vector<pair<int64, bigint>> Construct_car::preproduct_crossover(int64* P, long P
       delete[] q_exps;
     } // end if D small
     else{
+
       // Otherwise D is large, do CD method
       C_lower = 1 + (P_product * P_product) / D;
       C_upper = (P_product * P_product * (largestp + 3)) / (D * (largestp + 1));
@@ -662,11 +674,11 @@ vector<pair<int64, bigint>> Construct_car::preproduct_crossover(int64* P, long P
 
       // loop over C
       for(int64 C = C_lower; C <= C_upper; ++C){
-        // compute Delta, along with numerators of q, r
-        Delta = C * D - P_product * P_product;
-        q = (P_product - 1) * (P_product + D);
-        r = (P_product - 1) * (P_product + C);
- 
+       // compute Delta, along with numerators of q, r
+       Delta = C * D - P_product * P_product;
+       q = (P_product - 1) * (P_product + D);
+       r = (P_product - 1) * (P_product + C);
+
        // Delta bound to ensure q > p_{d-2}
        int64 Delta_bound = (P_product - 1) * (P_product + D);
        Delta_bound = Delta_bound / (largestp - 1);
@@ -680,13 +692,10 @@ vector<pair<int64, bigint>> Construct_car::preproduct_crossover(int64* P, long P
          q = 1 + q / Delta;
          r = 1 + r / Delta;
 
-         // now primality testing
-         // mpz_probab_prime_p does trial-division, then Baillie-PSW
-         // primality testing on q, r.  Will use a gmp func, so requires conversion to mpz
-         mpz_t q_big;
-         mpz_t r_big;
-         mpz_inits(q_big, r_big); 
+         //cout << "before mpz stuff\n";
 
+         // now primality testing; mpz_probab_prime_p does trial-division, then Baillie-PSW
+         // primality testing on q, r.  Will use a gmp func, so requires conversion to mpz
          // q can be converted directly.  r is possibly 128 bits, we need to use Dual_rep
          mpz_set_si(q_big, q);
          Dual_rep d;
@@ -700,6 +709,8 @@ vector<pair<int64, bigint>> Construct_car::preproduct_crossover(int64* P, long P
          // Note output is 0 if composite, 1 if prob prime, 2 if provably prime
          q_prime = mpz_probab_prime_p(q_big, 0);
          r_prime = mpz_probab_prime_p(r_big, 0);
+
+         //cout << "after mpz stuff\n";
 
          // check korselt if both are prime
          if(q_prime > 0 && r_prime > 0){
@@ -723,6 +734,9 @@ vector<pair<int64, bigint>> Construct_car::preproduct_crossover(int64* P, long P
     } // end if D large
 
   } // end for D
-  
+ 
+  // clear mpz
+  mpz_clear(q_big);  mpz_clear(r_big); 
+
   return output;
 } 

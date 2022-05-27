@@ -29,6 +29,8 @@ https://sourceforge.net/projects/gmp-ecpp
 or could try pari
 https://pari.math.u-bordeaux.fr
 
+Update - 
+
 * Implement Pinch - DONE, at least in case where "P small"
 Summary.  First generate pre-products.  Though Pinch generates these through back-tracking search, to keep timing comparisions "fair" I will generate pre-products with the same incremental sieve as for the D-Delta algorithm.
 "If P is small enough, then proceed by using Proposition 2"

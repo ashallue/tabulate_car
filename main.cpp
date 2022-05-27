@@ -18,34 +18,35 @@ using namespace std::chrono;
 // expecting two arguments: 1) thread number for this instance, 2) total thread count
 int main(int argc, char* argv[]) {
   std::cout << "Hello World!\n";
-  cout << "Argument 1: " << argv[1] << "\n";
-  cout << "Argument 2: " << argv[2] << "\n";
   
-
-  // Code for tabulating Carmichael numbers with fixed pre-product
-
-  // retrieve thread number and total from input
-  long thread = atoi(argv[1]);
-  long num_threads = atoi(argv[2]);
-
-  // create file names for carmichaels, and admissable pre-products w/o carmichaels
-  string cars_file = "cars" + to_string(thread) + ".txt";
-  string none_file = "cars_none" + to_string(thread) + ".txt";
+  if(argc == 2){
+    cout << "Argument 1: " << argv[1] << "\n";
+    cout << "Argument 2: " << argv[2] << "\n";
+  
+    // retrieve thread number and total from input
+    long thread = atoi(argv[1]);
+    long num_threads = atoi(argv[2]);
+  
+    // create file names for carmichaels, and admissable pre-products w/o carmichaels
+    string cars_file = "cars" + to_string(thread) + ".txt";
+    string none_file = "cars_none" + to_string(thread) + ".txt";
+    
+    cout << "This is thread " << thread << " of " << num_threads << "total\n";
+  }
 
   Construct_car C = Construct_car();
 
   // timing code from geeksforgeeks.org
   
   // we want all pre-products up to 10^8, which is 10^5 thousands
-  int64 num_thousands = 2;
+  int64 num_thousands = 1;
   int64 bound = num_thousands * 1000;
   cout << "Timings for tabulation of Carmichaels with pre-product up to " << bound << "\n";
-  cout << "This is thread " << thread << " of " << num_threads << " total\n";
 
   auto start_new = high_resolution_clock::now();
 
-  //C.tabulate_car(bound, 0, 1, "cars.txt", "cars_none.txt");
-  C.tabulate_car(bound, thread, num_threads, cars_file, none_file);
+  C.tabulate_car(bound, 0, 1, "cars0.txt", "cars_none0.txt");
+  //C.tabulate_car(bound, thread, num_threads, cars_file, none_file);
 
   auto end_new = high_resolution_clock::now();
  
