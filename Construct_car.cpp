@@ -315,7 +315,7 @@ void Construct_car::tabulate_car(int64 B, long processor, long num_threads, stri
   for(int64 P = 3; P < B; ++P){
 
     // testing
-    cout << "tabulate_car, loops with P = " << P << "\n";
+    //cout << "tabulate_car, loops with P = " << P << "\n";
 
     // retrieve factorizations of P, P-1
     P_factors = F.current;
@@ -337,10 +337,10 @@ void Construct_car::tabulate_car(int64 B, long processor, long num_threads, stri
      
         // Construct all Carmichael numbers with pre-product P
         qrs.clear();
-        qrs = preproduct_crossover(P_factors, P_factors_len, Pminus_factors, Pminus_factors_len, LCM, true);
+        qrs = preproduct_crossover(P_factors, P_factors_len, Pminus_factors, Pminus_factors_len, LCM, false);
 
         // testing
-        cout << "P = " << P << " generates " << qrs.size() << " many carmichaels\n";
+       // cout << "P = " << P << " generates " << qrs.size() << " many carmichaels\n";
 
         // if no carmichales constructed, write pre-product to other file
         if(qrs.size() == 0){
@@ -428,7 +428,7 @@ void Construct_car::tabulate_car_primeP(int64 B, long processor, long num_thread
 
 /* Version that calls the cross-over function
  */
-void Construct_car::tabulate_car_primeP_crossover(int64 B, long processor, long num_threads, string cars_file){
+void Construct_car::tabulate_car_primeP_crossover(int64 B, long processor, long num_threads, string cars_file, bool dynamic){
   int64* P_factors;
   long   P_factors_len;
   int64* Pminus_factors;
@@ -469,7 +469,7 @@ void Construct_car::tabulate_car_primeP_crossover(int64 B, long processor, long 
         F.next();
       }else{
         qrs.clear();
-        qrs = preproduct_crossover(P_factors, P_factors_len, Pminus_factors, Pminus_factors_len, LCM, true);
+        qrs = preproduct_crossover(P_factors, P_factors_len, Pminus_factors, Pminus_factors_len, LCM, dynamic);
 
         // write to file
         for(long j = 0; j < qrs.size(); ++j){

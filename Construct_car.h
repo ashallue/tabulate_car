@@ -80,16 +80,18 @@ class Construct_car{
   /* Construct Carmichaels for a range of pre-products P
  *   We use a factgen2 object, write to a file.  Only process admissable pre-products, divide up work among
  *   residue classes (processor modulo num_threads).
- *   Calls preproduct_crossover, which does a mix of D-Delta and C-D methods.
+ *   Calls preproduct_crossover, which does a mix of D-Delta and C-D methods.  Dynamic flag set to false.
  */
     void tabulate_car(int64 B, long processor, long num_threads, string cars_file, string admissable_file);
 
-    /* Construct Carmichaels for prime pre-products P.  Similar to tabulate_car */
+    /* Construct Carmichaels for prime pre-products P.  Similar to tabulate_car
+ *     Note this calls preproduct_construction, so no crossover at all, only D-Delta
+ * */
     void tabulate_car_primeP(int64 B, long processor, long num_threads, string cars_file);
 
-    /* version that calls the crossover version
+    /* version that calls the crossover version.  The T/F flag is for static or dynamic crossover.
  */
-    void tabulate_car_primeP_crossover(int64 B, long processor, long num_threads, string cars_file);
+    void tabulate_car_primeP_crossover(int64 B, long processor, long num_threads, string cars_file, bool dynamic);
 
     /* preproduct construction with a crossover strategy.
  * The boolean chooses between two different versions.

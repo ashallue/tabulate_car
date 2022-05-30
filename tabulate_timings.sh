@@ -13,9 +13,10 @@
 #PBS -l walltime=24:00:00
 
 # creation of job array
+#$ -t 1-20
 
 # change directory
 cd ~ashallue/tabulate_car
 
 # run command
-LD_LIBRARY_PATH=/share/apps/lib64 ./test 30 
+LD_LIBRARY_PATH=/share/apps/lib64 ./timings ${SGE_TASK_ID}

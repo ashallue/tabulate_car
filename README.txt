@@ -8,40 +8,36 @@ This is an idea that has been discussed before (e.g. Pinch), our innovation is t
 
 Analysis suggests it should give improvements overall, but it is especially interesting that one can generate very large Carmichael numbers quickly.
 
+**** Description of files and classes *****
 
-// Things to do:
+class Construct_car  - Primary class for constructing Carmichael numbers.  Call tabulate_car to tabulate all triples (P, q, r) 
+where Pqr is a Carmichael number and the preproduct P is less than the bound given.  There is a small potential for error, 
+namely that q and r are tested for primality with Baillie-PSW.  Output is a textfile with each (P, q, r) on one line, space separated.
 
-* If D is even, a divisor Delta of (P-1)(P+D) may not have 2 as a prime factor.
-Generalization: Let p be a prime divisor of D.  For the construction to succeed, it is necessary that (P^2 + Delta)/D be an integer.  Since p divides the bottom, it must divide the top.
-Status: DONE with D even, not implemented for other factors of D
+The tabulate_car function calls preproduct_crossover, which for a given preproduct P finds all q, r through a mix of D-Delta 
+and C-D strategies.  It switches strategies either statically or dynamically depending on a flag.  My own timings have shown 
+that a static strategy is better, so when tabulate_car calls preproduct_crossover, the flag is set to false.
 
-case a) if p divides P, we must have p | Delta.  So we can discard all divisors of (P-1)(P+D) where the exponent on p is 0.
-case b) if p does not divid P, then p not | Delta.  So we can discard all divisors of (P-1)(P+D) where the exponent on p is > 0.
+The function completion_check employs the primality and korselt conditions.
 
-* Parallelization - DONE
-From my notes: every processor has a factgen2 window tracking factors of P, P-1.Counts the number of admissable P seen.  When count is in the residue class corresponding to that particular processor, start a new segmented sieve.  By semented sieve, I think it just means running over divisors to find Carmichael numbers with that particular pre-product.
+preproduct_construction only does D-Delta method, and is no longer recommended for use.
+The primeP functions focus on prime pre-products, in case one is interested in Carmichaels with 3 prime factors.
 
-* What should I do about proving primality of r?
-We have r - 1 = (P-1)(P+C)/Delta.  I could put the factors of P-1 into the text file.  Then apply trial division factorization on the co-factor.
-With factors of r-1 in hand, I could do Pocklington.
-Update: No, just cast into gmp multi-precision integer, invoke gmp implementation of elliptic curve primality proving.
-https://sourceforge.net/projects/gmp-ecpp
-or could try pari
-https://pari.math.u-bordeaux.fr
+class Pinch  - Not currently a complete implementation of Pinch's Carmichael tabulation algorithm, simply an implementation 
+of the C-D method for pre-product tabulation.  Used for timing comparisons with D-Delta methods.
 
-Update - 
+class Odometer - Given the complete prime factorization of a number, "turn the odometer" to step through all divisors.
 
-* Implement Pinch - DONE, at least in case where "P small"
-Summary.  First generate pre-products.  Though Pinch generates these through back-tracking search, to keep timing comparisions "fair" I will generate pre-products with the same incremental sieve as for the D-Delta algorithm.
-"If P is small enough, then proceed by using Proposition 2"
-"If the value of P at level d-2 is large, then we loop overall values of p_{d-1} permitted by Proposition 1(1) and Proposition 3(1). The innermost loop runs over all primes p with Pp = 1 mod L for which p-1 | P-1 and satisfies bounds."
+files int.h and bigint.h  - Written by Jonathan Sorenson, code for conveniently working with 32, 64, 128 bit integers.
 
-* Crossover - dynamic choice between CD and D-Delta
-For a given D, how many C values vs how many divisors?
-If fewer C, do Pinch's method.  If fewer divisors, do new method.
+class Factgen  - implementation of incremental sieve by Jonathan Sorenson, extended by Andrew Shallue
 
-Update - DONE with trivial cross-over dependent on parameter bounds.  Need to still implement an alternate version where the actual size of the divisor set is calculated.
+functions.h  - a variety of helper functions related to arrays.  Also has more basic sieves used to test Factgen.
 
-* I need to update preproduct_construction so that instead of passing in prime factors of P-1, P+D, I pass in the merged set of unique prime factors.
+postprocess.h - unfinished.  Intended to have code to check all the Carmichaels in a file, and to compare with other tabulations.
 
-Update - DONE
+primetest.h  - a variety of primality and compositeness tests
+
+class Stack - implementation of a stack by Jonathan Sorenson.  Optimized version, based on an array of 20 words.
+
+
