@@ -14,6 +14,8 @@
 #include <vector>
 #include <iostream>
 #include "bigint.h"
+#include "int.h"
+#include "functions.h"
 
 using namespace std;
 
@@ -29,7 +31,26 @@ class Pseudosquare{
     int index_primes[num_entries];
     bigint pssquares[num_entries];
 
+    // loads index_primes and pssquares with the appropriate values
     Pseudosquare();
+
+    // computation of jacobi symbol (a | n).  Works for n composite.  
+    // Source: Chap 5 of Bach/Shallit
+    int jacobi(bigint a_in, bigint n_in); 
+
+    // print primes with their corresponding L_p
+    void print();
+
+    // A function that tests if n is a pseudosquare with respect to p,
+    // i.e. n = 1 mod 8 and (n | q) = 1 for all odd primes q <= p.
+    // Does not check that n is the smallest integer with this property.
+    bool is_pseudosquare(bigint n, long p);
+
+    // Check all the pseudosquares in stored in the class arrays.  Output is all printed.
+    // I am checking that is_pseudosquare returns true for the corresponding p, not for the next one
+    // I am not checking that the n is the smallest with respect to that p.
+    void check_pseudosquares();
+
 };
 
 #endif

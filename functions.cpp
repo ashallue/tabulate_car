@@ -350,11 +350,6 @@ bigint string_to_bigint(string num){
   mpz_t q;         mpz_init(q);
   mpz_t r;         mpz_init(r);
 
-  mpz_out_str(nullptr, 10, q);
-  cout << " ";
-  mpz_out_str(nullptr, 10, r);
-  cout << "\n";
-
   // convert from string to character array (annoying)
   // I need extra length in my character array to account for the \0 character strcpy adds
   char* num_chars = new char[num.length() + 1];
