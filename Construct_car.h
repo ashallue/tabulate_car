@@ -27,10 +27,10 @@ using namespace std;
 
 // Sometimes we need to convert from 128-bit words to two 64-bit words
 // This union structure allows the two representations to occupy same spot in memory
-union Dual_rep{
-  bigint double_word;
-  unsigned long int two_words[2];
-};
+//union Dual_rep{
+//  bigint double_word;
+//  unsigned long int two_words[2];
+//};
 
 class Construct_car{
   private:

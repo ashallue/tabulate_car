@@ -6,12 +6,22 @@
 #include <vector>
 #include "math.h"
 #include "int.h"
+#include "bigint.h"
+#include <string>
 #include <algorithm>   // std::sort on vectors
+#include "gmp.h"
 
 using namespace std;
 
 #ifndef FUNCTIONS
 #define FUNCTIONS
+
+// Sometimes we need to convert from 128-bit words to two 64-bit words
+// This union structure allows the two representations to occupy same spot in memory
+union Dual_rep{
+  bigint double_word;
+  unsigned long int two_words[2];
+};
 
 // print a vector<long>
 void print_vec(vector<long> nums);
@@ -64,5 +74,9 @@ vector<long> trivial_car_tab(long B);
  */
 long exp_in_factorization(int64 p, int64 n);
 
+/* A function that converts a string of digits into an integer of type bigint.
+ * Performs a size check to make sure it is at most 128 bits
+ */
+bigint string_to_bigint(string num);
 
 #endif

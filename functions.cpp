@@ -340,3 +340,67 @@ long exp_in_factorization(int64 p, int64 n){
   }
   return exp;
 }
+
+/* A function that converts a string of digits into an integer of type bigint.
+ * Performs a size check to make sure it is at most 128 bits
+ */
+bigint string_to_bigint(string num){
+  // set up mpz_t for quotient, remainder, and input
+  mpz_t input_num; mpz_init(input_num);
+  mpz_t q;         mpz_init(q);
+  mpz_t r;         mpz_init(r);
+
+  mpz_out_str(nullptr, 10, q);
+  cout << " ";
+  mpz_out_str(nullptr, 10, r);
+  cout << "\n";
+
+  // convert from string to character array (annoying)
+  // I need extra length in my character array to account for the \0 character strcpy adds
+  char* num_chars = new char[num.length() + 1];
+  strcpy(num_chars, num.c_str()); 
+
+  // set value of the input num, test its size.  Limit to 127 to make room for neg sign
+  mpz_set_str(input_num, num_chars, 10);
+  long int* num_bits = new long int;
+  double d = mpz_get_d_2exp(num_bits, input_num);
+
+  if(*num_bits > 127){
+    cout << "Error in string_to_bigint, input num too big: " << num << "\n";
+    return -1;
+  }
+  
+  // now divide by 2^64 and capture the quotient and remainder, then convert them to signed ints 
+  mpz_tdiv_q_2exp(q, input_num, 64);
+  mpz_tdiv_r_2exp(r, input_num, 64);
+  unsigned long q_int = mpz_get_ui(q);
+  unsigned long r_int = mpz_get_ui(r);
+
+  // use Dual_rep to convert to a bigint
+  Dual_rep conversion;
+  conversion.two_words[1] = q_int;
+  conversion.two_words[0] = r_int;
+
+  /* Testing
+  cout << "Inside string_to_bigint\n";
+  cout << "input string is " << num << " while the mpz version is ";
+  mpz_out_str(nullptr, 10, input_num);
+  cout << "\n";
+  cout << "The quotient and remainder are ";
+  mpz_out_str(nullptr, 10, q);
+  cout << " and ";
+  mpz_out_str(nullptr, 10, r);
+  cout << "\n";
+  cout << "Now let's see what is stored in Dual_rep.  r = " << conversion.two_words[0] << ", q = " << conversion.two_words[1];
+  cout << "while the bigint is " << conversion.double_word << "\n";
+  cout << "num_bits is " << *num_bits << "\n";
+  */
+
+  // free up memory
+  delete[] num_chars;
+  delete num_bits;
+  mpz_clear(input_num); mpz_clear(q); mpz_clear(r);
+
+  // return the bigint out of the Dual rep
+  return conversion.double_word;
+}
