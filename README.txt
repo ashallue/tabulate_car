@@ -8,6 +8,9 @@ This is an idea that has been discussed before (e.g. Pinch), our innovation is t
 
 Analysis suggests it should give improvements overall, but it is especially interesting that one can generate very large Carmichael numbers quickly.
 
+Important size note: the code assumes that P and q fit into int64 datatype, while r fits into int128.  These are signed integer types, 
+so the positive upper bound for P and q is actually 2^(63).
+
 **** Description of files and classes *****
 
 class Construct_car  - Primary class for constructing Carmichael numbers.  Call tabulate_car to tabulate all triples (P, q, r) 
@@ -39,5 +42,15 @@ postprocess.h - unfinished.  Intended to have code to check all the Carmichaels 
 primetest.h  - a variety of primality and compositeness tests
 
 class Stack - implementation of a stack by Jonathan Sorenson.  Optimized version, based on an array of 20 words.
+
+
+******  Things to Do ************
+
+Change Construct_car::tabulate_car so that it can have a start bound and end bound.  This should be doable 
+because of the properties of the incremental sieve.
+
+Get this up on github.
+
+Implement Pinch's "large P" tabulation, resulting in a full Carmichael tabulation algorithm
 
 

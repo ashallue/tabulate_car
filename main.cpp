@@ -17,14 +17,15 @@ using namespace std::chrono;
 
 // expecting two arguments: 1) thread number for this instance, 2) total thread count
 int main(int argc, char* argv[]) {
-  std::cout << "Hello World!\n";
+  std::cout << "Hello World! argc has value " << argc << "\n";
 
   long thread = 0;
   long num_threads = 1;
   string cars_file = "cars.txt";
   string none_file = "cars_none.txt"; 
  
-  if(argc == 2){
+  if(argc == 3){
+    cout << "Two arguments given\n";
     cout << "Argument 1: " << argv[1] << "\n";
     cout << "Argument 2: " << argv[2] << "\n";
   
@@ -44,7 +45,7 @@ int main(int argc, char* argv[]) {
   // timing code from geeksforgeeks.org
   
   // we want all pre-products up to 10^8, which is 10^5 thousands
-  int64 num_thousands = 100000;
+  int64 num_thousands = 1;
   int64 bound = num_thousands * 1000;
   cout << "Timings for tabulation of Carmichaels with pre-product up to " << bound << "\n";
 

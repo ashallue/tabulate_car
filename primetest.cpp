@@ -214,6 +214,32 @@ bool trial_thousand(const int64 &n){
   } else{
     return false;
   }
-
 }
+
+/* Checks if n is a perfect power of an integer or not.
+ * Return value is a boolean - true if perfect power.
+ */
+bool perfect_pow(const bigint &n){
+
+  int64 root;  // stores roots
+
+  // strategy: check if n is a kth root for k up to log_2(n)
+  long k_bound = ceil( log(n) / log(2) );
+
+  for(long k = 2; k <= k_bound; ++k){
+    // for each such k, take the root and round
+    root = round( pow (n, 1.0 / k) );
+
+    // now compute root^k and check if it equals n
+    // if yes, return true.  if no, continue
+    if( pow(root, k) == n ){
+      return true;
+    }
+  }
+  // if we have gotten to this point, not a perfect power
+  return false;
+}
+
+
+
 

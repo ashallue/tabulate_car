@@ -15,7 +15,7 @@ LargeP_Odometer::LargeP_Odometer(){
   // For now, set B = 1000
   // Let's set preproduct lower bound X at B^{1/3}
   // I need primes up to B^{1/3}.
-  B = 100001;
+  B = 1000001;
   double one_third = 1.0 / 3;
   X       = ceil(pow(B, one_third));
   prime_B = ceil(pow(B, one_third));
@@ -338,7 +338,9 @@ void LargeP_Odometer::large_products(string filename){
 }
 
 // A trivial algorithm for tabulating large pre-products.  Outputs P to a file given by filename
+// For some reason this function works fine with B = million, but gives seg fault if B = 10 million
 void LargeP_Odometer::trivial_large_products(string filename){
+
   // set up the flie
   ofstream output;
   output.open(filename);
@@ -384,7 +386,8 @@ void LargeP_Odometer::trivial_large_products(string filename){
       }
     }
   } 
-
+  // close file
+  output.close();
   return;
 }
 

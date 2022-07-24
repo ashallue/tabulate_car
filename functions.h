@@ -2,6 +2,10 @@
   Andrew Shallue and Jonathan Webster
   Fall 2021
 */
+
+#ifndef FUNCTIONS
+#define FUNCTIONS
+
 #include <iostream>
 #include <vector>
 #include "math.h"
@@ -13,15 +17,6 @@
 
 using namespace std;
 
-#ifndef FUNCTIONS
-#define FUNCTIONS
-
-// Sometimes we need to convert from 128-bit words to two 64-bit words
-// This union structure allows the two representations to occupy same spot in memory
-union Dual_rep{
-  bigint double_word;
-  unsigned long int two_words[2];
-};
 
 // print a vector<long>
 void print_vec(vector<long> nums);
@@ -49,6 +44,10 @@ vector<long> unique_prime_divs(long n, long* sieved_nums, long B);
 */
 vector<long> divisors(long n, long* sieved_nums, long B);
 
+/* From a factor sieve, compute the product of primes up to X, where X < B
+ */
+bigint prime_product(long X, long* sieved_nums, long B);
+
 /* Incremental sieve.
    Source: https://www.codevamping.com/2019/01/incremental-sieve-of-eratosthenes/
    The input is a bound B, the output is the list of primes up to B.
@@ -74,9 +73,5 @@ vector<long> trivial_car_tab(long B);
  */
 long exp_in_factorization(int64 p, int64 n);
 
-/* A function that converts a string of digits into an integer of type bigint.
- * Performs a size check to make sure it is at most 128 bits
- */
-bigint string_to_bigint(string num);
 
 #endif

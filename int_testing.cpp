@@ -6,17 +6,13 @@
 
 #include "bigint.h"
 #include "int.h"
+#include "primetest.h"
 #include <iostream>
 #include "gmp.h"
 #include <math.h>
 
 using namespace std;
 
-// represent a 128 bit integer either as a bigint or as two 64-bit ints
-union Dual_rep{
-  bigint double_word;
-  unsigned long int two_words[2];
-};
 
 int main(){
   cout << "hello world\n";
@@ -76,4 +72,8 @@ int main(){
   mpz_out_str(nullptr, 10, large_zz);
   cout << "\n";     
 
+  cout << "\nTesting perfect power and pseudosquares\n";
+  for(long i = 0; i < 200; i++){
+    if(perfect_pow(i)) cout << i << "\n";
+  }
 }

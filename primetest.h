@@ -12,6 +12,7 @@
 #include "int.h"
 #include "bigint.h"
 #include <vector>
+#include <math.h>
 
 using namespace std;
 
@@ -49,6 +50,11 @@ bool pocklington(const int64 &n, const vector<int64> &primes);
  * If output is false, provably composite.  If true, probably prime
  */
 bool trial_thousand(const int64 &n);
+
+/* Checks if n is a perfect power of an integer or not.
+ * Return value is a boolean - true if perfect power
+ */
+bool perfect_pow(const bigint &n);
 
 
 #endif

@@ -262,7 +262,9 @@ pair<int64, bigint> Construct_car::completion_check(int64 P, int64 Delta, int64 
   Dual_rep d;
   d.double_word = r;
 
-  // set the high bits, multiply by 2**64, then add over low bits
+  // Set the high bits, multiply by 2**64, then add over low bits
+  // I think I have the si, ui correct here.  I tested it with examples where d.two_words[0] requires 64bits, 
+  // and it worked fine.
   mpz_set_si(r_big, d.two_words[1]);
   mpz_mul_2exp(r_big, r_big, 64);
   mpz_add_ui(r_big, r_big, d.two_words[0]);
