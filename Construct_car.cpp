@@ -339,8 +339,13 @@ void Construct_car::tabulate_car(int64 B, long processor, long num_threads, stri
      
         // Construct all Carmichael numbers with pre-product P
         qrs.clear();
-        qrs = preproduct_crossover(P_factors, P_factors_len, Pminus_factors, Pminus_factors_len, LCM, false);
-
+        // if the largest prime dividing pre-product is large enough, do cross-over
+        // otherwist just do D-Delta method.  For now, we use 20 as a magical value
+        if( P / P_factors[ P_factors_len - 1 ] < 20){
+          qrs = preproduct_crossover(P_factors, P_factors_len, Pminus_factors, Pminus_factors_len, LCM);
+        }else{
+          qrs = preproduct_construction(P_factors, P_factors_len, Pminus_factors, Pminus_factors_len, LCM);
+        }
         // testing
        // cout << "P = " << P << " generates " << qrs.size() << " many carmichaels\n";
 
@@ -430,7 +435,7 @@ void Construct_car::tabulate_car_primeP(int64 B, long processor, long num_thread
 
 /* Version that calls the cross-over function
  */
-void Construct_car::tabulate_car_primeP_crossover(int64 B, long processor, long num_threads, string cars_file, bool dynamic){
+void Construct_car::tabulate_car_primeP_crossover(int64 B, long processor, long num_threads, string cars_file){
   int64* P_factors;
   long   P_factors_len;
   int64* Pminus_factors;
@@ -471,7 +476,7 @@ void Construct_car::tabulate_car_primeP_crossover(int64 B, long processor, long 
         F.next();
       }else{
         qrs.clear();
-        qrs = preproduct_crossover(P_factors, P_factors_len, Pminus_factors, Pminus_factors_len, LCM, dynamic);
+        qrs = preproduct_crossover(P_factors, P_factors_len, Pminus_factors, Pminus_factors_len, LCM);
 
         // write to file
         for(long j = 0; j < qrs.size(); ++j){
@@ -490,10 +495,11 @@ void Construct_car::tabulate_car_primeP_crossover(int64 B, long processor, long 
 }
 
 /* Another version, but this one has the D crossover strategy
- * If the bool dynamic is true, we dynamically switch between strategies
- * If the bool is false, the crossover is set at P / (ln P)^2 
+ * For each D, we choose either D-Delta method or CD method depending on the anticipated amount of work for each.
+ * This involves calculating L_p, the length of the interval for CD method, and estimating the number of divisors
+ * of (P-1)(P+D) for the D-Delta method. 
 */
-vector<pair<int64, bigint>> Construct_car::preproduct_crossover(int64* P, long P_len, int64* Pminus, long Pminus_len, int64 L, bool dynamic){
+vector<pair<int64, bigint>> Construct_car::preproduct_crossover(int64* P, long P_len, int64* Pminus, long Pminus_len, int64 L){
   vector<pair<int64, bigint>> output;
   int64 p;     // stores a temp prime
   long e;      // stores a temp exponent
@@ -530,11 +536,6 @@ vector<pair<int64, bigint>> Construct_car::preproduct_crossover(int64* P, long P
   long* q_exps;      // exponents of primes dividing q_temp
   pair<int64*, long> merge_output;
 
-  // static crossover bound calculated at P / (ln P)^2
-  int64 D_bound = P_product / ( floor(log(P_product)) * floor(log(P_product)) );
-  
-  //cout << "D_bound = " << D_bound << "\n";
-
   // For the dynamic version we need L_p, defined by 
   // P^2 + L_p = P^2 (p_{d-2} + 3)/(p_{d-2} + 1), where p_{d-2} is largest prime in P
   // So L_p = P^2 ( (p_{d-2} + 3)/(p_{d-2} + 1) - 1)
@@ -563,6 +564,11 @@ vector<pair<int64, bigint>> Construct_car::preproduct_crossover(int64* P, long P
   int64 count_CD = 0;
   bool DDelta = true;
 
+  // Note: incomplete idea for only doing crossover in certain situation
+  // if p (largest prime of P) satisfies P/p < 20, do D-Delta unconditionally, no crossover
+  // Note 20 is "magical", just supposed to represent "small"
+  // if(P / largestp >= 20) <then do crossover, i.e. the entire rest of the function>
+
   // Basic loop structure: for all D in [2..(P-1)], for all divisors
   // of the expression (P-1)(P+D)/2, do stuff.
   for(int64 D = 2; D < P_product; ++D){
@@ -578,19 +584,12 @@ vector<pair<int64, bigint>> Construct_car::preproduct_crossover(int64* P, long P
         PplusD = FD.prev;
         PplusD_len = FD.prevlen;
       }
-      // Code to determine when to switch from D-Delta to C-D
-      // If not dynamic, switch when D > D_bound
-      if(!dynamic){
-        if(D > D_bound){
-          DDelta = false;
-        }
-      }else{
-        // in the dynamic case, switch if L_P / D is less than the count of divisors
-        // We will approximate the count of divisors
-        if( L_p / D < pow(2, PplusD_len + Pminus_len) ){
-          DDelta = false;
-        }
+      // in the dynamic case, switch if L_P / D is less than the count of divisors
+      // We will approximate the count of divisors
+      if( L_p / D < pow(2, PplusD_len + Pminus_len) ){
+        DDelta = false;
       }
+      
     } // end deciding which method
 
     //cout << "D = " << D << " value of DDelta is " << DDelta << "\n";

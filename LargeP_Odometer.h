@@ -58,7 +58,7 @@ class LargeP_Odometer{
     // not sure I need it.  Unfinished for now.
     LargeP_Odometer(long d);
  
-    // Rotate the indices.  Starts with furthest right index, depending on P_len
+    //Rotate the indices.  Starts with furthest right index, depending on P_len
     void next(); 
 
     // retrieve current pre-product.  A simple getter function

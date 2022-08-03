@@ -45,20 +45,20 @@ int main(int argc, char* argv[]) {
   // timing code from geeksforgeeks.org
   
   // we want all pre-products up to 10^8, which is 10^5 thousands
-  int64 num_thousands = 1;
+  int64 num_thousands = 90;
   int64 bound = num_thousands * 1000;
   cout << "Timings for tabulation of Carmichaels with pre-product up to " << bound << "\n";
 
-  //auto start_new = high_resolution_clock::now();
+  auto start_new = high_resolution_clock::now();
 
   //C.tabulate_car(bound, 0, 1, "cars0.txt", "cars_none0.txt");
   C.tabulate_car(bound, thread, num_threads, cars_file, none_file);
 
-  //auto end_new = high_resolution_clock::now();
+  auto end_new = high_resolution_clock::now();
  
-  //auto duration_new = duration_cast<seconds>(end_new - start_new);
+  auto duration_new = duration_cast<seconds>(end_new - start_new);
 
-  //cout << "new timing: " << duration_new.count() << "\n";
+  cout << "new timing: " << duration_new.count() << "\n";
   
  /* 
   // This code computes Carmichaels in two different ways as a check

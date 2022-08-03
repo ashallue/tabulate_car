@@ -89,16 +89,17 @@ class Construct_car{
  * */
     void tabulate_car_primeP(int64 B, long processor, long num_threads, string cars_file);
 
-    /* version that calls the crossover version.  The T/F flag is for static or dynamic crossover.
+    /* version that calls the crossover version. 
  */
-    void tabulate_car_primeP_crossover(int64 B, long processor, long num_threads, string cars_file, bool dynamic);
+    void tabulate_car_primeP_crossover(int64 B, long processor, long num_threads, string cars_file);
 
-    /* preproduct construction with a crossover strategy.
- * The boolean chooses between two different versions.
- * True: dynamic version, compares tau((P-1)(P+D)) to L_p / D    
- * False: contant version, switch from D-Delta to CD at D = P / (ln P)^2
- */
-    vector<pair<int64, bigint>> preproduct_crossover(int64* P, long P_len, int64* Pminus, long Pminus_len, int64 L, bool dynamic);
+
+  /* Another version, but this one has the D crossover strategy
+   * For each D, we choose either D-Delta method or CD method depending on the anticipated amount of work for each.
+   * This involves calculating L_p, the length of the interval for CD method, and estimating the number of divisors
+   * of (P-1)(P+D) for the D-Delta method. 
+  */
+    vector<pair<int64, bigint>> preproduct_crossover(int64* P, long P_len, int64* Pminus, long Pminus_len, int64 L);
 
     /* prints out admissable pre-products in a given range */
     //void find_admissable(int64 low, int64 high);

@@ -64,22 +64,17 @@ int main(int argc, char* argv[]) {
   CP.tabulate_car_primeP(bound, 0, 1, "cars_pinch.txt");
   auto end_pinch = high_resolution_clock::now();
  
-  auto start_crossover_static = high_resolution_clock::now();
-  C2.tabulate_car_primeP_crossover(bound, 0, 1, "cars_crossover.txt", false);
-  auto end_crossover_static = high_resolution_clock::now();
- 
   auto start_crossover_dyn = high_resolution_clock::now();
-  C3.tabulate_car_primeP_crossover(bound, 0, 1, "cars_crossover.txt", true);
+  C3.tabulate_car_primeP_crossover(bound, 0, 1, "cars_crossover.txt");
   auto end_crossover_dyn = high_resolution_clock::now();
 
   auto duration_new = duration_cast<seconds>(end_new - start_new);
   auto duration_pinch = duration_cast<seconds>(end_pinch - start_pinch);
-  auto duration_crossover_static = duration_cast<seconds>(end_crossover_static - start_crossover_static);
   auto duration_crossover_dyn = duration_cast<seconds>(end_crossover_dyn - start_crossover_dyn);
 
   cout << "new timing: " << duration_new.count() << "\n";
   cout << "pinch timing: " << duration_pinch.count() << "\n";
-  cout << "static crossover timing: " << duration_crossover_static.count() << "\n";
+  cout << "static crossover has been removed.  Earlier testing showed it is better for prime preproducts" << "\n";
   cout << "dynamic crossover timing: " << duration_crossover_dyn.count() << "\n";
    
 
