@@ -279,8 +279,14 @@ pair<int64, bigint> Construct_car::completion_check(int64 P, int64 Delta, int64 
   */
 
   // check pseudo-primality of q, r.  mpz_probab_prime_p could return 0, 1, or 2.  0 for composite
-  if(mpz_probab_prime_p(q_big, 0) == 0) return output;
-  if(mpz_probab_prime_p(r_big, 0) == 0) return output;  
+  if(mpz_probab_prime_p(q_big, 0) == 0){
+    mpz_clear(q_big);  mpz_clear(r_big);
+    return output;
+  }
+  if(mpz_probab_prime_p(r_big, 0) == 0){
+    mpz_clear(q_big);  mpz_clear(r_big);
+    return output;  
+  }
 
   // clear mpz
   mpz_clear(q_big);   mpz_clear(r_big);
