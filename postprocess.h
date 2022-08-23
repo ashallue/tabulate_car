@@ -20,4 +20,9 @@ using namespace std;
  */
 vector<bigint> product_and_sort(string cars_file);
 
+/* Given a vector of filenames, call product_and_sort on each one, then merge them using the standard library.
+ * Resulting output is of type vector<bigint> and should be all Carmichael numbers
+ */
+vector<bigint> product_and_merge(vector<string> filenames);
+
 #endif
