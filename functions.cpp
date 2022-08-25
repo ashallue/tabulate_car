@@ -71,6 +71,40 @@ bool is_prime(long n, long* sieved_nums, long B){
   }
 }
 
+/* Returns true if n is a prime power, false if not.
+ * The power part is trivial: take kth roots then kth powers to check.
+ * The prime part is also trivial, from a factor sieve.
+ * If I wanted to do better, Bernstein has a paper from 98 titled "Detecting perfect powers in essentially linear time".
+ */
+bool is_prime_power(long n, long* sieve_nums, long B){
+  bool is_power = false;  // will flip to true if n is a power of some integer
+  long root;              // will store the kth root
+  long base;              // if n is a power of an int, use base
+
+  // first do the power part: for k from 2 up to log_2(n), take kth root then kth power
+  for(long k = 2; k < ceil( log2(n) ) + 1 ; ++k){
+    root = floor( pow(n, 1.0 / k) );
+
+    //cout << "For k = " << k << ", root = " << root << " and pow = " << pow(root, k);
+    //cout << ".  The raw root is " << pow(n, 1.0 / k) << "\n";
+
+    // note I do not break, because n might be a power of a smaller base
+    // I already encountered a weird float problem with n = 125, so check root and root+1
+    if(pow(root, k) == n){
+      is_power = true;
+      base = root;
+    }
+    if(pow(root + 1, k) == n){
+      is_power = true;
+      base = root + 1;
+    }
+  }
+
+  // now we need to check whether base is prime or not.  Simply call is_prime
+  return (is_power && is_prime(base, sieve_nums, B) );
+}
+
+
 /* From a factor sieve, return unique prime divisors of n
 */
 vector<long> unique_prime_divs(long n, long* sieved_nums, long B){

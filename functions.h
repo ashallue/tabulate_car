@@ -36,6 +36,12 @@ vector<long> primes_fromfs(long* sieved_nums, long B);
 */
 bool is_prime(long n, long* sieved_nums, long B);
 
+/* Returns true if n is a prime power, false if not.  Note primes are not prime powers for this function.
+ * The power part is trivial: take kth roots then kth powers to check.
+ * The prime part is also trivial, from a factor sieve.
+ */
+bool is_prime_power(long n, long* sieve_nums, long B);
+
 /* From a factor sieve, return unique prime divisors of n
 */
 vector<long> unique_prime_divs(long n, long* sieved_nums, long B);
