@@ -22,6 +22,12 @@ using namespace std;
 #ifndef PSEUDOSQUARE_H
 #define PSEUDOSQUARE_H
 
+/* Implementation of pseudosquares primality test.
+ * Source: Some Results on Pseudosquares, by Lukes, Patterson, Williams
+ * Mathematics of Computation, Vol 65, Num 213, 1996, pages 361-372
+ *
+ */
+
 class Pseudosquare{
   public:
     // There are 73 entries in the table of pseudosquares
@@ -50,6 +56,8 @@ class Pseudosquare{
     // I am checking that is_pseudosquare returns true for the corresponding p, not for the next one
     // I am not checking that the n is the smallest with respect to that p.
     void check_pseudosquares();
+
+    
 
 };
 

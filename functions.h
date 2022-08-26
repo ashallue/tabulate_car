@@ -42,6 +42,12 @@ bool is_prime(long n, long* sieved_nums, long B);
  */
 bool is_prime_power(long n, long* sieve_nums, long B);
 
+/* Returns true if and only if n is a non-trivial power of an integer.
+ * So returns false on input 0, input 1, and integers like 3 or 6.
+ * Trivial algorithm: find roots using gmp function.
+ */
+bool is_power(bigint n);
+
 /* From a factor sieve, return unique prime divisors of n
 */
 vector<long> unique_prime_divs(long n, long* sieved_nums, long B);

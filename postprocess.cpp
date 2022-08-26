@@ -23,7 +23,6 @@ vector<bigint> product_and_sort(string cars_file){
   string line;
   vector<bigint> linenums;
   bigint product;
-  bigint num;
 
   // while there is a line to get, keep getting lines
   while(getline(cars, line)){
@@ -32,7 +31,11 @@ vector<bigint> product_and_sort(string cars_file){
     istringstream numbers_stream(line);
     linenums.clear();
 
-    while(numbers_stream >> num){
+    // notice this only works if the line has exactly three numbers
+    // I tried using a while loop, but had problems with some variable not being intialized.  num?
+    for(long i = 0; i < 3; ++i){
+      bigint num;
+      numbers_stream >> num;
       linenums.push_back(num);
     }
 

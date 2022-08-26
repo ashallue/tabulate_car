@@ -104,6 +104,33 @@ bool is_prime_power(long n, long* sieve_nums, long B){
   return (is_power && is_prime(base, sieve_nums, B) );
 }
 
+/* Returns true if and only if n is a non-trivial power of an integer.
+ * So returns false on input 0, input 1, and integers like 3 or 6.
+ * Trivial algorithm: find roots using gmp function.
+ */
+bool is_power(bigint n){
+  bool is_power = false;  // will flip to true if n is a power (at least 2) of some integer > 1
+
+  // trivial cases
+  if(n == 0 || n == 1) return false;
+ 
+  // we will converg n to mpz_t, so we need to create and initialize variables
+  mpz_t gn;  mpz_t base;
+  mpz_init(gn);  mpz_init(base);
+  bigint_to_mpz(n, gn);
+ 
+  // now check if gn is a kth root.  mpz_root returns non-zero if this is true
+  for(long k = 2; k < ceil( log2(n) ) + 1; ++k){
+    if(mpz_root(base, gn, k) != 0){
+      is_power = true;
+      break;
+    }
+  } 
+
+  // free memory and return the answer
+  mpz_clear(gn); mpz_clear(base);
+  return is_power;
+}
 
 /* From a factor sieve, return unique prime divisors of n
 */

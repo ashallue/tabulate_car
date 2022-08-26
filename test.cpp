@@ -25,11 +25,11 @@ using namespace std::chrono;
 int main(int argc, char* argv[]) {
   std::cout << "Hello World!\n";
 
-  /*
+  
   cout << "Testing producting primes up to X\n";
  
   // create num array
-  long B = 1000;
+  long B = 100000;
   long nums[B];
   for(long i = 0; i < B; i++){
     nums[i] = i;
@@ -39,9 +39,14 @@ int main(int argc, char* argv[]) {
   
   // product primes
   cout << "Prime product is " << prime_product(102, nums, B);
-  */
+ 
+  cout << "Testing is_prime:\n";
+  for(long i = 0; i < 200; ++i){
+    cout << i << " " << nums[i] << " " << is_prime(i, nums, B) << "\n";
+  }
+ 
 
-  cout << "Testing LargeP_Odometer\n";
+  cout << "\nTesting LargeP_Odometer\n";
   LargeP_Odometer odo = LargeP_Odometer();
   cout << "B = " << odo.B << " X = " << odo.X << " primes up to " << odo.prime_B << "\n";
   cout << "primes: ";
@@ -49,11 +54,11 @@ int main(int argc, char* argv[]) {
     cout << odo.primes.at(i) << " ";
   } 
   cout << "\n";
-  odo.large_products("test1.txt");
+  //odo.large_products("test1.txt");
 
   LargeP_Odometer odo2 = LargeP_Odometer();
  
-  odo2.trivial_large_products("test2.txt");
+  //odo2.trivial_large_products("test2.txt");
 
   cout << "\n";
 
@@ -69,8 +74,8 @@ int main(int argc, char* argv[]) {
   string test_string2 = "3655334429477057460046489";
   string test_string3 = "99492945930479213334049";
 
-  bigint final_version = string_to_bigint(test_string3);
-  cout << "original string is " << test_string3 << "\n";
+  bigint final_version = string_to_bigint(test_string1);
+  cout << "original string is " << test_string1 << "\n";
   cout << "using function we get " << final_version << "\n";
 
   cout << "Now let's convert back to mpz_t\n";
@@ -84,75 +89,72 @@ int main(int argc, char* argv[]) {
   mpz_out_str(nullptr, 10, num_big);
   cout << "\n";
 
-  // could also try 10000991  = [ 7, 11, 13, 97, 103 ]
-  cout << "\n";
-  // testing merge on arrays
-  int64* test_array = new int64[6];
-  test_array[0] = 1;
-  test_array[1] = 5;
-  test_array[2] = 8;
-  test_array[3] = 9;
-  test_array[4] = 6;
-  test_array[5] = 0;
-  for(long i = 0; i < 6; i++){
-    cout << test_array[i] << " ";
+  mpz_clear(num_big);
+
+  // testing post-processing routines
+  cout << "\nTesting product_and_sort\n";
+  string f1 = "/home/ashallue/tabulate_car/million_preproducts_again/cars1.txt";
+  string f2 = "/home/ashallue/tabulate_car/million_preproducts_again/cars2.txt"; 
+  string f3 = "/home/ashallue/tabulate_car/million_preproducts_again/cars3.txt";
+  string f4 = "/home/ashallue/tabulate_car/million_preproducts_again/cars4.txt";
+  string f5 = "/home/ashallue/tabulate_car/million_preproducts_again/cars5.txt";
+
+  vector<string> fs;
+  fs.push_back(f1);  fs.push_back(f2); fs.push_back(f3);
+  //fs.push_back(f4);  fs.push_back(f5);
+
+  vector<bigint> cars = product_and_merge(fs);
+  cout << "Total number of cars: " << cars.size() << "\n";
+
+
+  for(long i = 0; i < 5; i++){
+    cout << cars.at(i) << "\n";
   }
+
+  // testing prime powering
+  cout << "\nTesting powering functions\n";
+
+  string ns1 = "295363487400900310880401";
+  string ns2 = "22539340290692258087863249";  // 7^(30)
+  string ns3 = "282475249";  // 7^(10)
+  bigint num1 = string_to_bigint(ns1);
+  bigint num2 = string_to_bigint(ns2);
+  bigint num3 = string_to_bigint(ns3);
+
+  mpz_t m2;
+  mpz_init(m2);
+  bigint_to_mpz(num2, m2);
+  mpz_out_str(nullptr, 10, m2);
+  cout << "\n";
+  cout << "back to bigint: " << mpz_to_bigint(m2);
+  mpz_clear(m2);
   cout << "\n";
 
-  int64* test_arr2 = new int64[4];
-  test_arr2[0] = 2;
-  test_arr2[1] = 9;
-  test_arr2[2] = 10;
-  test_arr2[3] = 5;
+  bigint root1 = floor( pow(num1, 1.0 / 2) );
+  bigint pow1 = pow(root1, 2);
 
-  for(long i = 0; i < 4; i++){
-    cout << test_arr2[i] << " ";
-  }
-  cout << "\n";
+  cout << num1 << " then " << root1 << " then " << pow1 << "\n";
+
+  bigint root2 = floor( pow(num2, 1.0 / 30) );
+  bigint pow2 = pow(root2, 30);
+
+  cout << num2 << " then " << root2 << " then " << pow2 << "\n";
   
-  cout << "\nTesting Odometer\n";
-  long num_ps = 4;
-  int64* ps = new int64[num_ps];
-  int64* es = new int64[num_ps];
+  bigint root3 = floor( pow(num3, 1.0 / 10) );
+  bigint pow3 = pow(root3, 10);
 
-  ps[0] = 2;  ps[1] = 3;  ps[2] = 5;  ps[3] = 11;
-  es[0] = 3;  es[1] = 1;  es[2] = 1;  es[3] = 1;
-  Odometer od = Odometer(ps, es, num_ps);
-  cout << "listing divisors:\n";
-  for(long i = 0; i < 20; i++){
-    cout << od.get_div() << " ";
-    od.next_div();
-  }
-  cout << "\n";
+  cout << num3 << " then " << root3 << " then " << pow3 << "\n";
 
-  cout << "\nTesting exp_in_factorization\n";
-  cout << exp_in_factorization(2, 64) << "\n";
-  cout << exp_in_factorization(2, 12) << "\n";
-  cout << exp_in_factorization(3, 81) << "\n";
-  cout << exp_in_factorization(3, 12) << "\n";
-  cout << exp_in_factorization(5, 12) << "\n";
+  if(num2 == pow2) cout << "Yes the second ones are equal\n";
+  if(num3 == pow3) cout << "yes the third ones are equal\n";
 
-  // free memory for the above
-  delete[] test_array;
-  delete[] test_arr2;
-  delete[] ps;
-  delete[] es;
+  cout << "Is " << num1 << " a power?  A: " << is_power(num1) << "\n";
+  cout << "Is " << num2 << " a power?  A: " << is_power(num2) << "\n";
+  cout << "Is " << num3 << " a power?  A: " << is_power(num3) << "\n";
 
-  Pinch CP = Pinch();
-  Construct_car C = Construct_car();
-  
-  // test preproduct with P = 3
-  int64* P_ps = new int64[1];
-  P_ps[0] = 3; 
-  int64* P_m = new int64[1];
-  P_m[0] = 2;
-
-  vector<pair<int64, bigint>> test_output;
-  test_output = C.preproduct_construction(P_ps, 1, P_m, 1, 2);  
-  cout << "\n preproduct_crossover with small P\n";
-  for(long i = 0; i < test_output.size(); i++){
-    cout << test_output.at(i).first << " " << test_output.at(i).second << "\n";
-  } 
+  //for(long i = 2; i < 129; i++){
+  //  cout << "Is " << i << " a prime power? Answer: " << is_prime_power(i, nums, B) << "\n";
+  //}
 
  
   // timing code from geeksforgeeks.org

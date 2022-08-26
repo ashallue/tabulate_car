@@ -52,4 +52,7 @@ bigint string_to_bigint(string num);
 // convert from bigint n to mpz_t type m (passed by reference)
 void bigint_to_mpz(bigint n, mpz_t &m);
 
+// convert from mpz_t (passed by reference) to bigint.  Code same as that found in string_to_bigint
+bigint mpz_to_bigint(mpz_t &m);
+
 #endif

@@ -73,7 +73,23 @@ bigint min(bigint x, bigint y)
 bigint pow_mod(bigint a, bigint e, bigint n){
   bigint output;
 
+  // plan is to convert all three parameters to mpz_t
+  // They need to be initalized, set, and then garbage collected at the end
+  mpz_t ga;  mpz_t ge;  mpz_t gn;
+  mpz_init(ga); mpz_init(ge); mpz_init(gn);
+  bigint_to_mpz(a, ga);
+  bigint_to_mpz(e, ge);
+  bigint_to_mpz(n, gn);
 
+  // also need an mpz for output
+  mpz_t result;  mpz_init(result);  
+
+  // do the powering, then convert back to bigint
+  mpz_powm(result, ga, ge, gn);
+  output = mpz_to_bigint(result);
+
+  // garbage collection
+  mpz_clear(ga);  mpz_clear(ge);  mpz_clear(gn); mpz_clear(result);
   return output;
 }
 
@@ -124,6 +140,7 @@ bigint string_to_bigint(string num){
 
 // convert from bigint n to mpz_t type m (passed by reference)
 void bigint_to_mpz(bigint n, mpz_t &m){
+
   // we will need a Dual_rep to manage two words
   Dual_rep d;
   d.double_word = n;
@@ -135,7 +152,36 @@ void bigint_to_mpz(bigint n, mpz_t &m){
   mpz_mul_2exp(m, m, 64);
   mpz_add_ui(m, m, d.two_words[0]);
 
+  // note: no clears.  Only mpz is m, and it is passed be referenced.  Memory freed outside function
   return;
 }
 
+// convert from mpz_t (passed by reference) to bigint.  Code same as that found in string_to_bigint
+bigint mpz_to_bigint(mpz_t &m){
+  cout << "Start of mpz_to_bigint\n";
 
+  // create quotient and remainder mpzs
+  mpz_t q;  mpz_t r;
+  mpz_init(q);  mpz_init(r);
+
+  cout << "After initialization\n";
+
+  // now divide by 2^64 and capture the quotient and remainder, then convert them to unsigned ints 
+  mpz_tdiv_q_2exp(q, m, 64);
+  mpz_tdiv_r_2exp(r, m, 64);
+
+  cout << "after division\n";
+  
+  unsigned long q_int = mpz_get_ui(q);
+  unsigned long r_int = mpz_get_ui(r);
+
+  cout << "conversion to long\n";
+
+  // use Dual_rep to convert to a bigint
+  Dual_rep conversion;
+  conversion.two_words[1] = q_int;
+  conversion.two_words[0] = r_int;
+
+  mpz_clear(q); mpz_clear(r);
+  return conversion.double_word;
+}
