@@ -130,6 +130,67 @@ void Pseudosquare::check_pseudosquares(){
   return;
 }
 
+/* a primality proving algorithm, based on Theorem 2.2 of Lukes, Patterson, Williams.
+ * If (1) all prime factors of N must exceed B, (2) N/B <= M_p, 
+ * (3) p_i^ (N-1)/2 = +- 1 mod N for all primes p_i with 2 <= p_i <= p
+ * (4) p_j^ (N-1)/2 = -1 mod N for some prime p_j with 2 <= p_j <= p
+ * Then N is a prime or a power of a prime.
+ */ 
+bool Pseudosquare::is_prime_pssquare(bigint n){
+  bool output = false;
+
+  /* Step 1 is to do trial division up to B.  Notably the largest pseudosquare is 81 bits.
+ */
+  bool trial = trial_thousand(n); 
+  if(trial){
+    // no prime factor found, any prime factor of n must be greater than 1000.
+    // If n / 1000 > biggest pseudosquare in the table, test fails
+    if(n / 1000 > pssquares[num_entries - 1]){
+      cout << "is_prime_pssquare with n = " << n << " failed, input too large\n";
+    }else{
+      // next I need to find the smallest appropriate pseudosquare.  I'll just do linear search
+      long index = 0;
+      bigint Mp = pssquares[index];
+      while( (n / 1000) > Mp ){
+        index++;
+        Mp = pssquares[index];
+      }
+      // capture the prime corresponding to the pseudosquare
+      long p = index_primes[index];
+
+      cout << "Mp = " << Mp << " corresponding to p = " << p << "\n";
+      
+      // now compute p_i^(n-1)/2 mod n for all primes up to p.
+      bool all_pm = true;
+      bool one_minus = false;
+      // we will pull the primes from the primes up to 1000 array
+      index = 0;
+      long pi = 2;
+      bigint pow;
+      while(pi <= p){
+        pow = pow_mod(pi, (n - 1) / 2, n);
+        
+        // check whether it is plus or minus 1
+        if(pow == n-1){
+          one_minus = true;
+        }else if(pow != 1){
+          all_pm = false;
+        }
+        // update loop index
+        index++;
+        pi = primes[index];
+      } // end while
+ 
+      // if all_pm and one_minus both true, and it is not a perfect power, then it must be prime
+      output = all_pm && one_minus && !is_power(n);
+    }
+  } // end if trial
+  
+
+  return output;
+}
+
+
 // constructor 
 Pseudosquare::Pseudosquare(){
   // manually set all 73 of the primes that index the pseudosquares

@@ -16,6 +16,7 @@
 #include "bigint.h"
 #include "int.h"
 #include "functions.h"
+#include "primetest.h"
 
 using namespace std;
 
@@ -57,8 +58,13 @@ class Pseudosquare{
     // I am not checking that the n is the smallest with respect to that p.
     void check_pseudosquares();
 
-    
-
+    /* a primality proving algorithm, based on Theorem 2.2 of Lukes, Patterson, Williams.
+     * If (1) all prime factors of N must exceed B, (2) N/B <= M_p, 
+     * (3) p_i^ (N-1)/2 = +- 1 mod N for all primes p_i with 2 <= p_i <= p
+     * (4) p_j^ (N-1)/2 = -1 mod N for some prime p_j with 2 <= p_j <= p
+     * Then N is a prime or a power of a prime.
+     */ 
+    bool is_prime_pssquare(bigint n);
 };
 
 #endif
