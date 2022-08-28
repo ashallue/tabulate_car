@@ -58,10 +58,11 @@ class Pseudosquare{
     // I am not checking that the n is the smallest with respect to that p.
     void check_pseudosquares();
 
-    /* a primality proving algorithm, based on Theorem 2.2 of Lukes, Patterson, Williams.
-     * If (1) all prime factors of N must exceed B, (2) N/B <= M_p, 
+    /* a primality proving algorithm, based on Theorem 2.7 of Lukes, Patterson, Williams.
+     * If (1) all prime factors of N must exceed B, (2) N/B <= L_p, 
      * (3) p_i^ (N-1)/2 = +- 1 mod N for all primes p_i with 2 <= p_i <= p
-     * (4) p_j^ (N-1)/2 = -1 mod N for some prime p_j with 2 <= p_j <= p
+     * (4) p_j^ (N-1)/2 = -1 mod N for some odd prime p_j <= p when N = 1 mod 8
+     *     or 2^ (N-1)/2 = -1 mod N when N = 5 mod 8,
      * Then N is a prime or a power of a prime.
      */ 
     bool is_prime_pssquare(bigint n);

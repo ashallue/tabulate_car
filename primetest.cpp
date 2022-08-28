@@ -216,28 +216,27 @@ bool trial_thousand(const int64 &n){
   }
 }
 
-/* Checks if n is a perfect power of an integer or not.
- * Return value is a boolean - true if perfect power.
- */
-bool perfect_pow(const bigint &n){
+// version with bigint input
+bool trial_thousand(const bigint &n){
+  // note primes up to 1000 come from int.h
+  int64 p = primes[0];
+  long index = 0;
 
-  int64 root;  // stores roots
+  // stop when we run out of primes, or if p >= r, or if factor found
+  while (index < primeslen && p < n && n % p != 0){
 
-  // strategy: check if n is a kth root for k up to log_2(n)
-  long k_bound = ceil( log(n) / log(2) );
+  //  cout << "Trial division, n = " << n << " p = " << p << "\n";
 
-  for(long k = 2; k <= k_bound; ++k){
-    // for each such k, take the root and round
-    root = round( pow (n, 1.0 / k) );
+    index++;
+    p = primes[index];
+  } // end while
 
-    // now compute root^k and check if it equals n
-    // if yes, return true.  if no, continue
-    if( pow(root, k) == n ){
-      return true;
-    }
+  // now see if loop ended because factor found
+  if (index == primeslen || p == n){
+    return true;
+  } else{
+    return false;
   }
-  // if we have gotten to this point, not a perfect power
-  return false;
 }
 
 

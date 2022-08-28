@@ -121,36 +121,40 @@ int main(int argc, char* argv[]) {
   bigint num2 = string_to_bigint(ns2);
   bigint num3 = string_to_bigint(ns3);
 
-  mpz_t m2;
-  mpz_init(m2);
+  mpz_t m1; mpz_t m2; mpz_t m3;
+  mpz_init(m1); mpz_init(m2); mpz_init(m3);
+  bigint_to_mpz(num1, m1);
   bigint_to_mpz(num2, m2);
-  mpz_out_str(nullptr, 10, m2);
-  cout << "\n";
-  cout << "back to bigint: " << mpz_to_bigint(m2);
-  mpz_clear(m2);
-  cout << "\n";
+  bigint_to_mpz(num3, m3);
 
-  bigint root1 = floor( pow(num1, 1.0 / 2) );
-  bigint pow1 = pow(root1, 2);
-
-  cout << num1 << " then " << root1 << " then " << pow1 << "\n";
-
-  bigint root2 = floor( pow(num2, 1.0 / 30) );
-  bigint pow2 = pow(root2, 30);
-
-  cout << num2 << " then " << root2 << " then " << pow2 << "\n";
-  
-  bigint root3 = floor( pow(num3, 1.0 / 10) );
-  bigint pow3 = pow(root3, 10);
-
-  cout << num3 << " then " << root3 << " then " << pow3 << "\n";
-
-  if(num2 == pow2) cout << "Yes the second ones are equal\n";
-  if(num3 == pow3) cout << "yes the third ones are equal\n";
+  cout << "Checking if conversions are working\n";
+  cout << ns1 << " vs " << num1 << " vs ";
+  mpz_out_str(nullptr, 10, m1);  cout << "\n";
 
   cout << "Is " << num1 << " a power?  A: " << is_power(num1) << "\n";
   cout << "Is " << num2 << " a power?  A: " << is_power(num2) << "\n";
   cout << "Is " << num3 << " a power?  A: " << is_power(num3) << "\n";
+
+  cout << "comparing two versions of n1 ^ n2 mod n3\n";
+  cout << "Bigint version: " << pow_mod(num1, num3, num2) << "\n";
+  mpz_t result;  mpz_init(result);
+  mpz_powm(result, m1, m3, m2);
+  cout << "mpz version: ";
+  mpz_out_str(nullptr, 10, result);
+  cout << "\n";
+
+  cout << "\nTesting pseudosquare\n";
+  Pseudosquare ps = Pseudosquare();
+
+ /* 
+  for(long i = 0; i < 2000; i++){
+    if(ps.is_prime_pssquare(i)) cout << i << " ";
+  }
+  cout << "\n";
+  */
+
+  bigint n = 1009;
+  cout << "is " << n << " prime? " << ps.is_prime_pssquare(n) << "\n";
 
   //for(long i = 2; i < 129; i++){
   //  cout << "Is " << i << " a prime power? Answer: " << is_prime_power(i, nums, B) << "\n";

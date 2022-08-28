@@ -158,24 +158,17 @@ void bigint_to_mpz(bigint n, mpz_t &m){
 
 // convert from mpz_t (passed by reference) to bigint.  Code same as that found in string_to_bigint
 bigint mpz_to_bigint(mpz_t &m){
-  cout << "Start of mpz_to_bigint\n";
 
   // create quotient and remainder mpzs
   mpz_t q;  mpz_t r;
   mpz_init(q);  mpz_init(r);
 
-  cout << "After initialization\n";
-
   // now divide by 2^64 and capture the quotient and remainder, then convert them to unsigned ints 
   mpz_tdiv_q_2exp(q, m, 64);
   mpz_tdiv_r_2exp(r, m, 64);
 
-  cout << "after division\n";
-  
   unsigned long q_int = mpz_get_ui(q);
   unsigned long r_int = mpz_get_ui(r);
-
-  cout << "conversion to long\n";
 
   // use Dual_rep to convert to a bigint
   Dual_rep conversion;
