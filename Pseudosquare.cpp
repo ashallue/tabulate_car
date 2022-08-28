@@ -144,11 +144,12 @@ bool Pseudosquare::is_prime_pssquare(bigint n){
   bool output = false;
 
   // set the trial bound to 1000 for now.  In the paper this is B
-  bigint trial_bound = 1000;
+  bigint trial_bound = 1;
 
   /* Step 1 is to do trial division up to B.  Notably the largest pseudosquare is 81 bits.
  */
-  bool trial = trial_thousand(n); 
+  //bool trial = trial_thousand(n); 
+  bool trial = n % 2 == 1;
   if(trial){
     // if it is prime based on trial division and less then the bound, we know it is prime
     if(n < trial_bound) return true;
@@ -161,21 +162,21 @@ bool Pseudosquare::is_prime_pssquare(bigint n){
       // next I need to find the smallest appropriate pseudosquare.  I'll just do linear search
       long index = 0;
       bigint Lp = pssquares[index];
-      while( (n / trial_bound) > Lp ){
+      while( (n / trial_bound) >= Lp ){
         index++;
         Lp = pssquares[index];
       }
       // capture the prime corresponding to the pseudosquare
       long p = index_primes[index];
 
-      cout << "Lp = " << Lp << " corresponding to p = " << p << "\n";
+      //cout << "Lp = " << Lp << " corresponding to p = " << p << "\n";
       
       // now compute p_i^(n-1)/2 mod n for all primes up to p.
       bool all_pm = true;
       bool odd_minus = false;
       bigint two_pow = pow_mod(2, (n - 1) / 2, n);
 
-      if(two_pow != 1 && two_pow != -1) all_pm = false;
+      if(two_pow != 1 && two_pow != n-1) all_pm = false;
 
       // we will pull the primes from the primes up to 1000 array
       index = 1;
@@ -184,7 +185,7 @@ bool Pseudosquare::is_prime_pssquare(bigint n){
       while(pi <= p){
         pow = pow_mod(pi, (n - 1) / 2, n);
        
-        cout << "checking pi = " << pi << " get pow = " << pow << "\n";
+        //cout << "checking pi = " << pi << " get pow = " << pow << "\n";
  
         // check whether it is plus or minus 1
         if(pow == n-1){
@@ -197,7 +198,7 @@ bool Pseudosquare::is_prime_pssquare(bigint n){
         pi = primes[index];
       } // end while
 
-      cout << "all_pm = " << all_pm << " and odd_minus = " << odd_minus << " and two_pow = " << two_pow << "\n";
+      //cout << "all_pm = " << all_pm << " and odd_minus = " << odd_minus << " and two_pow = " << two_pow << "\n";
  
       // we also need to check if it is a perfect power
       bool is_int_power = is_power(n);
@@ -301,11 +302,11 @@ Pseudosquare::Pseudosquare(){
   index_primes[72] = 373;
 
   // now set the pssquares array that holds the pseudosquare values
-  pssquares[0] = string_to_bigint("73");
-  pssquares[1] = string_to_bigint("241");
-  pssquares[2] = string_to_bigint("1009");
+  pssquares[0] = string_to_bigint("73");    // wait, this is prime !
+  pssquares[1] = string_to_bigint("241");   // wait, this is prime !
+  pssquares[2] = string_to_bigint("1009");  // wait, this is prime !
   pssquares[3] = string_to_bigint("2641");
-  pssquares[4] = string_to_bigint("8089");
+  pssquares[4] = string_to_bigint("8089");  // prime
   pssquares[5] = string_to_bigint("18001");
   pssquares[6] = string_to_bigint("53881");
   pssquares[7] = string_to_bigint("87481");
