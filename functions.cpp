@@ -11,6 +11,13 @@ void print_vec(vector<long> nums){
   }
   cout << "\n";
 }
+// print a vector<bigint>
+void print_vec(vector<bigint> nums){
+  for(long i = 0; i < nums.size(); ++i){
+    cout << nums.at(i) << " ";
+  }
+  cout << "\n";
+}
 
 /* Given an array which is assumed to store integer i at position i, 
   and given a bound which is the size of the array,

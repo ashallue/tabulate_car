@@ -146,15 +146,18 @@ int main(int argc, char* argv[]) {
   cout << "\nTesting pseudosquare\n";
   Pseudosquare ps = Pseudosquare();
 
- /* 
+  
   for(long i = 0; i < 2000; i++){
     if(ps.is_prime_pssquare(i)) cout << i << " ";
   }
   cout << "\n";
-  */
+  
 
-  bigint n = 1009;
-  cout << "is " << n << " prime? " << ps.is_prime_pssquare(n) << "\n";
+  cout << "\nChecking file " << f1 << "\n";
+  car_smallp_file_check(f1, 1000000);
+
+  //bigint n = 1009;
+  //cout << "is " << n << " prime? " << ps.is_prime_pssquare(n) << "\n";
 
   //for(long i = 2; i < 129; i++){
   //  cout << "Is " << i << " a prime power? Answer: " << is_prime_power(i, nums, B) << "\n";

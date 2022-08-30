@@ -20,6 +20,8 @@ using namespace std;
 
 // print a vector<long>
 void print_vec(vector<long> nums);
+// print a vector<bigint>
+void print_vec(vector<bigint> nums);
 
 /* Given an array which is assumed to store integer i at position i, 
   and given a bound which is the size of the array,

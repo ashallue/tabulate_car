@@ -9,6 +9,8 @@
 #include <vector>
 #include "bigint.h"
 #include <algorithm>
+#include "functions.h"
+#include "Pseudosquare.h"
 
 using namespace std;
 
@@ -24,5 +26,11 @@ vector<bigint> product_and_sort(string cars_file);
  * Resulting output is of type vector<bigint> and should be all Carmichael numbers
  */
 vector<bigint> product_and_merge(vector<string> filenames);
+
+/* Given a filename full of Carmichael numbers of the form P q r, confirm that it is indeed Carmichael.
+ * Involves completely factoring P, checking q and r are prime with the Pseudosquares test, checking Korselt.
+   Any not carmichael are sent to standard out.  We assume preproducts P are bounded above by B
+ */
+void car_smallp_file_check(string filename, int64 B);
 
 #endif

@@ -104,5 +104,104 @@ vector<bigint> product_and_merge(vector<string> filenames){
  
   // return the last output list; it is the result of all the merges
   return output.at(output.size()-1);
+}
 
+
+/* Given a filename full of Carmichael numbers of the form P q r, confirm that it is indeed Carmichael.
+ * Involves completely factoring P, checking q and r are prime with the Pseudosquares test, checking Korselt.
+   Any not carmichael are sent to standard out.  We assume preproducts P are bounded above by B
+ */
+void car_smallp_file_check(string filename, int64 B){
+
+  // create a factor sieve
+  long* nums = new long[B];
+  for(long i = 0; i < B; i++){
+    nums[i] = i;
+  }
+  // calling factor_sieve replaces nums[i] with the largest prime factor of i
+  factor_sieve(nums, B);
+
+  // create Pseudosquares class
+  Pseudosquare ps = Pseudosquare();
+
+  // open input file
+  ifstream cars;
+  cars.open(filename);
+
+  // store line and the numbers in that line
+  string line;
+  vector<bigint> linenums;
+  vector<bigint> primes;
+  vector<long>   P_primes;
+  bigint         P_primes_prod;
+  bigint         product;
+  long           P;
+  bigint q; bigint r;
+
+  // while there is a line to get, keep getting lines
+  while(getline(cars, line)){
+    // access each number in the line and place into a vector
+    // this solution from stackoverflow: reading-line-of-integers-into-a-vector
+    istringstream numbers_stream(line);
+    linenums.clear();
+
+    // notice this only works if the line has exactly three numbers
+    // I tried using a while loop, but had problems with some variable not being intialized.  num?
+    for(long i = 0; i < 3; ++i){
+      bigint num;
+      numbers_stream >> num;
+      linenums.push_back(num);
+    } // end for that reads the line
+
+    // create a vector of the prime factors of the carmichael
+    primes.clear();
+    P_primes.clear();
+    P = linenums.at(0);   // assume P is the first num in the line
+    // add the prime factors of P
+    P_primes = unique_prime_divs(P, nums, B);
+    
+    // check that they product to P
+    P_primes_prod = 1;
+    for(long i = 0; i < P_primes.size(); ++i){
+      P_primes_prod *= P_primes.at(i);
+    }
+    // if not, print the line as an error
+    if(P_primes_prod != P){
+      cout << "Not a Carmichael due to P not squarefree: ";
+      print_vec(linenums);
+    }
+
+    // copy over P_primes to primes;  Notice change from long to bigint
+    for(long i = 0; i < P_primes.size(); ++i){
+      primes.push_back(P_primes.at(i));
+    }
+
+    q = linenums.at(1);   r = linenums.at(2);
+    // now check primality of q and r
+    if(ps.is_prime_pssquare(q) && ps.is_prime_pssquare(r)){
+      primes.push_back(q);   primes.push_back(r);
+    }else{
+      // if one is not prime, cout an error
+      cout << "Not a Carmichael due to q or r not prime: ";
+      print_vec(linenums);
+    }
+    
+    // At this point we know squarefree and all prime, so check Korselt
+    P_primes_prod *= q;
+    P_primes_prod *= r;
+    
+    // I have chosen P_primes_prod to now represent n
+    for(long i = 0; i < primes.size(); ++i){
+      if(P_primes_prod % (primes.at(i) - 1) != 1){
+        cout << "Not a Carmichael due to Korselt failure: ";
+        print_vec(linenums);
+        cout << "becase n = " << P_primes_prod << " whose primes are: ";
+        print_vec(primes);
+      }
+    }
+
+  } // end while(getline)
+  cars.close();
+  delete[] nums;
+  return;
 }
