@@ -6,6 +6,7 @@
 #include "Stack.h"
 #include "Factgen.h"
 #include "Construct_car.h"
+#include "LargeP_construct_car.h"
 #include "Odometer.h"
 #include "bigint.h"
 #include "Pinch.h"
@@ -54,6 +55,11 @@ int main(int argc, char* argv[]) {
     cout << odo.primes.at(i) << " ";
   } 
   cout << "\n";
+  cout << "P = " << odo.get_P() << " and its largest factor = " << odo.get_largest_prime() << "\n";
+  cout << " curr_d = " << odo.curr_d << "\n";
+  odo.next();
+  cout << "P = " << odo.get_P() << " and its largest factor = " << odo.get_largest_prime() << "\n";
+ 
   //odo.large_products("test1.txt");
 
   LargeP_Odometer odo2 = LargeP_Odometer();
@@ -152,9 +158,13 @@ int main(int argc, char* argv[]) {
   }
   cout << "\n";
   
+  //cout << "\nTesting LargeP construction\n";
+  //LargeP_construct_car lpconstruct = LargeP_construct_car();
+  //lpconstruct.tabulate_car(1000, 200, 1, 1, "cars.txt");
 
-  cout << "\nChecking file " << f1 << "\n";
-  car_smallp_file_check(f1, 1000000);
+
+  //cout << "\nChecking file " << f1 << "\n";
+  //car_smallp_file_check(f1, 1000000);
 
   //bigint n = 1009;
   //cout << "is " << n << " prime? " << ps.is_prime_pssquare(n) << "\n";

@@ -48,8 +48,11 @@ class LargeP_Odometer{
     long X;       // lower bound on pre-products P such that n = Pqr
     long prime_B; // bound on the prime factors of P
 
-    // For now, this constructor orients around Carmichaels with three prime factors
+    // Sets up all the variables.  Default B = 100001 and X = B^{1/3}
     LargeP_Odometer();
+
+    // Constructor that takes B and X as input.  Calculates max_d, finds first pre-product
+    LargeP_Odometer(bigint B_init, long X_init);
   
     // destructor releases memory for the arrays;
     ~LargeP_Odometer();
@@ -63,6 +66,9 @@ class LargeP_Odometer{
 
     // retrieve current pre-product.  A simple getter function
     bigint get_P();
+
+    // retrieve p_{d-2}, i.e. the largest prime dividing the pre-product
+    long get_largest_prime();
 
     // print the entries of the indices array, the uppers array, and the lowers array
     void print_info();

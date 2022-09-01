@@ -6,7 +6,7 @@ using namespace std;
 
 #include "LargeP_Odometer.h"
 
-// Sets up all the variables.
+// Sets up all the variables.  Default B = 100001 and X = B^{1/3}
 LargeP_Odometer::LargeP_Odometer(){
   // let's start with 3 prime factors
   curr_d = 3;
@@ -18,6 +18,67 @@ LargeP_Odometer::LargeP_Odometer(){
   B = 1000001;
   double one_third = 1.0 / 3;
   X       = ceil(pow(B, one_third));
+  prime_B = ceil(pow(B, one_third));
+
+  // create the primes vector.  This involves setting up an array with nums[i] = i
+  // then creating factor_sieve, then retrieving primes from that factor sieve
+  long nums[prime_B];
+  for(long i = 0; i < prime_B; i++){
+    nums[i] = i;
+  }
+  factor_sieve(nums, prime_B);
+  primes = primes_fromfs(nums, prime_B);
+ 
+  // Calculate max_d.  
+  bigint prod = 1;
+  max_d = 1;  //start at p = 3;
+  while(prod < B && max_d < prime_B){
+    prod = prod * primes.at(max_d);
+    max_d++;
+  }
+  // subtract one to get it back less than B
+  max_d--;
+
+  // allocate memory for arrays
+  uppers = new long[max_d];
+  lowers = new long[max_d];
+  indices = new long[max_d];
+ 
+  //For the bounds, intialize first to all 0's
+  for(long i = 0; i < max_d; ++i){
+    uppers[i] = 0;
+    lowers[i] = 0;
+  }
+
+  // for Carmichaels with 3 prime factors, initially all we know is the 
+  // bounds on index 0.  Pre-product is prime, so must be greater than X
+  uppers[0] = ceil(pow(B, one_third));
+  lowers[0] = X;
+
+  // initialize indices to all 0's
+  for(long i = 0; i < max_d; ++i){
+    indices[i] = 0;
+  }
+  // except that first index is the smallest prime greater than X
+  indices[0] = find_index_lower(X);
+  P_curr = primes[ indices[0] ];
+
+  // but there might not be such primes, in which case we move on to length-2 pre-products
+  if(indices[0] == 0) next_nextd();
+}
+
+// Constructor that takes B and X as input.  Calculates max_d, finds first pre-product
+LargeP_Odometer::LargeP_Odometer(bigint B_init, long X_init){
+  // let's start with 3 prime factors
+  curr_d = 3;
+  P_len = 1;
+
+  // For now, set B = 1000
+  // Let's set preproduct lower bound X at B^{1/3}
+  // I need primes up to B^{1/3}.
+  B = B_init;
+  double one_third = 1.0 / 3;
+  X       = X_init;
   prime_B = ceil(pow(B, one_third));
 
   // create the primes vector.  This involves setting up an array with nums[i] = i
@@ -196,7 +257,13 @@ void LargeP_Odometer::next_nextd(){
 bigint LargeP_Odometer::get_P(){
   return P_curr;
 }
-    
+  
+// retrieve p_{d-2}, i.e. the largest prime dividing the pre-product
+// we subtract 3 because the pre-product has two fewer primes than n does.
+long LargeP_Odometer::get_largest_prime(){
+  return primes.at( indices[curr_d - 3] );
+}
+  
 // Rotate the indices.  Starts with furthest right index, depending on P_len
 void LargeP_Odometer::next(){
   // index used to find the correct index to change.  Start at the furthest right
