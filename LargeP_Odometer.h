@@ -56,6 +56,11 @@ class LargeP_Odometer{
   
     // destructor releases memory for the arrays;
     ~LargeP_Odometer();
+
+    // copy constructor and assignment operator.  Remember the rule of 3 andrew.
+    LargeP_Odometer(const LargeP_Odometer& other_od);
+    LargeP_Odometer operator=(const LargeP_Odometer& other_od);
+    
  
     // Construct odometer with given curr_d.  I only intend to use this as a helper, so primes not filled in.
     // not sure I need it.  Unfinished for now.

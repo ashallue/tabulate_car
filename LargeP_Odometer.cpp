@@ -129,9 +129,66 @@ LargeP_Odometer::LargeP_Odometer(bigint B_init, long X_init){
 }
 
 LargeP_Odometer::~LargeP_Odometer(){
+  cout << "Inside ~LargeP_Odometer\n";  
+
   delete[] uppers;
   delete[] lowers;
   delete[] indices;
+}
+
+// copy constructor
+LargeP_Odometer::LargeP_Odometer(const LargeP_Odometer& other_od){
+  // copy over all the data members
+  max_d   = other_od.max_d;
+  curr_d  = other_od.curr_d;
+  P_len   = other_od.P_len;
+  primes  = other_od.primes;   // this one is a vector, should do a deep copy
+  P_curr  = other_od.P_curr;
+  B       = other_od.B;
+  X       = other_od.X;
+  prime_B = other_od.prime_B;
+
+  // allocate for the 3 arrays
+  uppers = new long[max_d];
+  lowers = new long[max_d];
+  indices = new long[max_d];
+
+  // copy over the data for the arrays
+  for(long i = 0; i < max_d; ++i){
+    uppers[i] = other_od.uppers[i];
+    lowers[i] = other_od.lowers[i];
+    indices[i] = other_od.indices[i];
+  }
+}
+
+// assignment operator.  Very similar to copy constructor
+LargeP_Odometer LargeP_Odometer::operator=(const LargeP_Odometer& other_od){
+  // create new odometer
+  LargeP_Odometer result_od = LargeP_Odometer();
+
+  // copy over all the data members which are not arrays
+  result_od.max_d = other_od.max_d;
+  result_od.curr_d = other_od.curr_d;
+  result_od.P_len = other_od.P_len;
+  result_od.primes = other_od.primes;
+  result_od.P_curr = other_od.P_curr;
+  result_od.B = other_od.B;
+  result_od.X = other_od.X;
+  result_od.prime_B = other_od.prime_B;
+
+  // allocate for the 3 arrays
+  result_od.uppers = new long[result_od.max_d];
+  result_od.lowers = new long[result_od.max_d];
+  result_od.indices = new long[result_od.max_d];
+ 
+  // copy over the data for the arrays
+  for(long i = 0; i < result_od.max_d; ++i){
+    result_od.uppers[i] = other_od.uppers[i];
+    result_od.lowers[i] = other_od.lowers[i];
+    result_od.indices[i] = other_od.indices[i];
+  }
+  
+  return result_od;
 }
 
 // Construct odometer with given curr_d.  I only intend to use this as a helper, so primes not filled in.

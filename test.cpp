@@ -41,10 +41,6 @@ int main(int argc, char* argv[]) {
   // product primes
   cout << "Prime product is " << prime_product(102, nums, B);
  
-  cout << "Testing is_prime:\n";
-  for(long i = 0; i < 200; ++i){
-    cout << i << " " << nums[i] << " " << is_prime(i, nums, B) << "\n";
-  }
  
 
   cout << "\nTesting LargeP_Odometer\n";
@@ -149,18 +145,23 @@ int main(int argc, char* argv[]) {
   mpz_out_str(nullptr, 10, result);
   cout << "\n";
 
-  cout << "\nTesting pseudosquare\n";
-  Pseudosquare ps = Pseudosquare();
-
-  
-  for(long i = 0; i < 2000; i++){
-    if(ps.is_prime_pssquare(i)) cout << i << " ";
+  cout << "\nTesting LargeP construction\n";
+  LargeP_Odometer od3 = LargeP_Odometer();
+  for(long i = 0; i < 100; ++i){
+    cout << "( " << od3.get_P() << ", " << od3.get_largest_prime() << " )" << " ";
+    od3.next();
   }
   cout << "\n";
-  
-  //cout << "\nTesting LargeP construction\n";
-  //LargeP_construct_car lpconstruct = LargeP_construct_car();
-  //lpconstruct.tabulate_car(1000, 200, 1, 1, "cars.txt");
+  od3.large_products("odometer_output.txt");
+
+  cout << "The value of max_d for od3 is " << od3.max_d << "\n";
+  LargeP_Odometer od4 = od3;
+  cout << "The value of max_d for od4 is " << od4.max_d << "\n";
+  LargeP_Odometer od5{od3};
+  cout << "The value of max_d for od5 is " << od5.max_d << "\n";
+
+  LargeP_construct_car lpconstruct = LargeP_construct_car();
+  //lpconstruct.tabulate_car(1, 1, "cars.txt");
 
 
   //cout << "\nChecking file " << f1 << "\n";
