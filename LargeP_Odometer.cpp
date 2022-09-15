@@ -128,9 +128,8 @@ LargeP_Odometer::LargeP_Odometer(bigint B_init, long X_init){
   if(indices[0] == 0) next_nextd();
 }
 
+// destructor frees memory for the arrays
 LargeP_Odometer::~LargeP_Odometer(){
-  cout << "Inside ~LargeP_Odometer\n";  
-
   delete[] uppers;
   delete[] lowers;
   delete[] indices;

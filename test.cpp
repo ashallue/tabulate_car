@@ -152,7 +152,6 @@ int main(int argc, char* argv[]) {
     od3.next();
   }
   cout << "\n";
-  od3.large_products("odometer_output.txt");
 
   cout << "The value of max_d for od3 is " << od3.max_d << "\n";
   LargeP_Odometer od4 = od3;
@@ -160,10 +159,54 @@ int main(int argc, char* argv[]) {
   LargeP_Odometer od5{od3};
   cout << "The value of max_d for od5 is " << od5.max_d << "\n";
 
+  od3.large_products("odometer_output3.txt");
+  od4.large_products("odometer_output4.txt");
+  od5.large_products("odometer_output5.txt");
+
   LargeP_construct_car lpconstruct = LargeP_construct_car();
-  //lpconstruct.tabulate_car(1, 1, "cars.txt");
+  lpconstruct.tabulate_car(1, 1, "cars.txt");
 
+  cout << "\nTesting Factgen\n";
+  Factgen F = Factgen();
+  F.init(2, 100);
+  for(long i = 0; i < 15; ++i){
+    cout << F.n << " : ";
+    for(long j = 0; j < F.prevlen; ++j){
+      cout << F.prev[j] << " ";
+    }
+    cout << "\n";
 
+    // move sieve to next step
+    F.next();
+  } 
+
+  // make a copy of the Factgen object
+  Factgen F2(F);
+
+  for(long i = 0; i < 15; ++i){
+    cout << F2.n << " : ";
+    for(long j = 0; j < F2.prevlen; ++j){
+      cout << F2.prev[j] << " ";
+    }
+    cout << "\n";
+
+    // move sieve to next step
+    F2.next();
+  } 
+  /*
+  cout << "\nTesting pre-product crossover for P = 65003 (prime)\n";
+  Construct_car c = Construct_car();
+  // need arrays for both P and P-1 = 65002 = 2 * 7 * 4643
+  long ps[] = {65003};
+  long pms[] = {2, 7, 4643};
+  vector<pair<int64, bigint>> cars1;
+  cars1 = c.preproduct_crossover(ps, 1, pms, 3, 65002);
+  cout << "Carmichaels found: ";
+  for(long i = 0; i < cars1.size(); i++){
+    cout << "(" << cars1.at(i).first << ", " << cars1.at(i).second << ") ";
+  }
+  cout << "\n";
+  */
   //cout << "\nChecking file " << f1 << "\n";
   //car_smallp_file_check(f1, 1000000);
 
