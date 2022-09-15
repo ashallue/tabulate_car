@@ -44,8 +44,10 @@ public:
   int64 n;  
 
   // public member functions
-  Factgen();    // not useful, default values
+  Factgen();    // not useful, default values.  init is the function which sets values
   ~Factgen();   // delete the roll
+  Factgen(const Factgen& other_f);            // copy constructor
+  Factgen operator=(const Factgen& other_f);  // assignment operator
 
   void print();  // print top of the stack
   

@@ -14,6 +14,8 @@ Factgen::Factgen(){
 
   // roll had space for one Stack
   roll = nullptr;
+  rollsize = 0;
+  pos = 0;
   prevlen = 0;
   prevn = 0;
   start = 0;
@@ -25,7 +27,58 @@ Factgen::Factgen(){
 Factgen::~Factgen(){
   delete[] roll;
 }  
-  
+ 
+// copy constructor.  Copies over values, and allocates memory for its own roll
+Factgen::Factgen(const Factgen& other_f){
+  // copy over the single word variables
+  rollsize = other_f.rollsize;
+  pos = other_f.pos;
+  prevlen = other_f.prevlen;
+  prevn = other_f.prevn;
+  start = other_f.start;
+  stop = other_f.stop;
+  n = other_f.n;
+
+  // allocate memory for roll and copy over
+  roll = new Stack[rollsize];
+  for(long i = 0; i < rollsize; ++i){
+    roll[i] = other_f.roll[i];
+  }
+
+  // copy over prev array
+  for(long i = 0; i < prevlen; ++i){
+    prev[i] = other_f.prev[i];
+  }  
+
+}
+
+// assignment operator, very similar to copy constructor.  difference is it returns an object
+Factgen Factgen::operator=(const Factgen& other_f){
+  // create new Factgen object
+  Factgen result_f = Factgen();
+
+  // copy over the single word variables
+  result_f.rollsize = other_f.rollsize;
+  result_f.pos = other_f.pos;
+  result_f.prevlen = other_f.prevlen;
+  result_f.prevn = other_f.prevn;
+  result_f.start = other_f.start;
+  result_f.stop = other_f.stop;
+  result_f.n = other_f.n;
+
+  // allocate memory for roll and copy over
+  result_f.roll = new Stack[rollsize];
+  for(long i = 0; i < rollsize; ++i){
+    result_f.roll[i] = other_f.roll[i];
+  }
+
+  // copy over prev array
+  for(long i = 0; i < prevlen; ++i){
+    result_f.prev[i] = other_f.prev[i];
+  }
+  return result_f;
+}  
+ 
 // I would have made this a non-standard constructor
 // Complexity is O(sqrt(B)) time and space
 void Factgen::init(int64 startint, int64 stopint){
