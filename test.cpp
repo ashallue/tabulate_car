@@ -156,7 +156,7 @@ int main(int argc, char* argv[]) {
   cout << "The value of max_d for od3 is " << od3.max_d << "\n";
   LargeP_Odometer od4 = od3;
   cout << "The value of max_d for od4 is " << od4.max_d << "\n";
-  LargeP_Odometer od5{od3};
+  LargeP_Odometer od5(od3);
   cout << "The value of max_d for od5 is " << od5.max_d << "\n";
 
   od3.large_products("odometer_output3.txt");
@@ -165,6 +165,8 @@ int main(int argc, char* argv[]) {
 
   LargeP_construct_car lpconstruct = LargeP_construct_car();
   lpconstruct.tabulate_car(1, 1, "cars.txt");
+
+  /* Testing Factgen
 
   cout << "\nTesting Factgen\n";
   Factgen F = Factgen();
@@ -193,6 +195,8 @@ int main(int argc, char* argv[]) {
     // move sieve to next step
     F2.next();
   } 
+  */
+
   /*
   cout << "\nTesting pre-product crossover for P = 65003 (prime)\n";
   Construct_car c = Construct_car();
