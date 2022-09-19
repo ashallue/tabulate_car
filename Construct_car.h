@@ -45,9 +45,18 @@ class Construct_car{
     // bound of the Carmichael construction
     long X;
 
+    // variables for q, r.  Used in completion check.  mpz are for primality testing.
+    int64 q;  bigint r;
+    mpz_t q_mpz;  mpz_t r_mpz;
+
   public:
     // default sets X to 2^(16), B to twice that.
     Construct_car();
+
+    // destructor to clear the mpz_t variables.  Then copy construtors to follow rule of 3.
+    ~Construct_car();
+    Construct_car(Construct_car &other);
+    Construct_car operator=(Construct_car &other);
 
     // Tests whether a given pre-product P is admissable, 
     // i.e. that gcd(p-1, P) = 1 for all p | P, and P squarefree

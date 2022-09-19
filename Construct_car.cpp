@@ -30,6 +30,49 @@ Construct_car::Construct_car(){
   // create Factgen object for P+D
   // don't initialize now, need to do so later
   FD = Factgen();
+
+  // set q, r to 0.  initialize the mpz variables
+  q = 0;  r = 0;
+  mpz_init(q_mpz);   mpz_init(r_mpz);
+}
+
+//destructor is here to clear the mpz_t variables, everything else can be cleared using default methods
+Construct_car::~Construct_car(){
+  mpz_clear(q_mpz);
+  mpz_clear(r_mpz);
+}
+
+// copy constructor needs to initialize the mpz variables
+Construct_car::Construct_car(Construct_car &other){
+  // first copy over factgen objects and bounds
+  F = other.F;
+  FD = other.FD;
+  B = other.B;
+  X = other.X;
+  q = other.q;
+  r = other.r;
+
+  //now itialize the mpz variables and copy them over
+  mpz_init(q_mpz);  mpz_init(r_mpz);
+  mpz_set(q_mpz, other.q_mpz);   mpz_set(r_mpz, other.r_mpz);
+}
+
+// operator= is very similar to copy constructor
+Construct_car Construct_car::operator=(Construct_car &other){
+  // create new object and copy over non-mpz variables
+  Construct_car result_ob;
+  result_ob.F = other.F;
+  result_ob.FD = other.FD;
+  result_ob.B = other.B;
+  result_ob.X = other.X;
+  result_ob.q = other.q;
+  result_ob.r = other.r;
+
+  // initialize and set mpz variables
+  mpz_init(result_ob.q_mpz);   mpz_init(result_ob.r_mpz);
+  mpz_set(result_ob.q_mpz, other.q_mpz);  mpz_set(result_ob.r_mpz, other.r_mpz);
+
+  return result_ob;
 }
 
 // Tests whether a given pre-product P is admissable, 
@@ -210,6 +253,7 @@ vector<pair<int64, bigint>> Construct_car::preproduct_construction(int64* P, lon
   Other input: unique primes dividing (P-1)(P+D)/2, which we use to do primality via q-1 factorization.
   primality of q, r determined through mpz_probab_prime_p, a gmp func which does Baillie-PSW
   Returns a pair (q, r) if the completion works.  Returns (0, 0) if it doesn't
+  Update: q, r, and mpz_versions now members of the class.
 */
 pair<int64, bigint> Construct_car::completion_check(int64 P, int64 Delta, int64 D, int64 L, int64* q_primes, long q_primes_len){
   // setup output.  By default set it to (0, 0) which means false
@@ -232,13 +276,12 @@ pair<int64, bigint> Construct_car::completion_check(int64 P, int64 Delta, int64 
 
   // compute q and check primality
   // Final value of q is (P-1)(P+D) / Delta
-  int64 q;
-  q = (P - 1) * (P + D);
+  q = (P - 1) * (P + D);          // note q initialized by constructor
   q = (q / Delta) + 1;
 
   // compute r, check it is integral.  Recall r = (P-1)(P+C)/Delta + 1
-  bigint r, r_quo, r_rem; 
-  r = (P - 1) * (P + C);
+  bigint r_quo, r_rem; 
+  r = (P - 1) * (P + C);          // note r initialized by constructor
   r_quo = r / Delta;
   r_rem = r % Delta;
 
@@ -253,21 +296,21 @@ pair<int64, bigint> Construct_car::completion_check(int64 P, int64 Delta, int64 
   if(modL != 1 || modqminus != 1 || modrminus != 1) return output;
   
   // primality testing on q, r.  Will use a gmp func, so requires conversion to mpz
-  mpz_t q_big;
-  mpz_t r_big;
-  mpz_init(q_big); mpz_init(r_big); 
+  //mpz_t q_big;
+  //mpz_t r_big;
+  //mpz_init(q_big); mpz_init(r_big); 
 
   // q can be converted directly.  r is possibly 128 bits, we need to use Dual_rep
-  mpz_set_si(q_big, q);
+  mpz_set_si(q_mpz, q);
   Dual_rep d;
   d.double_word = r;
 
   // Set the high bits, multiply by 2**64, then add over low bits
   // I think I have the si, ui correct here.  I tested it with examples where d.two_words[0] requires 64bits, 
   // and it worked fine.
-  mpz_set_si(r_big, d.two_words[1]);
-  mpz_mul_2exp(r_big, r_big, 64);
-  mpz_add_ui(r_big, r_big, d.two_words[0]);
+  mpz_set_si(r_mpz, d.two_words[1]);
+  mpz_mul_2exp(r_mpz, r_mpz, 64);
+  mpz_add_ui(r_mpz, r_mpz, d.two_words[0]);
 
   /*
   // testing
@@ -279,17 +322,17 @@ pair<int64, bigint> Construct_car::completion_check(int64 P, int64 Delta, int64 
   */
 
   // check pseudo-primality of q, r.  mpz_probab_prime_p could return 0, 1, or 2.  0 for composite
-  if(mpz_probab_prime_p(q_big, 0) == 0){
-    mpz_clear(q_big);  mpz_clear(r_big);
+  if(mpz_probab_prime_p(q_mpz, 0) == 0){
+   // mpz_clear(q_big);  mpz_clear(r_big);
     return output;
   }
-  if(mpz_probab_prime_p(r_big, 0) == 0){
-    mpz_clear(q_big);  mpz_clear(r_big);
+  if(mpz_probab_prime_p(r_mpz, 0) == 0){
+   // mpz_clear(q_big);  mpz_clear(r_big);
     return output;  
   }
 
   // clear mpz
-  mpz_clear(q_big);   mpz_clear(r_big);
+  //mpz_clear(q_big);   mpz_clear(r_big);
 
   // If we have gotten to this point we have passed all the checks above
   output.first = q;   output.second = r;
