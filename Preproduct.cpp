@@ -15,6 +15,7 @@ Preproduct::Preproduct(){
   L = 0;
   Tau = 0;
   P = 0;
+  admissable = false;
 }
 
 // Given factors of P and P-1, create an object with new memory allocation.
@@ -61,6 +62,10 @@ Preproduct::Preproduct(int64 Pval, int64* Pfac, long Pfac_len, int64* PMfac, lon
     div_count *= (exp_count + 1);
   }
   Tau = div_count;
+
+  // set admissable bool by calling is_admissable
+  admissable = is_admissable();
+
 }
 
 // Need a destructor to free the memory, then copy constructors for rule of 3
@@ -76,6 +81,7 @@ Preproduct::Preproduct(const Preproduct& other){
   L = other.L;
   Tau = other.Tau;
   P = other.P;
+  admissable = other.admissable;
 
   // allocate memory for the factor arrays
   Pprimes = new int64[Pprimes_len];
@@ -98,6 +104,7 @@ Preproduct Preproduct::operator=(const Preproduct& other){
   result.L = other.L;
   result.Tau = other.Tau;
   result.P = other.P;
+  result.admissable = other.admissable;
 
   // allocate memory for the factor arrays
   result.Pprimes = new int64[result.Pprimes_len];
@@ -112,4 +119,36 @@ Preproduct Preproduct::operator=(const Preproduct& other){
   return result;
 }
 
+// Tests whether a given pre-product P is admissable, 
+// i.e. that gcd(p-1, P) = 1 for all p | P, and squarefree
+// returns 0 if not admissable
+bool Preproduct::is_admissable(){
+  // construct product of the prime factors of P
+  // and compute lcm L at the same time
+  int64 P_product = 1;
+  int64 prime;    // stores a prime
+  int64 g;        // stores gcd
 
+  // note for this loop: let P_p be the divisor of P that is the product of primes up to p
+  // Then gcd(p-1, P_p) = 1 for all p => gcd(p-1, P) = 1 for all p
+  // because p-1 can't share factors with primes larger than p.
+  for(long i = 0; i < Pprimes_len; ++i){
+    // grow the product P
+    P_product = P_product * Pprimes[i];
+
+    // grow the LCM
+    // first compute gcd(p-1, P)
+    prime = Pprimes[i];
+    g = gcd(prime - 1, P_product);
+
+    // Not admissable if gcd not 1
+    if(g != 1) return false;
+  
+  }  // end for over Pprimes
+
+  // not squarefree if this product is not P
+  if(P_product != P) return false;
+
+  // if computer gets to this point then P is admissable
+  return true;
+}

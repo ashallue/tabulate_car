@@ -22,6 +22,7 @@ class Preproduct{
     int64 L;            // will hold lcm_{p | P} (p-1)
     int64 Tau;          // The divisor count of P-1
     int64 P;            // the product of the primes in Pprimes, i.e. the actual pre-product
+    bool admissable;    // true if P is squarefree and gcd(p-1, P)=1 forall p | P   
 
     // default constructor
     Preproduct();
@@ -35,6 +36,9 @@ class Preproduct{
     Preproduct(const Preproduct& other);
     Preproduct operator=(const Preproduct& other);
     
+    // computes whether the preproduct is admissable in a Carmichael sense
+    // that is, returns true iff P squarefree and gcd(p-1, P) = 1 forall p | P
+    bool is_admissable();
 
 // I should include the admissable function in this class
 };
