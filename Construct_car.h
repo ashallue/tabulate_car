@@ -55,8 +55,8 @@ class Construct_car{
 
     // destructor to clear the mpz_t variables.  Then copy construtors to follow rule of 3.
     ~Construct_car();
-    Construct_car(Construct_car &other);
-    Construct_car operator=(Construct_car &other);
+    Construct_car(const Construct_car& other);
+    Construct_car operator=(const Construct_car& other);
 
     // Tests whether a given pre-product P is admissable, 
     // i.e. that gcd(p-1, P) = 1 for all p | P, and P squarefree

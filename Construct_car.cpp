@@ -43,7 +43,7 @@ Construct_car::~Construct_car(){
 }
 
 // copy constructor needs to initialize the mpz variables
-Construct_car::Construct_car(Construct_car &other){
+Construct_car::Construct_car(const Construct_car& other){
   // first copy over factgen objects and bounds
   F = other.F;
   FD = other.FD;
@@ -58,7 +58,7 @@ Construct_car::Construct_car(Construct_car &other){
 }
 
 // operator= is very similar to copy constructor
-Construct_car Construct_car::operator=(Construct_car &other){
+Construct_car Construct_car::operator=(const Construct_car& other){
   // create new object and copy over non-mpz variables
   Construct_car result_ob;
   result_ob.F = other.F;

@@ -5,8 +5,8 @@
 #include "functions.h"
 #include "Stack.h"
 #include "Factgen.h"
-#include "Construct_car.h"
-#include "LargeP_construct_car.h"
+#include "LargeP_Carmichael.h"
+#include "SmallP_Carmichael.h"
 #include "Odometer.h"
 #include "bigint.h"
 #include "Pinch.h"
@@ -16,6 +16,7 @@
 #include "Pseudosquare.h"
 #include <string>
 #include "LargeP_Odometer.h"
+#include "Preproduct.h"
 
 using namespace std::chrono;
 
@@ -144,7 +145,8 @@ int main(int argc, char* argv[]) {
   cout << "mpz version: ";
   mpz_out_str(nullptr, 10, result);
   cout << "\n";
-
+ 
+  /*
   cout << "\nTesting LargeP construction\n";
   LargeP_Odometer od3 = LargeP_Odometer();
   for(long i = 0; i < 100; ++i){
@@ -162,40 +164,43 @@ int main(int argc, char* argv[]) {
   od3.large_products("odometer_output3.txt");
   od4.large_products("odometer_output4.txt");
   od5.large_products("odometer_output5.txt");
+  */
 
-  LargeP_construct_car lpconstruct = LargeP_construct_car();
+  LargeP_Carmichael lpconstruct = LargeP_Carmichael();
   lpconstruct.tabulate_car(1, 1, "cars.txt");
 
-  /* Testing Factgen
+  // Testing Factgen
 
   cout << "\nTesting Factgen\n";
-  Factgen F = Factgen();
+  Factgen2 F = Factgen2();
   F.init(2, 100);
   for(long i = 0; i < 15; ++i){
-    cout << F.n << " : ";
+    cout << F.prevval << " " << F.currentval << " : ";
     for(long j = 0; j < F.prevlen; ++j){
       cout << F.prev[j] << " ";
     }
     cout << "\n";
 
+    // create preproduct object
+    Preproduct P = Preproduct(F.currentval, F.current, F.currentlen, F.prev, F.prevlen);
+    /*
+    for(long i = 0; i < P.Pprimes_len; ++i){
+      cout << P.Pprimes[i] << " ";
+    }
+    cout << ", ";
+    */
+    cout << "Pminus = " << P.P - 1 << ", ";
+    for(long i = 0; i < P.Pminus_len; ++i){
+      cout << P.Pminus[i] << " ";
+    }
+    cout << " : ";
+    cout << "Tau = " << P.Tau << ", admissable = " << P.admissable << "\n";
+
+
     // move sieve to next step
     F.next();
   } 
 
-  // make a copy of the Factgen object
-  Factgen F2(F);
-
-  for(long i = 0; i < 15; ++i){
-    cout << F2.n << " : ";
-    for(long j = 0; j < F2.prevlen; ++j){
-      cout << F2.prev[j] << " ";
-    }
-    cout << "\n";
-
-    // move sieve to next step
-    F2.next();
-  } 
-  */
 
   /*
   cout << "\nTesting pre-product crossover for P = 65003 (prime)\n";

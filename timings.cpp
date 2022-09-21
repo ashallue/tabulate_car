@@ -48,7 +48,7 @@ int main(int argc, char* argv[]) {
   // timing code from geeksforgeeks.org
   // Comparison of three methods: D-Delta, CD, and crossover
   // limited to prime preproducts.
-  
+    
   long size = atoi(argv[1]);
  
   int64 num_thousands = size * 10;
@@ -76,10 +76,41 @@ int main(int argc, char* argv[]) {
   cout << "pinch timing: " << duration_pinch.count() << "\n";
   cout << "static crossover has been removed.  Earlier testing showed it is better for prime preproducts" << "\n";
   cout << "dynamic crossover timing: " << duration_crossover_dyn.count() << "\n";
-   
-
   
 
+  /*
+  // This code times intialization and garbage collection for different types of variables
+  long count = 10000000000;
+  cout << "Timing initialization and malloc for " << count << " many variables\n";
+
+  auto start_mpz = high_resolution_clock::now();
+  for(long i = 0; i < count; ++i){
+    mpz_t x;
+    mpz_init(x);
+    mpz_clear(x);
+  }
+  auto end_mpz = high_resolution_clock::now();
+  auto duration_mpz = duration_cast<seconds>(end_mpz - start_mpz);
+  cout << "timing for mpz_t: " << duration_mpz.count() << "\n";
+
+  auto start_long = high_resolution_clock::now();
+  for(long i = 0; i < count; ++i){
+    long* x;
+    x = new long;
+    delete x;
+  }
+  auto end_long = high_resolution_clock::now();
+  auto duration_long = duration_cast<seconds>(end_long - start_long);
+  cout << "timing for long pointer: " << duration_long.count() << "\n";
+   
+  auto start_stacklong = high_resolution_clock::now();
+  for(long i = 0; i < count; ++i){
+    long x;
+  }
+  auto end_stacklong = high_resolution_clock::now();
+  auto duration_stacklong = duration_cast<seconds>(end_stacklong - start_stacklong);
+  cout << "timing for long on the stack: " << duration_stacklong.count() << "\n";
+  */
   /* 
   // This code computes Carmichaels in two different ways as a check
   vector<bigint> cars = C.product_and_sort("cars.txt");
