@@ -11,6 +11,7 @@ using namespace std;
 
 #include "int.h"
 #include "bigint.h"
+#include "functions.h"
 
 class Preproduct{
   public:
@@ -21,7 +22,7 @@ class Preproduct{
     long   Pminus_len;
     int64 L;            // will hold lcm_{p | P} (p-1)
     int64 Tau;          // The divisor count of P-1
-    int64 P;            // the product of the primes in Pprimes, i.e. the actual pre-product
+    int64 Prod;         // the product of the primes in Pprimes, i.e. the actual pre-product
     bool admissable;    // true if P is squarefree and gcd(p-1, P)=1 forall p | P   
 
     // default constructor
@@ -39,6 +40,10 @@ class Preproduct{
     // computes whether the preproduct is admissable in a Carmichael sense
     // that is, returns true iff P squarefree and gcd(p-1, P) = 1 forall p | P
     bool is_admissable();
+
+    // Given unique prime factors of P+D, compute the complete prime factorization of q = (P-1)(P+D)/2
+    // All arrays are passed by reference.  Return value is the length of the q_primes, q_exps arrays.
+    long q_factorization(int64 q, int64* PplusD, long PplusD_len, int64* q_primes, long* q_exps);
 
 // I should include the admissable function in this class
 };

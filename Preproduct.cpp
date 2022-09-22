@@ -14,7 +14,7 @@ Preproduct::Preproduct(){
   Pminus_len = 0;
   L = 0;
   Tau = 0;
-  P = 0;
+  Prod = 0;
   admissable = false;
 }
 
@@ -22,7 +22,7 @@ Preproduct::Preproduct(){
 // Note: assume product of the P factors is P, but factors of P-1 are the unique prime factors
 Preproduct::Preproduct(int64 Pval, int64* Pfac, long Pfac_len, int64* PMfac, long PMfac_len){
   // set length variables, then allocate memory for factor arrays
-  P = Pval;
+  Prod = Pval;
   Pprimes_len = Pfac_len;
   Pminus_len  = PMfac_len;
   Pprimes = new int64[Pprimes_len];
@@ -48,7 +48,7 @@ Preproduct::Preproduct(int64 Pval, int64* Pfac, long Pfac_len, int64* PMfac, lon
   }
 
   // compute Tau, the divisor count of P-1
-  int64 Pminus_prod = P - 1;
+  int64 Pminus_prod = Prod - 1;
   long div_count = 1;
   long exp_count = 0;
 
@@ -80,7 +80,7 @@ Preproduct::Preproduct(const Preproduct& other){
   Pminus_len = other.Pminus_len;
   L = other.L;
   Tau = other.Tau;
-  P = other.P;
+  Prod = other.Prod;
   admissable = other.admissable;
 
   // allocate memory for the factor arrays
@@ -103,7 +103,7 @@ Preproduct Preproduct::operator=(const Preproduct& other){
   result.Pminus_len = other.Pminus_len;
   result.L = other.L;
   result.Tau = other.Tau;
-  result.P = other.P;
+  result.Prod = other.Prod;
   result.admissable = other.admissable;
 
   // allocate memory for the factor arrays
@@ -125,7 +125,7 @@ Preproduct Preproduct::operator=(const Preproduct& other){
 bool Preproduct::is_admissable(){
   // construct product of the prime factors of P
   // and compute lcm L at the same time
-  int64 P_product = 1;
+  int64 P_check = 1;
   int64 prime;    // stores a prime
   int64 g;        // stores gcd
 
@@ -134,12 +134,12 @@ bool Preproduct::is_admissable(){
   // because p-1 can't share factors with primes larger than p.
   for(long i = 0; i < Pprimes_len; ++i){
     // grow the product P
-    P_product = P_product * Pprimes[i];
+    P_check = P_check * Pprimes[i];
 
     // grow the LCM
     // first compute gcd(p-1, P)
     prime = Pprimes[i];
-    g = gcd(prime - 1, P_product);
+    g = gcd(prime - 1, P_check);
 
     // Not admissable if gcd not 1
     if(g != 1) return false;
@@ -147,8 +147,33 @@ bool Preproduct::is_admissable(){
   }  // end for over Pprimes
 
   // not squarefree if this product is not P
-  if(P_product != P) return false;
+  if(P_check != Prod) return false;
 
   // if computer gets to this point then P is admissable
   return true;
+}
+
+// Given unique prime factors of P+D, compute the complete prime factorization of q = (P-1)(P+D)/2
+// // All arrays are passed by reference.  Return value is the length of the q_primes, q_exps arrays.
+long Preproduct::q_factorization(int64 q, int64* PplusD, long PplusD_len, int64* q_primes, long* q_exps){
+  // new variable for q, which will get smaller as exponents computed.
+  int64 q_temp = q;
+
+  // merge the P+D and P-1 prime factor arrays to remove duplicates
+  long q_primes_len = merge_array(Pminus, Pminus_len, PplusD, PplusD_len, q_primes);
+
+  long p, e;
+  // loop over the prime divisors of q and compute the exponents
+  for(long i = 0; i < q_primes_len; ++i){
+    p = q_primes[i];
+    e = 0;
+    while(q_temp % p == 0){
+      e++;
+      q_temp = q_temp / p;
+    }
+    q_exps[i] = e;
+  }
+
+  //return new length of the array
+  return q_primes_len;
 }
