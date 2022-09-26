@@ -45,7 +45,9 @@ class Preproduct{
     // All arrays are passed by reference.  Return value is the length of the q_primes, q_exps arrays.
     long q_factorization(int64 q, int64* PplusD, long PplusD_len, int64* q_primes, long* q_exps);
 
-// I should include the admissable function in this class
+    // return the largest prime dividing the preproduct.  Recall they are stored in increasing order.
+    int64 largest_prime();
+
 };
 
 #endif

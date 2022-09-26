@@ -98,18 +98,9 @@ SmallP_Carmichael SmallP_Carmichael::operator=(const SmallP_Carmichael& other){
 // Inputs are factorizations of P and P-1, along with L = lcm_{p | P} (p-1)
 // This version not tied to F.  Would be slightly more efficient if it was.
 */
-vector<pair<int64, bigint>> SmallP_Carmichael::DDelta(Preproduct& P){
+vector<pair<int64, bigint>> SmallP_Carmichael::all_DDelta(Preproduct& P){
   vector<pair<int64, bigint>> output;
-  int64 Delta_bound;  // stores upper bound on Delta to ensure it isn't too big
-  int64 div = 1;     // will store divisors of (P-1)(P+D)/2
-
-  // variables to help store and compute factorization of (P-1)(P+D)/2
-  int64* PplusD;     // unique prime dividing P+D
-  long PplusD_len;   // number of such primes
-  int64* q_primes;   // unique primes dividing q_temp = (P-1)(P+D)/2
-  long q_primes_len; // number of such primes
-  long* q_exps;      // exponents of primes dividing q_temp
-  pair<int64*, long> merge_output;
+  vector<pair<int64, bigint>> D_cars;
 
   // We need a Factgen object for factorizations of P+D
   // Initialize to match D in [2 .. P-1]
@@ -125,19 +116,37 @@ vector<pair<int64, bigint>> SmallP_Carmichael::DDelta(Preproduct& P){
     // go to the next P+D through the Factgen object
     FD.next();
 
+    // gather Carmichaels from the DDelta function
+    D_cars = DDelta(P, D);
+    for(long i = 0; i < D_cars.size(); ++i){
+      output.push_back(D_cars.at(i));
+    }
+
+  } // end for D
+  
+  return output;
+}
+
+/* D-Delta method for a single Preproduct, D pair.  Computes all divisors of (P-1)(P+D).
+ */
+vector<pair<int64, bigint>> SmallP_Carmichael::DDelta(Preproduct& P, bigint D){
+    vector<pair<int64, bigint>> output;
+    int64 Delta_bound;  // stores upper bound on Delta to ensure it isn't too big (making q too small)
+    int64 div = 1;      // will store divisors of (P-1)(P+D)/2    
+
     // We set up an odometer, which requires primes and powers
     // Note this is not the final value of q, just the one needed to compute divisors.
     q = (P.Prod - 1) * (P.Prod + D) / 2;
 
     // P_minus has the unique prime factors dividing P-1.
     // copy over prev into PplusD
-    PplusD = FD.prev;
-    PplusD_len = FD.prevlen;   
+    int64* PplusD = FD.prev;
+    long PplusD_len = FD.prevlen;   
  
     // from PplusD and Pminus, compute full factorization of q (see Preproduct class) 
-    q_primes = new int64[PplusD_len + P.Pminus_len];
-    q_exps   = new long[PplusD_len + P.Pminus_len];
-    q_primes_len = P.q_factorization(q, PplusD, PplusD_len, q_primes, q_exps);  
+    int64* q_primes = new int64[PplusD_len + P.Pminus_len];
+    long* q_exps   = new long[PplusD_len + P.Pminus_len];
+    long q_primes_len = P.q_factorization(q, PplusD, PplusD_len, q_primes, q_exps);  
  
     // Set up odometer to run through divisors of (P-1)(P+D)/2
     Odometer q_od = Odometer(q_primes, q_exps, q_primes_len);
@@ -161,7 +170,7 @@ vector<pair<int64, bigint>> SmallP_Carmichael::DDelta(Preproduct& P){
     // The appropriate bound is Delta < (P-1)(P+D)/(p_{d-2}-1)
     // So we add 1 to the quotient, since integer division rounds down.
     Delta_bound = (P.Prod - 1) * (P.Prod + D);
-    Delta_bound = Delta_bound / (P.Pprimes[P.Pprimes_len - 1] - 1);
+    Delta_bound = Delta_bound / (P.largest_prime() - 1);
     
     // continue looking at divisors until it is back to 1
     while(div != 1){
@@ -188,40 +197,78 @@ vector<pair<int64, bigint>> SmallP_Carmichael::DDelta(Preproduct& P){
     delete[] q_primes;
     delete[] q_exps;
 
-  } // end for D
-  
-  return output;
+    return output;
 }
 
+// CD method (Pinch algorithm).  Given Preproduct and D, compute Carmichael completions
+vector<pair<int64, bigint>> SmallP_Carmichael::CD(Preproduct& P, bigint D){ 
+  vector<pair<int64, bigint>> output;
+
+  // for CD method we generate all C in an interval.  These are the bounds.
+  bigint C_lower = 1 + (P.Prod * P.Prod) / D;
+  bigint C_upper = (P.Prod * P.Prod * (P.largest_prime() + 3)) / (D * (P.largest_prime() + 1));
+
+  // Delta bound to ensure q > p_{d-2}
+  int64 Delta;
+  int64 Delta_bound = (P.Prod - 1) * (P.Prod + D);
+  Delta_bound = Delta_bound / (P.largest_prime() - 1);
+  
+  // helper variables
+  bool q_integral, r_integral;
+  bool q_prime, r_prime;
+
+  // loop over C
+  for(int64 C = C_lower; C <= C_upper; ++C){
+    // compute Delta
+    Delta = C * D - P.Prod * P.Prod;
+  
+    // check integrality of q
+    q_integral = q % Delta == 0;
+    if(q_integral && Delta < Delta_bound){
+      pair<int64, bigint> qr = completion_check(P, Delta, D, C);
+
+      if(qr.first != 0 && qr.second != 0){
+        output.push_back(qr);
+      }
+    }  
+
+  } // end for C
+  return output;
+}
+    
 /* Once I have the loop over divisors of (P-1)(P+D)/Delta, I need to perform the following steps:
-    1) Compute C = (P^2 + Delta)/D, check that it is integral
+    1) Compute C = (P^2 + Delta)/D, check that it is integral (unless C != 0, meaning given as parameter)
     2) Check Pqr for Korselt criterion
     3) check q and r for small prime factors (compositeness check)
     4) Compute q = (P-1)(P+D)/Delta + 1, check primality.  Don't check integrality, we know because div = Delta.
-    5) Compute r = (P-1)(P+C)/Delta + 1, check integrality
+    5) Compute r = (P-1)(P+C)/Delta + 1, check integrality and primality
   Note that I know q is integral, because Delta chosen as divisor of (P-1)(P+D).
-  Other input: unique primes dividing (P-1)(P+D)/2, which we use to do primality via q-1 factorization.
   primality of q, r determined through mpz_probab_prime_p, a gmp func which does Baillie-PSW
   Returns a pair (q, r) if the completion works.  Returns (0, 0) if it doesn't
   Update: q, r, and mpz_versions now members of the class.
 */
-pair<int64, bigint> SmallP_Carmichael::completion_check(Preproduct& P, int64 Delta, int64 D){
+pair<int64, bigint> SmallP_Carmichael::completion_check(Preproduct& P, int64 Delta, int64 D, int64 C_param){
   // setup output.  By default set it to (0, 0) which means false
   pair<int64, bigint> output;
   output.first = 0;   output.second = 0;
 
-  // compute C and check that it is integral
-  int64 intermediate;
   int64 C;
+  if(C_param == 0){
 
-  // compute quotient and rem at the same time, compiler should only use 1 instruction
-  intermediate = P.Prod * P.Prod + Delta;
-  C = intermediate / D;
-  bigint inter_rem = intermediate % D;
+    // compute C and check that it is integral
+    int64 intermediate;
 
-  // if rem is not 0, C not integral, return the (0,0) output pair
-  if(inter_rem != 0){
-    return output;
+    // compute quotient and rem at the same time, compiler should only use 1 instruction
+    intermediate = P.Prod * P.Prod + Delta;
+    C = intermediate / D;
+    bigint inter_rem = intermediate % D;
+
+    // if rem is not 0, C not integral, return the (0,0) output pair
+    if(inter_rem != 0){
+      return output;
+    }
+  }else{
+    C = C_param;
   }
 
   // compute q and check primality
@@ -343,10 +390,10 @@ void SmallP_Carmichael::tabulate_car(long processor, long num_threads, string ca
         qrs.clear();
         // if the largest prime dividing pre-product is large enough, do cross-over
         // otherwise just do D-Delta method.  For now, we use 20 as a magical value
-        if( P / P_factors[ P_factors_len - 1 ] < 20){
+        if( P / P_ob.largest_prime() < 20){
           qrs = preproduct_crossover(P_factors, P_factors_len, Pminus_factors, Pminus_factors_len, LCM);
         }else{
-          qrs = DDelta(P_ob);
+          qrs = all_DDelta(P_ob);
         }
         // testing
        // cout << "P = " << P << " generates " << qrs.size() << " many carmichaels\n";
@@ -375,15 +422,15 @@ void SmallP_Carmichael::tabulate_car(long processor, long num_threads, string ca
   admissable_w_zero.close();
 }
 
-/* Construct Carmichaels for prime pre-products P
+/* Construct Carmichaels for prime pre-products P, using just D-Delta method
  */
-void SmallP_Carmichael::tabulate_car_primeP(int64 B, long processor, long num_threads, string cars_file){
+void SmallP_Carmichael::tabulate_car_primeP(long processor, long num_threads, string cars_file){
   int64* P_factors;
   long   P_factors_len;
   int64* Pminus_factors;
   long   Pminus_factors_len;
   vector<pair<int64, bigint>> qrs;
-  int64 LCM;
+  Preproduct P_ob;
 
   // file stream object
   ofstream output;
@@ -400,6 +447,7 @@ void SmallP_Carmichael::tabulate_car_primeP(int64 B, long processor, long num_th
     // check if P is prime.  If not, continue
     if(!F.isprime_current()){
       F.next();
+      F.next();
     }else{
       //cout << "Found prime P = " << P << "\n";     
 
@@ -410,15 +458,16 @@ void SmallP_Carmichael::tabulate_car_primeP(int64 B, long processor, long num_th
       Pminus_factors = F.prev;
       Pminus_factors_len = F.prevlen;
 
-      // if P is prime, the LCM is just P-1
-      LCM = P - 1;
-      
       // if prime count in correct residue class, construct cars
       if(num_prime_P % num_threads != processor){
         F.next();
+        F.next();
       }else{
+        // construct preproduct object
+        P_ob = Preproduct(P, P_factors, P_factors_len, Pminus_factors, Pminus_factors_len);
+ 
         qrs.clear();
-        qrs = preproduct_construction(P_factors, P_factors_len, Pminus_factors, Pminus_factors_len, LCM);
+        qrs = all_DDelta(P_ob);
 
         // write to file
         for(long j = 0; j < qrs.size(); ++j){
@@ -426,6 +475,7 @@ void SmallP_Carmichael::tabulate_car_primeP(int64 B, long processor, long num_th
         }
  
         // advance window
+        F.next();
         F.next();
       }
    
@@ -438,13 +488,13 @@ void SmallP_Carmichael::tabulate_car_primeP(int64 B, long processor, long num_th
 
 /* Version that calls the cross-over function
  */
-void SmallP_Carmichael::tabulate_car_primeP_crossover(int64 B, long processor, long num_threads, string cars_file){
+void SmallP_Carmichael::tabulate_car_primeP_crossover(long processor, long num_threads, string cars_file){
   int64* P_factors;
   long   P_factors_len;
   int64* Pminus_factors;
   long   Pminus_factors_len;
   vector<pair<int64, bigint>> qrs;
-  int64 LCM;
+  Preproduct P_ob;
 
   // file stream object
   ofstream output;
@@ -461,6 +511,7 @@ void SmallP_Carmichael::tabulate_car_primeP_crossover(int64 B, long processor, l
     // check if P is prime.  If not, continue
     if(!F.isprime_current()){
       F.next();
+      F.next();
     }else{
       //cout << "Found prime P = " << P << "\n";     
 
@@ -471,15 +522,17 @@ void SmallP_Carmichael::tabulate_car_primeP_crossover(int64 B, long processor, l
       Pminus_factors = F.prev;
       Pminus_factors_len = F.prevlen;
 
-      // if P is prime, the LCM is just P-1
-      LCM = P - 1;
-      
       // if prime count in correct residue class, construct cars
       if(num_prime_P % num_threads != processor){
         F.next();
+        F.next();
       }else{
+        // construct preproduct object
+        P_ob = Preproduct(P_factors, P_factors_len, Pminus_factors, Pminus_factors_len);
+
+        // construct carmichaels with that particular preproduct.
         qrs.clear();
-        qrs = preproduct_crossover(P_factors, P_factors_len, Pminus_factors, Pminus_factors_len, LCM);
+        qrs = preproduct_crossover(P_ob);
 
         // write to file
         for(long j = 0; j < qrs.size(); ++j){
@@ -487,6 +540,7 @@ void SmallP_Carmichael::tabulate_car_primeP_crossover(int64 B, long processor, l
         }
  
         // advance window
+        F.next();
         F.next();
       }
    
@@ -502,7 +556,7 @@ void SmallP_Carmichael::tabulate_car_primeP_crossover(int64 B, long processor, l
  * This involves calculating L_p, the length of the interval for CD method, and estimating the number of divisors
  * of (P-1)(P+D) for the D-Delta method. 
 */
-vector<pair<int64, bigint>> SmallP_Carmichael::preproduct_crossover(int64* P, long P_len, int64* Pminus, long Pminus_len, int64 L){
+vector<pair<int64, bigint>> SmallP_Carmichael::preproduct_crossover(Preproduct& P){
   vector<pair<int64, bigint>> output;
   int64 p;     // stores a temp prime
   long e;      // stores a temp exponent
@@ -566,6 +620,7 @@ vector<pair<int64, bigint>> SmallP_Carmichael::preproduct_crossover(int64* P, lo
   // count the number of times we do C-D
   int64 count_CD = 0;
   bool DDelta = true;
+
 
   // Note: incomplete idea for only doing crossover in certain situation
   // if p (largest prime of P) satisfies P/p < 20, do D-Delta unconditionally, no crossover

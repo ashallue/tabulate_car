@@ -61,20 +61,28 @@ class SmallP_Carmichael{
     // This does only D-Delta method, which isn't as efficient as switching between D-Delta and C-D
     // Left here for timings and for historical interest.
     */
-    vector<pair<int64, bigint>> DDelta(Preproduct& P);
+    vector<pair<int64, bigint>> all_DDelta(Preproduct& P);
+
+    /* Testing has shown that dynamically choosing between C-D and D-Delta methods is better than always 
+     * picking one or the other.  This function takes a Preproduct and a D and performs D-Delta
+     */  
+    vector<pair<int64, bigint>> DDelta(Preproduct& P, bigint D);
+
+    /* Given a Preproduct and a D value, compute all Carmichael numbers.  This algorithm due to Pinch
+     */
+    vector<pair<int64, bigint>> CD(Preproduct& P, bigint D); 
 
   /* Once I have the loop over divisors of (P-1)(P+D)/Delta, I need to perform the following steps:
-    1) Compute C = (P^2 + Delta)/D, check that it is integral
+    1) Compute C = (P^2 + Delta)/D, check that it is integral (unless C != 0, meaning given as parameter)
     2) Check Pqr for Korselt criterion: L | Pqr - 1
     3) check q-1 and r-1 for small prime factors (compositeness check)
     4) Compute q = (P-1)(P+D)/Delta + 1, check primality
-    5) Compute r = (P-1)(P+C)/Delta + 1, check integrality, 
+    5) Compute r = (P-1)(P+C)/Delta + 1, check integrality and primality
   Note that I know q is integral, because Delta chosen as divisor of (P-1)(P+D).
-  Other input: unique primes dividing (P-1)(P+D)/2, which we use to do primality via q-1 factorization.
   primality of q, r is determined through gmp func: mpz_probab_prime_p, which does Baillie-PSW
   Returns a pair (q, r) if the completion works.  Returns (0, 0) if it doesn't
   */
-    pair<int64, bigint> completion_check(Preproduct& P, int64 Delta, int64 D);
+    pair<int64, bigint> completion_check(Preproduct& P, int64 Delta, int64 D, int64 C_param = 0);
    
   /* Construct Carmichaels for a range of pre-products P
  *   We use a factgen2 object, write to a file.  Only process admissable pre-products, divide up work among
@@ -84,13 +92,13 @@ class SmallP_Carmichael{
     void tabulate_car(long processor, long num_threads, string cars_file, string admissable_file);
 
     /* Construct Carmichaels for prime pre-products P.  Similar to tabulate_car
- *     Note this calls preproduct_construction, so no crossover at all, only D-Delta
+ *     Note this only does D-Delta.  Thus bad for production; only use for timing comparisons with Pinch
  * */
-    void tabulate_car_primeP(int64 B, long processor, long num_threads, string cars_file);
+    void tabulate_car_primeP(long processor, long num_threads, string cars_file);
 
     /* version that calls the crossover version. 
  */
-    void tabulate_car_primeP_crossover(int64 B, long processor, long num_threads, string cars_file);
+    void tabulate_car_primeP_crossover(long processor, long num_threads, string cars_file);
 
 
   /* Another version, but this one has the D crossover strategy
@@ -98,7 +106,7 @@ class SmallP_Carmichael{
    * This involves calculating L_p, the length of the interval for CD method, and estimating the number of divisors
    * of (P-1)(P+D) for the D-Delta method. 
   */
-    vector<pair<int64, bigint>> preproduct_crossover(int64* P, long P_len, int64* Pminus, long Pminus_len, int64 L);
+    vector<pair<int64, bigint>> preproduct_crossover(Preproduct& P);
 
     /* prints out admissable pre-products in a given range */
     //void find_admissable(int64 low, int64 high);

@@ -177,3 +177,9 @@ long Preproduct::q_factorization(int64 q, int64* PplusD, long PplusD_len, int64*
   //return new length of the array
   return q_primes_len;
 }
+
+// return the largest prime dividing the preproduct.  Recall they are stored in increasing order.
+int64 Preproduct::largest_prime(){
+  // the last and largest prime is at position Pprimes_len - 1
+  return Pprimes[ Pprimes_len - 1 ];
+}
