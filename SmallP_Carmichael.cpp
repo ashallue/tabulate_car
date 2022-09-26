@@ -391,7 +391,7 @@ void SmallP_Carmichael::tabulate_car(long processor, long num_threads, string ca
         // if the largest prime dividing pre-product is large enough, do cross-over
         // otherwise just do D-Delta method.  For now, we use 20 as a magical value
         if( P / P_ob.largest_prime() < 20){
-          qrs = preproduct_crossover(P_factors, P_factors_len, Pminus_factors, Pminus_factors_len, LCM);
+          qrs = preproduct_crossover(P_ob);
         }else{
           qrs = all_DDelta(P_ob);
         }
@@ -528,7 +528,7 @@ void SmallP_Carmichael::tabulate_car_primeP_crossover(long processor, long num_t
         F.next();
       }else{
         // construct preproduct object
-        P_ob = Preproduct(P_factors, P_factors_len, Pminus_factors, Pminus_factors_len);
+        P_ob = Preproduct(P, P_factors, P_factors_len, Pminus_factors, Pminus_factors_len);
 
         // construct carmichaels with that particular preproduct.
         qrs.clear();
@@ -558,22 +558,8 @@ void SmallP_Carmichael::tabulate_car_primeP_crossover(long processor, long num_t
 */
 vector<pair<int64, bigint>> SmallP_Carmichael::preproduct_crossover(Preproduct& P){
   vector<pair<int64, bigint>> output;
-  int64 p;     // stores a temp prime
-  long e;      // stores a temp exponent
-  int64 Delta_bound;  // stores upper bound on Delta to ensure it isn't too big
-
-  // variables for primality testing, using gmp function so need to convert to mpz_t
-  mpz_t q_big;
-  mpz_t r_big;
-  mpz_init(q_big);  mpz_init(r_big);
-  
-  // Generate P as a single integer
-  int64 P_product = 1;
-  for(long i = 0; i < P_len; ++i){
-    P_product = P_product * P[i];
-  }
-  int64 q_temp;  // will store (P-1)(P+D)/2
-  int64 div = 1;     // will store divisors of (P-1)(P+D)/2
+  int64* PplusD;
+  long PplusD_len;
 
   /*
   // testing 
@@ -585,42 +571,22 @@ vector<pair<int64, bigint>> SmallP_Carmichael::preproduct_crossover(Preproduct& 
   cout << "\n";
   */
 
-  // variables to help store and compute factorization of (P-1)(P+D)/2
-  int64* PplusD;     // unique prime dividing P+D
-  long PplusD_len;   // number of such primes
-  int64* q_primes;   // unique primes dividing q_temp = (P-1)(P+D)/2
-  long q_primes_len; // number of such primes
-  long* q_exps;      // exponents of primes dividing q_temp
-  pair<int64*, long> merge_output;
-
   // For the dynamic version we need L_p, defined by 
   // P^2 + L_p = P^2 (p_{d-2} + 3)/(p_{d-2} + 1), where p_{d-2} is largest prime in P
   // So L_p = P^2 ( (p_{d-2} + 3)/(p_{d-2} + 1) - 1)
-  int64 largest_p = P[P_len - 1];
-  double term = (double) (largest_p + 3) / (largest_p + 1);
-  int64 L_p = floor(P_product * P_product * ( term  - 1) ); 
-
-  // constants needed for CD method
-  bigint C_lower;
-  bigint C_upper;
-  int64 largestp = P[ P_len - 1 ];
-  int64 q;
-  bigint r;
-  int64 Delta;
-  // boolean values for whether q, r are integral, prime
-  bool q_integral, r_integral;
-  bool q_prime, r_prime;
-  // reduced values for Korselt
-  bigint modL, modqminus, modrminus;
+  double term = (double) (P.largest_prime() + 3) / (P.largest_prime() + 1);
+  int64 L_p = floor(P.Prod * P.Prod * ( term  - 1) ); 
 
   // We need a Factgen object for factorizations of P+D
   // Initialize to match D in [2 .. P-1]
-  FD.init(P_product + 2, 2 * P_product);
+  FD.init(P.Prod + 2, 2 * P.Prod);
 
   // count the number of times we do C-D
   int64 count_CD = 0;
-  bool DDelta = true;
+  bool do_DDelta_method = true;
 
+  // calling either CD or DDelta method will create Carmichael completions
+  vector<pair<int64, bigint>> qrs;
 
   // Note: incomplete idea for only doing crossover in certain situation
   // if p (largest prime of P) satisfies P/p < 20, do D-Delta unconditionally, no crossover
@@ -629,23 +595,23 @@ vector<pair<int64, bigint>> SmallP_Carmichael::preproduct_crossover(Preproduct& 
 
   // Basic loop structure: for all D in [2..(P-1)], for all divisors
   // of the expression (P-1)(P+D)/2, do stuff.
-  for(int64 D = 2; D < P_product; ++D){
+  for(int64 D = 2; D < P.Prod; ++D){
     // Start with code to decide whether to do D-Delta or C-D method
     // if count_CD > 20, do C-D.  20 chosen without investigation.
     if(count_CD > 20){
-      DDelta = false;
+      do_DDelta_method = false;
     }else{
       // if we are in the DDelta method, then turn the FD incremental sieve
-      if(DDelta){
+      if(do_DDelta_method){
         FD.next();
         // then FD.prev corresponds to P+D
         PplusD = FD.prev;
         PplusD_len = FD.prevlen;
       }
       // in the dynamic case, switch if L_P / D is less than the count of divisors
-      // We will approximate the count of divisors
-      if( L_p / D < pow(2, PplusD_len + Pminus_len) ){
-        DDelta = false;
+      // Divisor count stored in Preproduct class as Tau
+      if( L_p / D < P.Tau){
+        do_DDelta_method = false;
       }
       
     } // end deciding which method
@@ -653,149 +619,25 @@ vector<pair<int64, bigint>> SmallP_Carmichael::preproduct_crossover(Preproduct& 
     //cout << "D = " << D << " value of DDelta is " << DDelta << "\n";
 
     // if D is small, do the D-Delta method
-    if(DDelta){
+    if(do_DDelta_method){
+      qrs = DDelta(P, D);
 
-      // We set up an odometer, which requires primes and powers
-      q_temp = (P_product - 1) * (P_product + D) / 2;
-
-      // merge PplusD and Pminus to get prime factors of q_temp
-      q_primes = new int64[PplusD_len + Pminus_len];
-      q_primes_len = merge_array(Pminus, Pminus_len, PplusD, PplusD_len, q_primes);   
- 
-      q_exps = new long[q_primes_len];
-
-      // loop over prime divisors of (P-1)(P+D) / 2, compute exponent  
-      for(long i = 0; i < q_primes_len; ++i){
-        p = q_primes[i];
-        e = 0;
-        while(q_temp % p == 0){
-          e++;
-          q_temp = q_temp / p;
-        }
-        q_exps[i] = e;
-      }
-
-      // Set up odometer to run through divisors of (P-1)(P+D)/2
-      Odometer q_od = Odometer(q_primes, q_exps, q_primes_len);
-      div = q_od.get_div();
-
-      // Run the code for divisor Delta = 1
-      // apply completion check subroutine to see if this divisor Delta creates Carmichael
-      pair<int64, bigint> qr = completion_check(P_product, div, D, L, q_primes, q_primes_len);
-      //cout << "qr: " << qr.first << " " << qr.second << endl;
-      if(qr.first != 0 && qr.second != 0){
-        //cout << "Carmichael found in divs " << qr.first << " " << qr.second << "\n";
-        output.push_back(qr);
-      }
-      // now go to next divisor
-      q_od.next_div();
-      div = q_od.get_div();
-    
-      // Throw out the divisor if it is too big.  It needs to be small enough so q is bigger than p_{d-2}.
-      // The appropriate bound is Delta < (P-1)(P+D)/(p_{d-2}-1)
-      // So we add 1 to the quotient, since integer division rounds down.
-      Delta_bound = (P_product - 1) * (P_product + D);
-      Delta_bound = Delta_bound / (P[P_len-1] - 1);
-    
-      // continue looking at divisors until it is back to 1
-      while(div != 1){
-
-        //cout << "div = " << div << "\n";
-
-        if(div < Delta_bound){
-
-          // apply completion check subroutine to see if this divisor Delta creates Carmichael
-          pair<int64, bigint> qr = completion_check(P_product, div, D, L, q_primes, q_primes_len);
-          //cout << "qr: " << qr.first << " " << qr.second << endl;
-          if(qr.first != 0 && qr.second != 0){
-            //cout << "Carmichael found in divs " << qr.first << " " << qr.second << "\n";
-            output.push_back(qr);
-          }
-        } // end if div < Delta_bound
-      
-        // next iteration
-        q_od.next_div();
-        div = q_od.get_div();
-      } //end while div != 1
-
-      // free memory for q_primes and q_exps before next cycle
-      delete[] q_primes;
-      delete[] q_exps;
     } // end if D small
     else{
 
-      // Otherwise D is large, do CD method
-      C_lower = 1 + (P_product * P_product) / D;
-      C_upper = (P_product * P_product * (largestp + 3)) / (D * (largestp + 1));
-
-      // turn counter
+      // turn counter and perform CD method
       count_CD++;
+      qrs = CD(P, D);
 
-      // loop over C
-      for(int64 C = C_lower; C <= C_upper; ++C){
-       // compute Delta, along with numerators of q, r
-       Delta = C * D - P_product * P_product;
-       q = (P_product - 1) * (P_product + D);
-       r = (P_product - 1) * (P_product + C);
+    } // end if D large i.e. end of else
 
-       // Delta bound to ensure q > p_{d-2}
-       int64 Delta_bound = (P_product - 1) * (P_product + D);
-       Delta_bound = Delta_bound / (largestp - 1);
-
-       // test q, r for integrality
-       q_integral = q % Delta == 0;
-       r_integral = r % Delta == 0;
-
-       // only do further work if both are integral, Delta small enough
-       if(q_integral && r_integral && Delta < Delta_bound){
-         q = 1 + q / Delta;
-         r = 1 + r / Delta;
-
-         //cout << "before mpz stuff\n";
-
-         // now primality testing; mpz_probab_prime_p does trial-division, then Baillie-PSW
-         // primality testing on q, r.  Will use a gmp func, so requires conversion to mpz
-         // q can be converted directly.  r is possibly 128 bits, we need to use Dual_rep
-         mpz_set_si(q_big, q);
-         Dual_rep d;
-         d.double_word = r;
-
-         // set the high bits, multiply by 2**64, then add over low bits
-         mpz_set_si(r_big, d.two_words[1]);
-         mpz_mul_2exp(r_big, r_big, 64);
-         mpz_add_ui(r_big, r_big, d.two_words[0]);
-
-         // Note output is 0 if composite, 1 if prob prime, 2 if provably prime
-         q_prime = mpz_probab_prime_p(q_big, 0);
-         r_prime = mpz_probab_prime_p(r_big, 0);
-
-         //cout << "after mpz stuff\n";
-
-         // check korselt if both are prime
-         if(q_prime > 0 && r_prime > 0){
-           modL = ( (q % L) * (r % L) % L) * (P_product % L) % L;
-           modqminus = (r % (q-1)) * (P_product % (q-1)) % (q-1);
-           modrminus = (q * P_product) % (r-1);
-
-           // if all three are 1, add (q, r) to output pairs
-           if(modL == 1 && modqminus == 1 && modrminus == 1){
-             pair<int64, bigint> qr_found;
-             qr_found.first = q;
-             qr_found.second = r;
-             output.push_back(qr_found);
-           }
-         } // end if korselt
-
-       } // end if
-
-      } // end for C      
-
-    } // end if D large
+    // either way, merge pairs found into output
+    // note I'm using [] to save time, cuts out bounds checks
+    for(long i = 0; i < qrs.size(); ++i){
+      output.push_back(qrs[i]);
+    }
 
   } // end for D
  
-  // clear mpz
-  mpz_clear(q_big);  mpz_clear(r_big); 
-
   return output;
 } 
