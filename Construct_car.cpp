@@ -675,7 +675,7 @@ vector<pair<int64, bigint>> Construct_car::preproduct_crossover(int64* P, long P
       pair<int64, bigint> qr = completion_check(P_product, div, D, L, q_primes, q_primes_len);
       //cout << "qr: " << qr.first << " " << qr.second << endl;
       if(qr.first != 0 && qr.second != 0){
-        //cout << "Carmichael found in divs " << qr.first << " " << qr.second << "\n";
+        cout << "Carmichael found with DDelta method  D = " << D << ": " << qr.first << " " << qr.second << "\n";
         output.push_back(qr);
       }
       // now go to next divisor
@@ -774,6 +774,10 @@ vector<pair<int64, bigint>> Construct_car::preproduct_crossover(int64* P, long P
              qr_found.first = q;
              qr_found.second = r;
              output.push_back(qr_found);
+
+             //testing
+             cout << "Carmichael found with CD method, D = " << D << ": " << q << " " << r << "\n";
+
            }
          } // end if korselt
 

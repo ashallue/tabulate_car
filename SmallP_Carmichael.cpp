@@ -124,7 +124,7 @@ vector<pair<int64, bigint>> SmallP_Carmichael::all_DDelta(Preproduct& P){
       output.push_back(D_cars.at(i));
     }
    
-    if(D_cars.size() > 0) cout << "Cars found when calling DDelta method on D = " << D << "\n";
+    //if(D_cars.size() > 0) cout << "Cars found when calling DDelta method on D = " << D << "\n";
 
   } // end for D
   
@@ -141,7 +141,7 @@ vector<pair<int64, bigint>> SmallP_Carmichael::all_CD(Preproduct& P){
     D_cars = CD(P, D);
 
     // testing
-    if(D_cars.size() > 0) cout << "Cars found when calling CD method on D = " << D << "\n";
+    //if(D_cars.size() > 0) cout << "Cars found when calling CD method on D = " << D << "\n";
 
     for(long i = 0; i < D_cars.size(); ++i){
       output.push_back(D_cars.at(i));
@@ -198,7 +198,7 @@ vector<pair<int64, bigint>> SmallP_Carmichael::DDelta(Preproduct& P, bigint D){
     // continue looking at divisors until it is back to 1
     while(div != 1){
 
-      //cout << "div = " << div << "\n";
+      if(D == 574) cout << "inside DDelta, div = " << div << " and Delta_bound = " << Delta_bound << "\n";
 
       if(div < Delta_bound){
 
@@ -206,7 +206,7 @@ vector<pair<int64, bigint>> SmallP_Carmichael::DDelta(Preproduct& P, bigint D){
         pair<int64, bigint> qr = completion_check(P, div, D);
         //cout << "qr: " << qr.first << " " << qr.second << endl;
         if(qr.first != 0 && qr.second != 0){
-          //cout << "Carmichael found in divs " << qr.first << " " << qr.second << "\n";
+          if(D == 574) cout << "Carmichael found in divs " << qr.first << " " << qr.second << "\n";
           output.push_back(qr);
         }
       } // end if div < Delta_bound
@@ -231,7 +231,7 @@ vector<pair<int64, bigint>> SmallP_Carmichael::CD(Preproduct& P, bigint D){
   bigint C_lower = 1 + (P.Prod * P.Prod) / D;
   bigint C_upper = (P.Prod * P.Prod * (P.largest_prime() + 3)) / (D * (P.largest_prime() + 1));
 
-  if(D == 18) cout << "(P, D) = " << P.Prod << ", " << D << ": Bounds in CD method are " << C_lower << " and " << C_upper << "\n";
+  //if(D == 18) cout << "(P, D) = " << P.Prod << ", " << D << ": Bounds in CD method are " << C_lower << " and " << C_upper << "\n";
 
   // Delta bound to ensure q > p_{d-2}
   int64 Delta;
@@ -249,9 +249,6 @@ vector<pair<int64, bigint>> SmallP_Carmichael::CD(Preproduct& P, bigint D){
 
     // check integrality of q
     q_integral = q_D % Delta == 0;
-
-    //testing
-    if(D == 18 && C == 234743890) cout << "Delta = " << Delta << " and q_integral = " << q_integral << "\n";
 
     if(q_integral && Delta < Delta_bound){
       pair<int64, bigint> qr = completion_check(P, Delta, D, C);
@@ -309,8 +306,6 @@ pair<int64, bigint> SmallP_Carmichael::completion_check(Preproduct& P, int64 Del
     q = q_D / Delta + 1;
   }
 
-  if(D == 18) cout << "inside completion_check, q = " << q << "\n";
-
   // compute r, check it is integral.  Recall r = (P-1)(P+C)/Delta + 1
   bigint r_quo, r_rem; 
   r = (P.Prod - 1) * (P.Prod + C);          // note r initialized by constructor
@@ -320,13 +315,17 @@ pair<int64, bigint> SmallP_Carmichael::completion_check(Preproduct& P, int64 Del
   if(r_rem != 0) return output;
   r = r_quo + 1;
 
+  if(D == 574) cout << "past q,r calculation.  q = " << q << " ,r = " << r << ", L = " << P.L << "\n";
+
   // check that Pqr satisfies Korselt criterion, i.e. Pqr = 1 mod lcm(L, q-1, r-1)
   // first compute product modulo L.  We work with reduced quantities since L is smaller than q, r
   bigint modL = ( (q % P.L) * (r % P.L) % P.L ) * (P.Prod % P.L) % P.L;
   bigint modqminus = (r % (q-1)) * (P.Prod % (q-1)) % (q-1);
   bigint modrminus = (q * P.Prod) % (r-1);
   if(modL != 1 || modqminus != 1 || modrminus != 1) return output;
-  
+ 
+  if(D == 574) cout << "past Korselt\n";
+ 
   // primality testing on q, r.  Will use a gmp func, so requires conversion to mpz
   //mpz_t q_big;
   //mpz_t r_big;
@@ -419,7 +418,7 @@ void SmallP_Carmichael::tabulate_car(long processor, long num_threads, string ca
     }else{
 
       // if admissable, construct Carmichaels
-      if(P_ob.L != 0){
+      if(P_ob.admissable){
      
         // Construct all Carmichael numbers with pre-product P
         qrs.clear();
@@ -655,7 +654,8 @@ vector<pair<int64, bigint>> SmallP_Carmichael::preproduct_crossover(Preproduct& 
     if(do_DDelta_method){
       qrs = DDelta(P, D);
 
-      if(qrs.size() > 0) cout << "DDelta method for D = " << D << " found Carmichaels\n";
+      // testing
+      //if(qrs.size() > 0) cout << "DDelta method for D = " << D << " found Carmichaels\n";
 
     } // end if D small
     else{
@@ -664,7 +664,8 @@ vector<pair<int64, bigint>> SmallP_Carmichael::preproduct_crossover(Preproduct& 
       count_CD++;
       qrs = CD(P, D);
 
-      if(qrs.size() > 0) cout << "CD method for D = " << D << " found Carmichaels\n";
+      //testing
+      //if(qrs.size() > 0) cout << "CD method for D = " << D << " found Carmichaels\n";
 
     } // end if D large i.e. end of else
 

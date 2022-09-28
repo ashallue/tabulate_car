@@ -40,7 +40,7 @@ Preproduct::Preproduct(int64 Pval, int64* Pfac, long Pfac_len, int64* PMfac, lon
     prime = Pprimes[i];
 
     // in computing LCM, we can muliply by p-1 and divide by the gcd
-    g = gcd(prime, L);
+    g = gcd(prime - 1, L);
     L = L * (prime - 1) / g;
   }
   for(long i = 0; i < Pminus_len; ++i){
