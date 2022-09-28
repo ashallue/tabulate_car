@@ -198,7 +198,8 @@ vector<pair<int64, bigint>> SmallP_Carmichael::DDelta(Preproduct& P, bigint D){
     // continue looking at divisors until it is back to 1
     while(div != 1){
 
-      if(D == 574) cout << "inside DDelta, div = " << div << " and Delta_bound = " << Delta_bound << "\n";
+      //testing
+      //if(D == 574) cout << "inside DDelta, div = " << div << " and Delta_bound = " << Delta_bound << "\n";
 
       if(div < Delta_bound){
 
@@ -206,7 +207,6 @@ vector<pair<int64, bigint>> SmallP_Carmichael::DDelta(Preproduct& P, bigint D){
         pair<int64, bigint> qr = completion_check(P, div, D);
         //cout << "qr: " << qr.first << " " << qr.second << endl;
         if(qr.first != 0 && qr.second != 0){
-          if(D == 574) cout << "Carmichael found in divs " << qr.first << " " << qr.second << "\n";
           output.push_back(qr);
         }
       } // end if div < Delta_bound
@@ -278,6 +278,10 @@ pair<int64, bigint> SmallP_Carmichael::completion_check(Preproduct& P, int64 Del
   pair<int64, bigint> output;
   output.first = 0;   output.second = 0;
 
+  // look up at store the preproduct value and the LCM from the Preproduct object
+  int64 P_val = P.Prod;
+  int64 LCM   = P.L;
+
   int64 C;
   if(C_param == 0){
 
@@ -285,7 +289,7 @@ pair<int64, bigint> SmallP_Carmichael::completion_check(Preproduct& P, int64 Del
     int64 intermediate;
 
     // compute quotient and rem at the same time, compiler should only use 1 instruction
-    intermediate = P.Prod * P.Prod + Delta;
+    intermediate = P_val * P_val + Delta;
     C = intermediate / D;
     bigint inter_rem = intermediate % D;
 
@@ -308,23 +312,19 @@ pair<int64, bigint> SmallP_Carmichael::completion_check(Preproduct& P, int64 Del
 
   // compute r, check it is integral.  Recall r = (P-1)(P+C)/Delta + 1
   bigint r_quo, r_rem; 
-  r = (P.Prod - 1) * (P.Prod + C);          // note r initialized by constructor
+  r = (P_val - 1) * (P_val + C);          // note r initialized by constructor
   r_quo = r / Delta;
   r_rem = r % Delta;
 
   if(r_rem != 0) return output;
   r = r_quo + 1;
 
-  if(D == 574) cout << "past q,r calculation.  q = " << q << " ,r = " << r << ", L = " << P.L << "\n";
-
   // check that Pqr satisfies Korselt criterion, i.e. Pqr = 1 mod lcm(L, q-1, r-1)
   // first compute product modulo L.  We work with reduced quantities since L is smaller than q, r
-  bigint modL = ( (q % P.L) * (r % P.L) % P.L ) * (P.Prod % P.L) % P.L;
-  bigint modqminus = (r % (q-1)) * (P.Prod % (q-1)) % (q-1);
-  bigint modrminus = (q * P.Prod) % (r-1);
+  bigint modL = ( (q % LCM) * (r % LCM) % LCM ) * (P_val % LCM) % LCM;
+  bigint modqminus = (r % (q-1)) * (P_val % (q-1)) % (q-1);
+  bigint modrminus = (q * P_val) % (r-1);
   if(modL != 1 || modqminus != 1 || modrminus != 1) return output;
- 
-  if(D == 574) cout << "past Korselt\n";
  
   // primality testing on q, r.  Will use a gmp func, so requires conversion to mpz
   //mpz_t q_big;
