@@ -42,6 +42,9 @@ class SmallP_Carmichael{
     int64 q;  bigint r;
     mpz_t q_mpz;  mpz_t r_mpz;
 
+    // variable that stores (P - 1) * (P + D) / 2.  Used to test integrality of q for a given Delta
+    int64 q_D;
+
   public:
     // default sets B to 2^(16)
     SmallP_Carmichael();
@@ -62,6 +65,9 @@ class SmallP_Carmichael{
     // Left here for timings and for historical interest.
     */
     vector<pair<int64, bigint>> all_DDelta(Preproduct& P);
+
+    // Similar to above, apply CD method for all D.  Don't use this for production code.
+    vector<pair<int64, bigint>> all_CD(Preproduct& P);
 
     /* Testing has shown that dynamically choosing between C-D and D-Delta methods is better than always 
      * picking one or the other.  This function takes a Preproduct and a D and performs D-Delta

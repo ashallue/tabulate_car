@@ -35,7 +35,7 @@ SmallP_Carmichael::SmallP_Carmichael(){
   FD = Factgen();
 
   // set q, r to 0.  initialize the mpz variables
-  q = 0;  r = 0;
+  q = 0;  r = 0;  q_D = 0;
   mpz_init(q_mpz);   mpz_init(r_mpz);
 }
 
@@ -48,7 +48,7 @@ SmallP_Carmichael::SmallP_Carmichael(int64 B_val){
   F.init(2, B);
   FD = Factgen();
 
-  q = 0;  r = 0;
+  q = 0;  r = 0;  q_D = 0;
   mpz_init(q_mpz);  mpz_init(r_mpz);
 }
 
@@ -66,6 +66,7 @@ SmallP_Carmichael::SmallP_Carmichael(const SmallP_Carmichael& other){
   B = other.B;
   q = other.q;
   r = other.r;
+  q_D = other.q_D;
 
   //now itialize the mpz variables and copy them over
   mpz_init(q_mpz);  mpz_init(r_mpz);
@@ -81,6 +82,7 @@ SmallP_Carmichael SmallP_Carmichael::operator=(const SmallP_Carmichael& other){
   result_ob.B = other.B;
   result_ob.q = other.q;
   result_ob.r = other.r;
+  result_ob.q_D = other.q_D;
 
   // initialize and set mpz variables
   mpz_init(result_ob.q_mpz);   mpz_init(result_ob.r_mpz);
@@ -121,9 +123,30 @@ vector<pair<int64, bigint>> SmallP_Carmichael::all_DDelta(Preproduct& P){
     for(long i = 0; i < D_cars.size(); ++i){
       output.push_back(D_cars.at(i));
     }
+   
+    if(D_cars.size() > 0) cout << "Cars found when calling DDelta method on D = " << D << "\n";
 
   } // end for D
   
+  return output;
+}
+
+// same as above.  Don't use this for production
+vector<pair<int64, bigint>> SmallP_Carmichael::all_CD(Preproduct& P){
+  vector<pair<int64, bigint>> output;
+  vector<pair<int64, bigint>> D_cars;
+
+  // loop over D, call CD method.  For this function I shouldn't have to update FD object.
+  for(int64 D = 2; D < P.Prod; ++D){
+    D_cars = CD(P, D);
+
+    // testing
+    if(D_cars.size() > 0) cout << "Cars found when calling CD method on D = " << D << "\n";
+
+    for(long i = 0; i < D_cars.size(); ++i){
+      output.push_back(D_cars.at(i));
+    }
+  }
   return output;
 }
 
@@ -136,17 +159,17 @@ vector<pair<int64, bigint>> SmallP_Carmichael::DDelta(Preproduct& P, bigint D){
 
     // We set up an odometer, which requires primes and powers
     // Note this is not the final value of q, just the one needed to compute divisors.
-    q = (P.Prod - 1) * (P.Prod + D) / 2;
+    q_D = (P.Prod - 1) * (P.Prod + D) / 2;
 
     // P_minus has the unique prime factors dividing P-1.
     // copy over prev into PplusD
     int64* PplusD = FD.prev;
     long PplusD_len = FD.prevlen;   
  
-    // from PplusD and Pminus, compute full factorization of q (see Preproduct class) 
+    // from PplusD and Pminus, compute full factorization of q_D (see Preproduct class) 
     int64* q_primes = new int64[PplusD_len + P.Pminus_len];
     long* q_exps   = new long[PplusD_len + P.Pminus_len];
-    long q_primes_len = P.q_factorization(q, PplusD, PplusD_len, q_primes, q_exps);  
+    long q_primes_len = P.q_factorization(q_D, PplusD, PplusD_len, q_primes, q_exps);  
  
     // Set up odometer to run through divisors of (P-1)(P+D)/2
     Odometer q_od = Odometer(q_primes, q_exps, q_primes_len);
@@ -208,22 +231,28 @@ vector<pair<int64, bigint>> SmallP_Carmichael::CD(Preproduct& P, bigint D){
   bigint C_lower = 1 + (P.Prod * P.Prod) / D;
   bigint C_upper = (P.Prod * P.Prod * (P.largest_prime() + 3)) / (D * (P.largest_prime() + 1));
 
+  if(D == 18) cout << "(P, D) = " << P.Prod << ", " << D << ": Bounds in CD method are " << C_lower << " and " << C_upper << "\n";
+
   // Delta bound to ensure q > p_{d-2}
   int64 Delta;
   int64 Delta_bound = (P.Prod - 1) * (P.Prod + D);
   Delta_bound = Delta_bound / (P.largest_prime() - 1);
   
   // helper variables
-  bool q_integral, r_integral;
-  bool q_prime, r_prime;
+  bool q_integral;
 
   // loop over C
   for(int64 C = C_lower; C <= C_upper; ++C){
-    // compute Delta
+    // compute Delta and q_D
     Delta = C * D - P.Prod * P.Prod;
-  
+    q_D = (P.Prod - 1) * (P.Prod + D);  
+
     // check integrality of q
-    q_integral = q % Delta == 0;
+    q_integral = q_D % Delta == 0;
+
+    //testing
+    if(D == 18 && C == 234743890) cout << "Delta = " << Delta << " and q_integral = " << q_integral << "\n";
+
     if(q_integral && Delta < Delta_bound){
       pair<int64, bigint> qr = completion_check(P, Delta, D, C);
 
@@ -271,10 +300,16 @@ pair<int64, bigint> SmallP_Carmichael::completion_check(Preproduct& P, int64 Del
     C = C_param;
   }
 
-  // compute q and check primality
-  // Final value of q is (P-1)(P+D) / Delta
-  q = (P.Prod - 1) * (P.Prod + D);          // note q initialized by constructor
-  q = (q / Delta) + 1;
+  // compute q.  Recall q_D already defined.
+  // If DDelta method, it is (P-1)(P+D)/2.  If CD method, it is (P-1)(P+D)
+  // We can tell which to use depending on whether C_param is non zero or not
+  if(C_param == 0){
+    q = q_D * 2 / Delta + 1;
+  }else{
+    q = q_D / Delta + 1;
+  }
+
+  if(D == 18) cout << "inside completion_check, q = " << q << "\n";
 
   // compute r, check it is integral.  Recall r = (P-1)(P+C)/Delta + 1
   bigint r_quo, r_rem; 
@@ -616,11 +651,11 @@ vector<pair<int64, bigint>> SmallP_Carmichael::preproduct_crossover(Preproduct& 
       
     } // end deciding which method
 
-    //cout << "D = " << D << " value of DDelta is " << DDelta << "\n";
-
     // if D is small, do the D-Delta method
     if(do_DDelta_method){
       qrs = DDelta(P, D);
+
+      if(qrs.size() > 0) cout << "DDelta method for D = " << D << " found Carmichaels\n";
 
     } // end if D small
     else{
@@ -628,6 +663,8 @@ vector<pair<int64, bigint>> SmallP_Carmichael::preproduct_crossover(Preproduct& 
       // turn counter and perform CD method
       count_CD++;
       qrs = CD(P, D);
+
+      if(qrs.size() > 0) cout << "CD method for D = " << D << " found Carmichaels\n";
 
     } // end if D large i.e. end of else
 

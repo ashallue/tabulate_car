@@ -7,6 +7,7 @@
 #include "Factgen.h"
 #include "LargeP_Carmichael.h"
 #include "SmallP_Carmichael.h"
+#include "Construct_car.h"
 #include "Odometer.h"
 #include "bigint.h"
 #include "Pinch.h"
@@ -94,58 +95,7 @@ int main(int argc, char* argv[]) {
 
   mpz_clear(num_big);
 
-  // testing post-processing routines
-  cout << "\nTesting product_and_sort\n";
-  string f1 = "/home/ashallue/tabulate_car/million_preproducts_again/cars1.txt";
-  string f2 = "/home/ashallue/tabulate_car/million_preproducts_again/cars2.txt"; 
-  string f3 = "/home/ashallue/tabulate_car/million_preproducts_again/cars3.txt";
-  string f4 = "/home/ashallue/tabulate_car/million_preproducts_again/cars4.txt";
-  string f5 = "/home/ashallue/tabulate_car/million_preproducts_again/cars5.txt";
 
-  vector<string> fs;
-  fs.push_back(f1);  fs.push_back(f2); fs.push_back(f3);
-  //fs.push_back(f4);  fs.push_back(f5);
-
-  vector<bigint> cars = product_and_merge(fs);
-  cout << "Total number of cars: " << cars.size() << "\n";
-
-
-  for(long i = 0; i < 5; i++){
-    cout << cars.at(i) << "\n";
-  }
-
-  // testing prime powering
-  cout << "\nTesting powering functions\n";
-
-  string ns1 = "295363487400900310880401";
-  string ns2 = "22539340290692258087863249";  // 7^(30)
-  string ns3 = "282475249";  // 7^(10)
-  bigint num1 = string_to_bigint(ns1);
-  bigint num2 = string_to_bigint(ns2);
-  bigint num3 = string_to_bigint(ns3);
-
-  mpz_t m1; mpz_t m2; mpz_t m3;
-  mpz_init(m1); mpz_init(m2); mpz_init(m3);
-  bigint_to_mpz(num1, m1);
-  bigint_to_mpz(num2, m2);
-  bigint_to_mpz(num3, m3);
-
-  cout << "Checking if conversions are working\n";
-  cout << ns1 << " vs " << num1 << " vs ";
-  mpz_out_str(nullptr, 10, m1);  cout << "\n";
-
-  cout << "Is " << num1 << " a power?  A: " << is_power(num1) << "\n";
-  cout << "Is " << num2 << " a power?  A: " << is_power(num2) << "\n";
-  cout << "Is " << num3 << " a power?  A: " << is_power(num3) << "\n";
-
-  cout << "comparing two versions of n1 ^ n2 mod n3\n";
-  cout << "Bigint version: " << pow_mod(num1, num3, num2) << "\n";
-  mpz_t result;  mpz_init(result);
-  mpz_powm(result, m1, m3, m2);
-  cout << "mpz version: ";
-  mpz_out_str(nullptr, 10, result);
-  cout << "\n";
- 
   /*
   cout << "\nTesting LargeP construction\n";
   LargeP_Odometer od3 = LargeP_Odometer();
@@ -166,11 +116,11 @@ int main(int argc, char* argv[]) {
   od5.large_products("odometer_output5.txt");
   */
 
-  LargeP_Carmichael lpconstruct = LargeP_Carmichael();
-  lpconstruct.tabulate_car(1, 1, "cars.txt");
+  //LargeP_Carmichael lpconstruct = LargeP_Carmichael();
+  //lpconstruct.tabulate_car(1, 1, "cars.txt");
 
   // Testing Factgen
-
+ /*
   cout << "\nTesting Factgen\n";
   Factgen2 F = Factgen2();
   F.init(2, 100);
@@ -183,12 +133,12 @@ int main(int argc, char* argv[]) {
 
     // create preproduct object
     Preproduct P = Preproduct(F.currentval, F.current, F.currentlen, F.prev, F.prevlen);
-    /*
+    
     for(long i = 0; i < P.Pprimes_len; ++i){
       cout << P.Pprimes[i] << " ";
     }
     cout << ", ";
-    */
+    
     cout << "Pminus = " << P.P - 1 << ", ";
     for(long i = 0; i < P.Pminus_len; ++i){
       cout << P.Pminus[i] << " ";
@@ -200,22 +150,49 @@ int main(int argc, char* argv[]) {
     // move sieve to next step
     F.next();
   } 
+  */
 
-
-  /*
+  
   cout << "\nTesting pre-product crossover for P = 65003 (prime)\n";
-  Construct_car c = Construct_car();
-  // need arrays for both P and P-1 = 65002 = 2 * 7 * 4643
+  SmallP_Carmichael c = SmallP_Carmichael();
+
+  // construct Preproduct, need arrays for both P and P-1 = 65002 = 2 * 7 * 4643
   long ps[] = {65003};
   long pms[] = {2, 7, 4643};
+  Preproduct P = Preproduct(65003, ps, 1, pms, 3);
+
   vector<pair<int64, bigint>> cars1;
-  cars1 = c.preproduct_crossover(ps, 1, pms, 3, 65002);
+  cars1 = c.preproduct_crossover(P);
   cout << "Carmichaels found: ";
   for(long i = 0; i < cars1.size(); i++){
     cout << "(" << cars1.at(i).first << ", " << cars1.at(i).second << ") ";
   }
   cout << "\n";
-  */
+ 
+  cout << "Construct car version:\n";
+  Construct_car other_c = Construct_car();
+  vector<pair<int64, bigint>> cars2 = other_c.preproduct_crossover(ps, 1, pms, 3, 65002);
+  for(long i = 0; i < cars2.size(); i++){
+    cout << "(" << cars2.at(i).first << ", " << cars2.at(i).second << ") ";
+  }
+  cout << "\n";
+
+  cout << "All DDelta version:\n";
+  cars1 = c.all_DDelta(P);
+   
+  cout << "Carmichaels found: ";
+  for(long i = 0; i < cars1.size(); i++){
+    cout << "(" << cars1.at(i).first << ", " << cars1.at(i).second << ") ";
+  }
+  cout << "\n";
+
+  cout << "All CD version:\n";
+  cars1 = c.all_CD(P); 
+  cout << "Carmichaels found: ";
+  for(long i = 0; i < cars1.size(); i++){
+    cout << "(" << cars1.at(i).first << ", " << cars1.at(i).second << ") ";
+  }
+  cout << "\n";
   //cout << "\nChecking file " << f1 << "\n";
   //car_smallp_file_check(f1, 1000000);
 
