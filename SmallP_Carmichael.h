@@ -44,6 +44,10 @@ class SmallP_Carmichael{
 
     // variable that stores (P - 1) * (P + D) / 2.  Used to test integrality of q for a given Delta
     int64 q_D;
+ 
+  public:
+    // stores pairs (q, r) that complete a Carmichael of the form Pqr
+    vector<pair<int64, bigint>> qrs;
 
   public:
     // default sets B to 2^(16)
@@ -59,24 +63,25 @@ class SmallP_Carmichael{
 
     /* Given an admissible pre-product P, return all Carmichael numbers 
     // up to X of the form Pqr where q and r are primes.
-    // Returns list of pairs (q,r) such that Pqr is Carmichael (except for primality test on r)
+    // Pairs (q,r) that complete the Carmichael are pushed onto vector qrs.
     // Inputs are factorizations of P and P-1.
     // This does only D-Delta method, which isn't as efficient as switching between D-Delta and C-D
     // Left here for timings and for historical interest.
     */
-    vector<pair<int64, bigint>> all_DDelta(Preproduct& P);
+    void all_DDelta(Preproduct& P);
 
     // Similar to above, apply CD method for all D.  Don't use this for production code.
-    vector<pair<int64, bigint>> all_CD(Preproduct& P);
+    void all_CD(Preproduct& P);
 
     /* Testing has shown that dynamically choosing between C-D and D-Delta methods is better than always 
-     * picking one or the other.  This function takes a Preproduct and a D and performs D-Delta
+     * picking one or the other.  This function takes a Preproduct and a D and performs D-Delta.
+     * Runs through all divisors of (P-1)(P+D)/2, writes pairs (q,r) that complete a Carmichael to vector qrs
      */  
-    vector<pair<int64, bigint>> DDelta(Preproduct& P, bigint D);
+    void DDelta(Preproduct& P, bigint D);
 
     /* Given a Preproduct and a D value, compute all Carmichael numbers.  This algorithm due to Pinch
      */
-    vector<pair<int64, bigint>> CD(Preproduct& P, bigint D); 
+    void CD(Preproduct& P, bigint D); 
 
   /* Once I have the loop over divisors of (P-1)(P+D)/Delta, I need to perform the following steps:
     1) Compute C = (P^2 + Delta)/D, check that it is integral (unless C != 0, meaning given as parameter)
@@ -86,9 +91,9 @@ class SmallP_Carmichael{
     5) Compute r = (P-1)(P+C)/Delta + 1, check integrality and primality
   Note that I know q is integral, because Delta chosen as divisor of (P-1)(P+D).
   primality of q, r is determined through gmp func: mpz_probab_prime_p, which does Baillie-PSW
-  Returns a pair (q, r) if the completion works.  Returns (0, 0) if it doesn't
+  If completion works, returns true and writes pair (q,r) to the qrs vector.  If it doesn't, returns false.
   */
-    pair<int64, bigint> completion_check(Preproduct& P, int64 Delta, int64 D, int64 C_param = 0);
+    bool completion_check(Preproduct& P, int64 Delta, int64 D, int64 C_param = 0);
    
   /* Construct Carmichaels for a range of pre-products P
  *   We use a factgen2 object, write to a file.  Only process admissable pre-products, divide up work among
@@ -112,7 +117,7 @@ class SmallP_Carmichael{
    * This involves calculating L_p, the length of the interval for CD method, and estimating the number of divisors
    * of (P-1)(P+D) for the D-Delta method. 
   */
-    vector<pair<int64, bigint>> preproduct_crossover(Preproduct& P);
+    void preproduct_crossover(Preproduct& P);
 
     /* prints out admissable pre-products in a given range */
     //void find_admissable(int64 low, int64 high);

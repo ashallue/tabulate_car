@@ -161,11 +161,10 @@ int main(int argc, char* argv[]) {
   long pms[] = {2, 5, 199};
   Preproduct P = Preproduct(1991, ps, 2, pms, 3);
 
-  vector<pair<int64, bigint>> cars1;
-  cars1 = c.preproduct_crossover(P);
+  c.preproduct_crossover(P);
   cout << "Carmichaels found: ";
-  for(long i = 0; i < cars1.size(); i++){
-    cout << "(" << cars1.at(i).first << ", " << cars1.at(i).second << ") ";
+  for(long i = 0; i < c.qrs.size(); i++){
+    cout << "(" << c.qrs.at(i).first << ", " << c.qrs.at(i).second << ") ";
   }
   cout << "\n";
  
@@ -176,7 +175,7 @@ int main(int argc, char* argv[]) {
     cout << "(" << cars2.at(i).first << ", " << cars2.at(i).second << ") ";
   }
   cout << "\n";
-
+  /*
   cout << "All DDelta version:\n";
   cars1 = c.all_DDelta(P);
    
@@ -193,6 +192,7 @@ int main(int argc, char* argv[]) {
     cout << "(" << cars1.at(i).first << ", " << cars1.at(i).second << ") ";
   }
   cout << "\n";
+  */
   //cout << "\nChecking file " << f1 << "\n";
   //car_smallp_file_check(f1, 1000000);
 
