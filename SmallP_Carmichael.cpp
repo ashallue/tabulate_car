@@ -403,17 +403,17 @@ void SmallP_Carmichael::tabulate_car(long processor, long num_threads, string ca
         // Construct all Carmichael numbers with pre-product P.  First clear the qrs member variable
         qrs.clear();
 
-        preproduct_crossover(P_ob);
-
         // if the largest prime dividing pre-product is large enough, do cross-over
-        // otherwise just do D-Delta method.  For now, we use 20 as a magical value
+        preproduct_crossover(P_ob);
         /*
-        if( P / P_ob.largest_prime() < 20){
+        // otherwise just do D-Delta method.  For now, we use 20 as a magical value 
+        if( P / P_ob.largest_prime() < 20 ){
           preproduct_crossover(P_ob);
         }else{
           all_DDelta(P_ob);
         }
         */
+        
         // testing
        // cout << "P = " << P << " generates " << qrs.size() << " many carmichaels\n";
 
@@ -604,6 +604,8 @@ void SmallP_Carmichael::preproduct_crossover(Preproduct& P){
   int64 count_CD = 0;
   bool do_DDelta_method = true;
 
+  int64 count_DDelta = 0;
+
   // calling either CD or DDelta method will create Carmichael completions
   vector<pair<int64, bigint>> qrs;
 
@@ -615,6 +617,7 @@ void SmallP_Carmichael::preproduct_crossover(Preproduct& P){
   // Basic loop structure: for all D in [2..(P-1)], for all divisors
   // of the expression (P-1)(P+D)/2, do stuff.
   for(int64 D = 2; D < P.Prod; ++D){
+
     // Start with code to decide whether to do D-Delta or C-D method
     // if count_CD > 20, do C-D.  20 chosen without investigation.
     if(count_CD > 20){
@@ -628,8 +631,8 @@ void SmallP_Carmichael::preproduct_crossover(Preproduct& P){
         PplusD_len = FD.prevlen;
       }
       // in the dynamic case, switch if L_P / D is less than the count of divisors
-      // Divisor count stored in Preproduct class as Tau
-      if( L_p / D < P.Tau){
+      // Divisor count of P-1 stored in Preproduct class as Tau, then include estimate for P+D divisor count
+      if( L_p / D < P.Tau * pow(2, PplusD_len)){
         do_DDelta_method = false;
       }
       
@@ -638,9 +641,10 @@ void SmallP_Carmichael::preproduct_crossover(Preproduct& P){
     // if D is small, do the D-Delta method
     if(do_DDelta_method){
       DDelta(P, D);
-
+      
       // testing
       //if(qrs.size() > 0) cout << "DDelta method for D = " << D << " found Carmichaels\n";
+      //count_DDelta++;
 
     } // end if D small
     else{
@@ -657,5 +661,6 @@ void SmallP_Carmichael::preproduct_crossover(Preproduct& P){
     // note the Carmichaels are written to vector qrs by completion_check, called by either DDelta or CD
 
   } // end for D
+  //cout << "Crossover with P = " << P.Prod << " did DDelta method " << count_DDelta << " times and the CD method " << count_CD << " many times\n";
  
 } 

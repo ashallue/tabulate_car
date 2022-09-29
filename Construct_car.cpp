@@ -613,6 +613,8 @@ vector<pair<int64, bigint>> Construct_car::preproduct_crossover(int64* P, long P
   int64 count_CD = 0;
   bool DDelta = true;
 
+  int64 count_DDelta = 0;
+
   // Note: incomplete idea for only doing crossover in certain situation
   // if p (largest prime of P) satisfies P/p < 20, do D-Delta unconditionally, no crossover
   // Note 20 is "magical", just supposed to represent "small"
@@ -645,6 +647,9 @@ vector<pair<int64, bigint>> Construct_car::preproduct_crossover(int64* P, long P
 
     // if D is small, do the D-Delta method
     if(DDelta){
+
+      //testing
+      //count_DDelta++;
 
       // We set up an odometer, which requires primes and powers
       q_temp = (P_product - 1) * (P_product + D) / 2;
@@ -787,7 +792,10 @@ vector<pair<int64, bigint>> Construct_car::preproduct_crossover(int64* P, long P
     } // end if D large
 
   } // end for D
- 
+  
+  // testing
+  //cout << "For P = " << P_product << "Construct_car did DDelta " << count_DDelta << " many times and CD " << count_CD << " many times\n";
+
   // clear mpz
   mpz_clear(q_big);  mpz_clear(r_big); 
 

@@ -153,13 +153,13 @@ int main(int argc, char* argv[]) {
   */
 
   
-  cout << "\nTesting pre-product crossover for P = 1991 = 11 * 181\n";
+  cout << "\nTesting pre-product crossover for P = 3809 = 13 * 293\n";
   SmallP_Carmichael c = SmallP_Carmichael();
 
-  // construct Preproduct, need arrays for both P and P-1 = 65002 = 2 * 7 * 4643
-  long ps[] = {11, 181};
-  long pms[] = {2, 5, 199};
-  Preproduct P = Preproduct(1991, ps, 2, pms, 3);
+  // construct Preproduct, need arrays for both P and P-1 = 2^5 * 7 * 17
+  long ps[] = {13, 293};
+  long pms[] = {2, 7, 17};
+  Preproduct P = Preproduct(3809, ps, 2, pms, 3);
 
   c.preproduct_crossover(P);
   cout << "Carmichaels found: ";
@@ -170,7 +170,7 @@ int main(int argc, char* argv[]) {
  
   cout << "Construct car version:\n";
   Construct_car other_c = Construct_car();
-  vector<pair<int64, bigint>> cars2 = other_c.preproduct_crossover(ps, 2, pms, 3, 180);
+  vector<pair<int64, bigint>> cars2 = other_c.preproduct_crossover(ps, 2, pms, 3, 876);
   for(long i = 0; i < cars2.size(); i++){
     cout << "(" << cars2.at(i).first << ", " << cars2.at(i).second << ") ";
   }
