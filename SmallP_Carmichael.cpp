@@ -24,11 +24,12 @@ using namespace std;
 // default sets X to 2^(16) = 65536.
 // Incremental sieve starts at 2
 SmallP_Carmichael::SmallP_Carmichael(){
-  B = 65536;
+  B_upper = 65536;
+  B_lower = 1;
 
   // create Factgen2 object and initialize
   F = Factgen2();
-  F.init(2, B);
+  F.init(2, B_upper);
 
   // create Factgen object for P+D
   // don't initialize now, need to do so later
@@ -43,12 +44,13 @@ SmallP_Carmichael::SmallP_Carmichael(){
 }
 
 // set preproduct bound B to given value.  Initialize F.  FD gets initialized in a separate function.
-SmallP_Carmichael::SmallP_Carmichael(int64 B_val){
+SmallP_Carmichael::SmallP_Carmichael(int64 B_up_val, int64 B_low_val){
   // same as default, except for the B input
-  B = B_val;
-  
+  B_upper = B_up_val;
+  B_lower = B_low_val;  
+
   F = Factgen2();
-  F.init(2, B);
+  F.init(B_lower, B_upper);
   FD = Factgen();
 
   q = 0;  r = 0;  q_D = 0;
@@ -70,7 +72,8 @@ SmallP_Carmichael::SmallP_Carmichael(const SmallP_Carmichael& other){
   // first copy over factgen objects and bounds
   F = other.F;
   FD = other.FD;
-  B = other.B;
+  B_upper = other.B_upper;
+  B_lower = other.B_lower;
   q = other.q;
   r = other.r;
   q_D = other.q_D;
@@ -87,7 +90,8 @@ SmallP_Carmichael SmallP_Carmichael::operator=(const SmallP_Carmichael& other){
   SmallP_Carmichael result_ob;
   result_ob.F = other.F;
   result_ob.FD = other.FD;
-  result_ob.B = other.B;
+  result_ob.B_upper = other.B_upper;
+  result_ob.B_lower = other.B_lower;
   result_ob.q = other.q;
   result_ob.r = other.r;
   result_ob.q_D = other.q_D;
@@ -143,6 +147,130 @@ void SmallP_Carmichael::all_CD(Preproduct& P){
   }
 }
 
+// using only the DDelta method, compute Carmichaels for all preproducts up to a bound
+// same code as tabulate_car, but with crossover replaced by all_DDelta
+void SmallP_Carmichael::tabulate_all_DDelta(string cars_file){
+
+  int64* P_factors;
+  long   P_factors_len;
+  int64* Pminus_factors;
+  long   Pminus_factors_len;
+
+  // file stream object
+  ofstream output;
+  output.open(cars_file);
+
+  // initialize the Factgen2 object that stores factorizations of P, P-1
+  F.init(2, B_upper);
+
+  // count the number of admissable pre-products
+  int64 num_admissable = 0;
+
+  // Now loop over odd pre-products P
+  for(int64 P = 3; P < B_upper; P = P + 2){
+
+    // testing
+    //cout << "tabulate_car, loops with P = " << P << "\n";
+
+    // retrieve factorizations of P, P-1
+    P_factors = F.current;
+    P_factors_len = F.currentlen;
+    Pminus_factors = F.prev;
+    Pminus_factors_len = F.prevlen;
+
+    // construct Preproduct object
+    Preproduct P_ob = Preproduct(P, P_factors, P_factors_len, Pminus_factors, Pminus_factors_len);
+
+      // if admissable, construct Carmichaels
+      if(P_ob.admissable){
+     
+        // Construct all Carmichael numbers with pre-product P.  First clear the qrs member variable
+        qrs.clear();
+
+        // if the largest prime dividing pre-product is large enough, do cross-over
+        all_DDelta(P_ob);
+        
+        // testing
+       // cout << "P = " << P << " generates " << qrs.size() << " many carmichaels\n";
+
+        // print to file
+        //output << "Carmichaels for P = " << P << " number of Cars is " << qrs.size() << "\n";
+        for(long j = 0; j < qrs.size(); ++j){
+          output << P << " " << qrs.at(j).first << " " << qrs.at(j).second << "\n";
+        } // end for
+      } // end if admissable
+      // move the factorization window to next odd number
+      F.next();
+      F.next();
+
+  } // end for P 
+
+  // close file and clear the qrs
+  output.close();
+  qrs.clear();
+}
+
+
+void SmallP_Carmichael::tabulate_all_CD(string cars_file){
+  int64* P_factors;
+  long   P_factors_len;
+  int64* Pminus_factors;
+  long   Pminus_factors_len;
+
+  // file stream object
+  ofstream output;
+  output.open(cars_file);
+
+  // initialize the Factgen2 object that stores factorizations of P, P-1
+  F.init(2, B_upper);
+
+  // count the number of admissable pre-products
+  int64 num_admissable = 0;
+
+  // Now loop over odd pre-products P
+  for(int64 P = 3; P < B_upper; P = P + 2){
+
+    // testing
+    //cout << "all_CD, loops with P = " << P << "\n";
+
+    // retrieve factorizations of P, P-1
+    P_factors = F.current;
+    P_factors_len = F.currentlen;
+    Pminus_factors = F.prev;
+    Pminus_factors_len = F.prevlen;
+
+    // construct Preproduct object
+    Preproduct P_ob = Preproduct(P, P_factors, P_factors_len, Pminus_factors, Pminus_factors_len);
+
+      // if admissable, construct Carmichaels
+      if(P_ob.admissable){
+     
+        // Construct all Carmichael numbers with pre-product P.  First clear the qrs member variable
+        qrs.clear();
+
+        // if the largest prime dividing pre-product is large enough, do cross-over
+        all_CD(P_ob);
+        
+        // testing
+       // cout << "P = " << P << " generates " << qrs.size() << " many carmichaels\n";
+
+        // print to file
+        //output << "Carmichaels for P = " << P << " number of Cars is " << qrs.size() << "\n";
+        for(long j = 0; j < qrs.size(); ++j){
+          output << P << " " << qrs.at(j).first << " " << qrs.at(j).second << "\n";
+        } // end for
+      } // end if admissable
+      // move the factorization window to next odd number
+      F.next();
+      F.next();
+
+  } // end for P 
+
+  // close file and clear the qrs
+  output.close();
+  qrs.clear();
+}
+
 /* D-Delta method for a single Preproduct, D pair.  Computes all divisors of (P-1)(P+D),
  * Calls completion check, which will write the pair (q,r) to vector qrs if Pqr is Carmichael.
  */
@@ -163,12 +291,15 @@ void SmallP_Carmichael::DDelta(Preproduct& P, bigint D){
     int64* q_primes = new int64[PplusD_len + P.Pminus_len];
     long* q_exps   = new long[PplusD_len + P.Pminus_len];
     long q_primes_len = P.q_factorization(q_D, PplusD, PplusD_len, q_primes, q_exps);  
- 
+
+    //testing
+    //if(D == 1000) cout << "Inside DDelta with P = " << P.Prod << " and D = " << D << "\n";
+    
     // Set up odometer to run through divisors of (P-1)(P+D)/2
-    Odometer q_od = Odometer(q_primes, q_exps, q_primes_len);
+    Odometer q_od = Odometer(q_primes, q_exps, q_primes_len, true);
     div = q_od.get_div();
 
-    //cout << "div = " << div << "\n";
+    //if(D == 13) cout << "div = " << div << "\n";
 
     // Run the code for divisor Delta = 1
     // apply completion check subroutine to see if this divisor Delta creates Carmichael
@@ -188,7 +319,7 @@ void SmallP_Carmichael::DDelta(Preproduct& P, bigint D){
     while(div != 1){
 
       //testing
-      //if(D == 574) cout << "inside DDelta, div = " << div << " and Delta_bound = " << Delta_bound << "\n";
+      //if(D == 13) cout << "inside DDelta, div = " << div << " and Delta_bound = " << Delta_bound << "\n";
 
       if(div < Delta_bound){
 
@@ -354,7 +485,7 @@ bool SmallP_Carmichael::completion_check(Preproduct& P, int64 Delta, int64 D, in
 
 /* Construct Carmichaels for a range of pre-products P < B
  */
-void SmallP_Carmichael::tabulate_car(long processor, long num_threads, string cars_file, string admissable_file){
+void SmallP_Carmichael::tabulate_car(long processor, long num_threads, string cars_file){
   int64* P_factors;
   long   P_factors_len;
   int64* Pminus_factors;
@@ -364,17 +495,14 @@ void SmallP_Carmichael::tabulate_car(long processor, long num_threads, string ca
   ofstream output;
   output.open(cars_file);
 
-  ofstream admissable_w_zero;
-  admissable_w_zero.open(admissable_file);
-
   // initialize the Factgen2 object that stores factorizations of P, P-1
-  F.init(2, B);
+  F.init(B_lower, B_upper);
 
   // count the number of admissable pre-products
   int64 num_admissable = 0;
 
   // Now loop over odd pre-products P
-  for(int64 P = 3; P < B; P = P + 2){
+  for(int64 P = B_lower; P < B_upper; P = P + 2){
 
     // testing
     //cout << "tabulate_car, loops with P = " << P << "\n";
@@ -405,30 +533,16 @@ void SmallP_Carmichael::tabulate_car(long processor, long num_threads, string ca
 
         // if the largest prime dividing pre-product is large enough, do cross-over
         preproduct_crossover(P_ob);
-        /*
-        // otherwise just do D-Delta method.  For now, we use 20 as a magical value 
-        if( P / P_ob.largest_prime() < 20 ){
-          preproduct_crossover(P_ob);
-        }else{
-          all_DDelta(P_ob);
-        }
-        */
         
         // testing
        // cout << "P = " << P << " generates " << qrs.size() << " many carmichaels\n";
 
-        // if no carmichales constructed, write pre-product to other file
-        if(qrs.size() == 0){
-          admissable_w_zero << F.currentval << "\n";
-        }else{
-
-          // print to file
-          //output << "Carmichaels for P = " << P << " number of Cars is " << qrs.size() << "\n";
-          for(long j = 0; j < qrs.size(); ++j){
-            output << P << " " << qrs.at(j).first << " " << qrs.at(j).second << "\n";
-          } // end for
-        } // end else
-      } // end if L != 0
+        // print to file
+        //output << "Carmichaels for P = " << P << " number of Cars is " << qrs.size() << "\n";
+        for(long j = 0; j < qrs.size(); ++j){
+          output << P << " " << qrs.at(j).first << " " << qrs.at(j).second << "\n";
+        } // end for
+      } // end if admissable
       // move the factorization window to next odd number
       F.next();
       F.next();
@@ -438,7 +552,6 @@ void SmallP_Carmichael::tabulate_car(long processor, long num_threads, string ca
 
   // close file and clear the qrs
   output.close();
-  admissable_w_zero.close();
   qrs.clear();
 }
 
@@ -456,13 +569,13 @@ void SmallP_Carmichael::tabulate_car_primeP(long processor, long num_threads, st
   output.open(cars_file);
 
   // initialize Factgen2 object
-  F.init(2, B);
+  F.init(2, B_upper);
 
   // count the number of prime pre-products
   int64 num_prime_P = 0;
 
   // loop over pre-products
-  for(int64 P = 3; P < B; ++P){
+  for(int64 P = 3; P < B_upper; ++P){
     // check if P is prime.  If not, continue
     if(!F.isprime_current()){
       F.next();
@@ -520,13 +633,13 @@ void SmallP_Carmichael::tabulate_car_primeP_crossover(long processor, long num_t
   output.open(cars_file);
 
   // initialize Factgen2 object
-  F.init(2, B);
+  F.init(2, B_upper);
 
   // count the number of prime pre-products
   int64 num_prime_P = 0;
 
   // loop over pre-products
-  for(int64 P = 3; P < B; ++P){
+  for(int64 P = 3; P < B_upper; ++P){
     // check if P is prime.  If not, continue
     if(!F.isprime_current()){
       F.next();

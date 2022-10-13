@@ -48,13 +48,13 @@ int main(int argc, char* argv[]) {
   int64 bound = num_thousands * 1000;
   cout << "Timings for tabulation of Carmichaels with pre-product up to " << bound << "\n";
 
-  SmallP_Carmichael C = SmallP_Carmichael(bound);
+  SmallP_Carmichael C = SmallP_Carmichael(2, bound);
   //Construct_car C = Construct_car();
 
   auto start_new = high_resolution_clock::now();
 
   //C.tabulate_car(bound, 0, 1, "cars0.txt", "cars_none0.txt");
-  C.tabulate_car(thread, num_threads, cars_file, none_file);
+  C.tabulate_car(thread, num_threads, cars_file);
 
   auto end_new = high_resolution_clock::now();
  

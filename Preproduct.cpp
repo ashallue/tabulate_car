@@ -159,8 +159,30 @@ long Preproduct::q_factorization(int64 q, int64* PplusD, long PplusD_len, int64*
   // new variable for q, which will get smaller as exponents computed.
   int64 q_temp = q;
 
+  /*
+  //testing
+  cout << "before calling merge_array, we have q = " << q << " PplusD: ";
+  for(long i = 0; i < PplusD_len; ++i){
+    cout << PplusD[i] << " ";
+  }
+  cout << " and Pminus: ";
+  for(long i = 0; i < Pminus_len; ++i){
+    cout << Pminus[i] << " ";
+  }
+  cout << "\n";
+  */
+
   // merge the P+D and P-1 prime factor arrays to remove duplicates
   long q_primes_len = merge_array(Pminus, Pminus_len, PplusD, PplusD_len, q_primes);
+
+  /*
+  // testing
+  cout << "after calling merge_array we have q_primes: ";
+  for(long i = 0; i < q_primes_len; ++i){
+    cout << q_primes[i] << " ";
+  }  
+  cout << "\n";
+  */
 
   long p, e;
   // loop over the prime divisors of q and compute the exponents

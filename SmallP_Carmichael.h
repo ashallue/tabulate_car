@@ -35,8 +35,9 @@ class SmallP_Carmichael{
     // Object for the P+D sieve
     Factgen FD;
 
-    // preproduct upper_bound.  Initialization value for F.
-    int64 B;
+    // preproduct upper_bound and lower bound.  Initialization value for F.
+    int64 B_upper;
+    int64 B_lower;
 
     // variables for q, r.  Used in completion check.  mpz are for primality testing.
     int64 q;  bigint r;
@@ -54,7 +55,7 @@ class SmallP_Carmichael{
     SmallP_Carmichael();
 
     // set preproduct bound B to given value.  Initialize F.  FD gets initialized in a separate function.
-    SmallP_Carmichael(int64 B_val);
+    SmallP_Carmichael(int64 B_up_val, int64 B_low_val);
 
     // destructor to clear the mpz_t variables.  Then copy construtors to follow rule of 3.
     ~SmallP_Carmichael();
@@ -70,8 +71,13 @@ class SmallP_Carmichael{
     */
     void all_DDelta(Preproduct& P);
 
+    // using only the DDelta method, compute Carmichaels for all preproducts up to a bound
+    // same code as tabulate_car, but with crossover replaced by all_DDelta
+    void tabulate_all_DDelta(string cars_file);
+
     // Similar to above, apply CD method for all D.  Don't use this for production code.
     void all_CD(Preproduct& P);
+    void tabulate_all_CD(string cars_file);
 
     /* Testing has shown that dynamically choosing between C-D and D-Delta methods is better than always 
      * picking one or the other.  This function takes a Preproduct and a D and performs D-Delta.
@@ -100,7 +106,7 @@ class SmallP_Carmichael{
  *   residue classes (processor modulo num_threads).
  *   Calls preproduct_crossover, which does a mix of D-Delta and C-D methods.  Dynamic flag set to false.
  */
-    void tabulate_car(long processor, long num_threads, string cars_file, string admissable_file);
+    void tabulate_car(long processor, long num_threads, string cars_file);
 
     /* Construct Carmichaels for prime pre-products P.  Similar to tabulate_car
  *     Note this only does D-Delta.  Thus bad for production; only use for timing comparisons with Pinch

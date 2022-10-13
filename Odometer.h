@@ -4,6 +4,10 @@ An odometer class, useful for stepping through all divisors.
 This is the second version. First stores primes and powers in vectors, 
 and the divisor as an exponent vector.  New version has these as arrays, 
 and adds a private data member to store the current div as an integer.
+
+New addition (could say third versions): add an alternate way to step through
+divisors, namely storing all divisors in an array and then next_div simply
+goes through them linearly.
 */
 
 #include <vector>
@@ -33,17 +37,26 @@ class Odometer{
     long* div_exp;
     int64 div;
 
+    // if store_divisors flag turned on, instead store all divisors in an array
+    bool store_divisors;
+    int64* all_divisors;
+    long num_divisors;
+    long curr_div_index;
+
   public:
     // default sets primes, powers to correspond to 2
     Odometer();
 
     // set the prime and powers
-    Odometer(int64* ps, long* pows, long len);
+    // by default, do the space-efficient version.  If storage flag turned to true, 
+    // this constructor will calculate and store all divisors in an array
+    Odometer(int64* ps, long* pows, long len, bool storage = false);
 
     // destructor frees memory for primes, powers, div_exp
     ~Odometer();
 
     // rotate odometer, then update div
+    // if store_divisors is true, simply move linearly to next divisor in array
     void next_div();
 
     // print div_exp
@@ -51,6 +64,10 @@ class Odometer{
 
     // return divisor corresponding to div_exp
     int64 get_div();
+
+  private:
+    // recursive helper function that calculates divisors
+    void create_divisors(long prime_index, long curr_position);
 
 };
 

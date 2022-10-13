@@ -6,6 +6,7 @@
 #include "Stack.h"
 #include "Factgen.h"
 #include "Construct_car.h"
+#include "SmallP_Carmichael.h"
 #include "Odometer.h"
 #include "bigint.h"
 #include "Pinch.h"
@@ -23,12 +24,17 @@ using namespace std::chrono;
 int main(int argc, char* argv[]) {
   std::cout << "Hello World!\n";
   
+   
+  long size = atoi(argv[1]);
+ 
+  int64 num_thousands = size * 10;
+  int64 bound = num_thousands * 1000;
 
   Pinch CP = Pinch();
   Construct_car C1 = Construct_car();
-  Construct_car C2 = Construct_car();
-  Construct_car C3 = Construct_car();
-
+  SmallP_Carmichael S2 = SmallP_Carmichael(2, bound);
+  SmallP_Carmichael S3 = SmallP_Carmichael(2, bound);
+  SmallP_Carmichael S4 = SmallP_Carmichael(2, bound);
   /*  
   // test preproduct with P = 3
   int64* P_ps = new int64[1];
@@ -49,11 +55,33 @@ int main(int argc, char* argv[]) {
   // Comparison of three methods: D-Delta, CD, and crossover
   // limited to prime preproducts.
     
-  long size = atoi(argv[1]);
- 
-  int64 num_thousands = size * 10;
-  int64 bound = num_thousands * 1000;
-  cout << "Timings for tabulation of Carmichaels with prime pre-product up to " << bound << "\n";
+  cout << "Timings for tabulation of Carmichaels with pre-product up to " << bound << "\n";
+
+  auto start_old = high_resolution_clock::now();
+  C1.tabulate_car(bound, 0, 1, "cars_old.txt", "cars_none.txt");
+  auto end_old = high_resolution_clock::now();
+  auto duration_old = duration_cast<seconds>(end_old - start_old);
+  cout << "Timing for Construct_car.tabulate_car: " << duration_old.count() << "\n";
+
+  auto start_new = high_resolution_clock::now();
+  S2.tabulate_car(0, 1, "cars_new.txt");
+  auto end_new = high_resolution_clock::now();
+  auto duration_new = duration_cast<seconds>(end_new - start_new);
+  cout << "Timing for SmallP_Carmichael.tabulate_car: " << duration_new.count() << "\n";
+
+  auto start_DD = high_resolution_clock::now();
+  S3.tabulate_all_DDelta("cars_DD.txt");
+  auto end_DD = high_resolution_clock::now();
+  auto duration_DD = duration_cast<seconds>(end_DD - start_DD);
+  cout << "Timing for all_DD method: " << duration_DD.count() << "\n";
+   
+  auto start_CD = high_resolution_clock::now();
+  S3.tabulate_all_CD("cars_CD.txt");
+  auto end_CD = high_resolution_clock::now();
+  auto duration_CD = duration_cast<seconds>(end_CD - start_CD);
+  cout << "Timing for all_CD method: " << duration_CD.count() << "\n";
+  
+  /* Code for the prime preproduct timing comparisons
 
   auto start_new = high_resolution_clock::now();
   C1.tabulate_car_primeP(bound, 0, 1, "cars.txt");
@@ -76,7 +104,7 @@ int main(int argc, char* argv[]) {
   cout << "pinch timing: " << duration_pinch.count() << "\n";
   cout << "static crossover has been removed.  Earlier testing showed it is better for prime preproducts" << "\n";
   cout << "dynamic crossover timing: " << duration_crossover_dyn.count() << "\n";
-  
+  */
 
   /*
   // This code times intialization and garbage collection for different types of variables

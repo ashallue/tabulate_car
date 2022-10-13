@@ -153,28 +153,79 @@ int main(int argc, char* argv[]) {
   */
 
   
-  cout << "\nTesting pre-product crossover for P = 3809 = 13 * 293\n";
-  SmallP_Carmichael c = SmallP_Carmichael();
+  cout << "\nTesting different methods for P = 49601 = 193 * 257\n";
+  SmallP_Carmichael c1 = SmallP_Carmichael();
 
-  // construct Preproduct, need arrays for both P and P-1 = 2^5 * 7 * 17
-  long ps[] = {13, 293};
-  long pms[] = {2, 7, 17};
-  Preproduct P = Preproduct(3809, ps, 2, pms, 3);
-
-  c.preproduct_crossover(P);
-  cout << "Carmichaels found: ";
-  for(long i = 0; i < c.qrs.size(); i++){
-    cout << "(" << c.qrs.at(i).first << ", " << c.qrs.at(i).second << ") ";
+  // construct Preproduct, need arrays for both P and P-1 
+  long ps[] = {193, 257};
+  long pms[] = {2, 5, 31};
+  Preproduct P = Preproduct(49601, ps, 2, pms, 3);
+ 
+  /*
+  // testing q_factorization 
+  // array for factors of (P-1)(P+D)/2
+  long D = 10;
+  int64* pd = new int64[2];
+  pd[0] = 241;  pd[1] = 16747;
+  int64* q_primes = new int64[10];
+  long*  q_exps = new int64[10];
+  long length = P.q_factorization(8144734774216, pd, 2, q_primes, q_exps);
+  cout << "length = " << length << " ";
+  cout << "q_primes: ";
+  for(long i = 0; i < length; ++i){
+    cout << q_primes[i] << " ";
+  }
+  cout << " q_exps: ";
+  for(long i = 0; i < length; ++i){
+    cout << q_exps[i] << " ";
   }
   cout << "\n";
+  */
  
-  cout << "Construct car version:\n";
+  auto start_new = high_resolution_clock::now(); 
+  c1.preproduct_crossover(P);
+  auto end_new = high_resolution_clock::now();
+  auto duration_new = duration_cast<seconds>(end_new - start_new);
+  cout << "timing for SmallP version: " << duration_new.count() << "\n";
+  
+  cout << "Carmichaels found: ";
+  for(long i = 0; i < c1.qrs.size(); i++){
+    cout << "(" << c1.qrs.at(i).first << ", " << c1.qrs.at(i).second << ") ";
+  }
+  cout << "\n";
+
+  cout << "all DD method\n";
+  SmallP_Carmichael c2 = SmallP_Carmichael();  
+  auto start_dd = high_resolution_clock::now();
+  c2.all_DDelta(P);
+  auto end_dd = high_resolution_clock::now();
+  auto duration_dd = duration_cast<seconds>(end_dd - start_dd);
+  cout << "timing for all_DD method: " << duration_dd.count() << "\n";
+
+  cout << "all CD method\n";
+   
+  SmallP_Carmichael c3 = SmallP_Carmichael();  
+  auto start_cd = high_resolution_clock::now();
+  c3.all_CD(P);
+  auto end_cd = high_resolution_clock::now();
+  auto duration_cd = duration_cast<seconds>(end_cd - start_cd);
+  cout << "timing for all_CD method: " << duration_cd.count() << "\n";
+
+  /* 
   Construct_car other_c = Construct_car();
-  vector<pair<int64, bigint>> cars2 = other_c.preproduct_crossover(ps, 2, pms, 3, 876);
+  auto start_old = high_resolution_clock::now();
+  vector<pair<int64, bigint>> cars2 = other_c.preproduct_crossover(ps, 2, pms, 4, 252000);
+  auto end_old = high_resolution_clock::now();
+  auto duration_old = duration_cast<seconds>(end_old - start_old);
+  cout << "timing for Construct_car version: " << duration_old.count() << "\n";
+  
+  cout << "Carmichaels found: ";
   for(long i = 0; i < cars2.size(); i++){
     cout << "(" << cars2.at(i).first << ", " << cars2.at(i).second << ") ";
   }
   cout << "\n";
+  */
+
   /*
   cout << "All DDelta version:\n";
   cars1 = c.all_DDelta(P);
