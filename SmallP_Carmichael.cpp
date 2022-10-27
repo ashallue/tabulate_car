@@ -44,13 +44,13 @@ SmallP_Carmichael::SmallP_Carmichael(){
 }
 
 // set preproduct bound B to given value.  Initialize F.  FD gets initialized in a separate function.
-SmallP_Carmichael::SmallP_Carmichael(int64 B_up_val, int64 B_low_val){
+SmallP_Carmichael::SmallP_Carmichael(int64 B_low_val, int64 B_up_val){
   // same as default, except for the B input
   B_upper = B_up_val;
   B_lower = B_low_val;  
 
   F = Factgen2();
-  F.init(B_lower, B_upper);
+  F.init(B_lower - 1, B_upper);
   FD = Factgen();
 
   q = 0;  r = 0;  q_D = 0;
@@ -491,21 +491,27 @@ void SmallP_Carmichael::tabulate_car(long processor, long num_threads, string ca
   int64* Pminus_factors;
   long   Pminus_factors_len;
 
+  // let's also calculate the average value of L/P
+  double avg_ratio = 0;
+
   // file stream object
   ofstream output;
   output.open(cars_file);
 
+  // set start value to the first odd number greater or equal to B_lower
+  int64 start_P = B_lower;
+  if(start_P % 2 == 0) start_P++;
+
   // initialize the Factgen2 object that stores factorizations of P, P-1
-  F.init(B_lower, B_upper);
+  F.init(start_P - 1, B_upper);
+ 
+  F.print();
 
   // count the number of admissable pre-products
   int64 num_admissable = 0;
 
   // Now loop over odd pre-products P
-  for(int64 P = B_lower; P < B_upper; P = P + 2){
-
-    // testing
-    //cout << "tabulate_car, loops with P = " << P << "\n";
+  for(int64 P = start_P; P < B_upper; P = P + 2){
 
     // retrieve factorizations of P, P-1
     P_factors = F.current;
@@ -515,6 +521,9 @@ void SmallP_Carmichael::tabulate_car(long processor, long num_threads, string ca
 
     // construct Preproduct object
     Preproduct P_ob = Preproduct(P, P_factors, P_factors_len, Pminus_factors, Pminus_factors_len);
+
+    // add ratio L/P to the running total
+    avg_ratio += P_ob.L / (P + 0.0) ;
 
     // check admissability.  If so, add to count
     if(P_ob.admissable) num_admissable++;
@@ -535,7 +544,7 @@ void SmallP_Carmichael::tabulate_car(long processor, long num_threads, string ca
         preproduct_crossover(P_ob);
         
         // testing
-       // cout << "P = " << P << " generates " << qrs.size() << " many carmichaels\n";
+        //cout << "P = " << P << " generates " << qrs.size() << " many carmichaels\n";
 
         // print to file
         //output << "Carmichaels for P = " << P << " number of Cars is " << qrs.size() << "\n";
@@ -553,6 +562,9 @@ void SmallP_Carmichael::tabulate_car(long processor, long num_threads, string ca
   // close file and clear the qrs
   output.close();
   qrs.clear();
+
+  // to stdout print avg ratio
+  cout << "average ratio of L/P is " << avg_ratio / num_admissable << "\n";
 }
 
 /* Construct Carmichaels for prime pre-products P, using just D-Delta method

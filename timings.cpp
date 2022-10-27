@@ -32,9 +32,9 @@ int main(int argc, char* argv[]) {
 
   Pinch CP = Pinch();
   Construct_car C1 = Construct_car();
-  SmallP_Carmichael S2 = SmallP_Carmichael(2, bound);
-  SmallP_Carmichael S3 = SmallP_Carmichael(2, bound);
-  SmallP_Carmichael S4 = SmallP_Carmichael(2, bound);
+  SmallP_Carmichael S2 = SmallP_Carmichael(1000, bound);
+  SmallP_Carmichael S3 = SmallP_Carmichael(1000, bound);
+  SmallP_Carmichael S4 = SmallP_Carmichael(1000, bound);
   /*  
   // test preproduct with P = 3
   int64* P_ps = new int64[1];
@@ -43,8 +43,6 @@ int main(int argc, char* argv[]) {
   P_m[0] = 2;
 
   vector<pair<int64, bigint>> test_output;
-  test_output = C.preproduct_construction(P_ps, 1, P_m, 1, 2);  
-  cout << "\n preproduct_crossover with small P\n";
   for(long i = 0; i < test_output.size(); i++){
     cout << test_output.at(i).first << " " << test_output.at(i).second << "\n";
   } 
@@ -68,7 +66,8 @@ int main(int argc, char* argv[]) {
   auto end_new = high_resolution_clock::now();
   auto duration_new = duration_cast<seconds>(end_new - start_new);
   cout << "Timing for SmallP_Carmichael.tabulate_car: " << duration_new.count() << "\n";
-
+  
+  /*
   auto start_DD = high_resolution_clock::now();
   S3.tabulate_all_DDelta("cars_DD.txt");
   auto end_DD = high_resolution_clock::now();
@@ -76,11 +75,12 @@ int main(int argc, char* argv[]) {
   cout << "Timing for all_DD method: " << duration_DD.count() << "\n";
    
   auto start_CD = high_resolution_clock::now();
-  S3.tabulate_all_CD("cars_CD.txt");
+  S4.tabulate_all_CD("cars_CD.txt");
   auto end_CD = high_resolution_clock::now();
   auto duration_CD = duration_cast<seconds>(end_CD - start_CD);
   cout << "Timing for all_CD method: " << duration_CD.count() << "\n";
-  
+  */  
+
   /* Code for the prime preproduct timing comparisons
 
   auto start_new = high_resolution_clock::now();

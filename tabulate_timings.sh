@@ -13,7 +13,7 @@
 #PBS -l walltime=24:00:00
 
 # creation of job array
-#$ -t 1-20
+#$ -t 1-5
 
 # change directory
 cd ~ashallue/tabulate_car

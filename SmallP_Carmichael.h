@@ -55,7 +55,7 @@ class SmallP_Carmichael{
     SmallP_Carmichael();
 
     // set preproduct bound B to given value.  Initialize F.  FD gets initialized in a separate function.
-    SmallP_Carmichael(int64 B_up_val, int64 B_low_val);
+    SmallP_Carmichael(int64 B_low_val, int64 B_up_val);
 
     // destructor to clear the mpz_t variables.  Then copy construtors to follow rule of 3.
     ~SmallP_Carmichael();
