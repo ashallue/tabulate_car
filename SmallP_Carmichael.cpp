@@ -41,6 +41,16 @@ SmallP_Carmichael::SmallP_Carmichael(){
 
   qrs = vector<pair<int64, bigint>>();
   qrs.reserve(1000);
+
+  // set residues data structures
+  for(long i = 0; i < 6; ++i){
+    residues_P[i][0] = i % 2;
+    residues_P[i][1] = i % 3;
+    residues_D[i][0] = i % 2;
+    residues_D[i][1] = i % 3;  
+  }
+  res_P_index = 0;
+  res_D_index = 0;
 }
 
 // set preproduct bound B to given value.  Initialize F.  FD gets initialized in a separate function.
@@ -58,6 +68,16 @@ SmallP_Carmichael::SmallP_Carmichael(int64 B_low_val, int64 B_up_val){
 
   qrs = vector<pair<int64, bigint>>();
   qrs.reserve(1000);
+
+  // set residues data structures
+  for(long i = 0; i < 6; ++i){
+    residues_P[i][0] = i % 2;
+    residues_P[i][1] = i % 3;
+    residues_D[i][0] = i % 2;
+    residues_D[i][1] = i % 3;  
+  }
+  res_P_index = 0;
+  res_D_index = 0;
 }
 
 //destructor is here to clear the mpz_t variables, everything else can be cleared using default methods
@@ -82,6 +102,16 @@ SmallP_Carmichael::SmallP_Carmichael(const SmallP_Carmichael& other){
   //now itialize the mpz variables and copy them over
   mpz_init(q_mpz);  mpz_init(r_mpz);
   mpz_set(q_mpz, other.q_mpz);   mpz_set(r_mpz, other.r_mpz);
+
+  // set residues data structures
+  for(long i = 0; i < 6; ++i){
+    residues_P[i][0] = i % 2;
+    residues_P[i][1] = i % 3;
+    residues_D[i][0] = i % 2;
+    residues_D[i][1] = i % 3;  
+  }
+  res_P_index = other.res_P_index;
+  res_D_index = other.res_D_index;
 }
 
 // operator= is very similar to copy constructor
@@ -101,6 +131,16 @@ SmallP_Carmichael SmallP_Carmichael::operator=(const SmallP_Carmichael& other){
   mpz_init(result_ob.q_mpz);   mpz_init(result_ob.r_mpz);
   mpz_set(result_ob.q_mpz, other.q_mpz);  mpz_set(result_ob.r_mpz, other.r_mpz);
 
+  // set residues data structures
+  for(long i = 0; i < 6; ++i){
+    result_ob.residues_P[i][0] = i % 2;
+    result_ob.residues_P[i][1] = i % 3;
+    result_ob.residues_D[i][0] = i % 2;
+    result_ob.residues_D[i][1] = i % 3;  
+  }
+  result_ob.res_P_index = other.res_P_index;
+  result_ob.res_D_index = other.res_D_index;
+  
   return result_ob;
 }
 

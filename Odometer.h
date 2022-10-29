@@ -8,10 +8,14 @@ and adds a private data member to store the current div as an integer.
 New addition (could say third versions): add an alternate way to step through
 divisors, namely storing all divisors in an array and then next_div simply
 goes through them linearly.
+
+Another new addition: can specify a vector of primes, then all divisors must 
+be divisible by the primes in the vector.
 */
 
 #include <vector>
 #include "int.h"
+#include <algorithm>
 
 using namespace std;
 
@@ -37,6 +41,9 @@ class Odometer{
     long* div_exp;
     int64 div;
 
+    // this vector of indices specifies primes from primes array that must divide the divisors
+    vector<long> must_have;
+
     // if store_divisors flag turned on, instead store all divisors in an array
     bool store_divisors;
     int64* all_divisors;
@@ -50,7 +57,10 @@ class Odometer{
     // set the prime and powers
     // by default, do the space-efficient version.  If storage flag turned to true, 
     // this constructor will calculate and store all divisors in an array
-    Odometer(int64* ps, long* pows, long len, bool storage = false);
+    //
+    // Addition: all divisors generated will be divisible by the must divides
+    // This constructor checks, if they are not part of primes they are not included.
+    Odometer(int64* ps, long* pows, long len, vector<long> must_divide, bool storage = false);
 
     // destructor frees memory for primes, powers, div_exp
     ~Odometer();

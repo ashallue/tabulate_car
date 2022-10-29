@@ -45,6 +45,14 @@ class SmallP_Carmichael{
 
     // variable that stores (P - 1) * (P + D) / 2.  Used to test integrality of q for a given Delta
     int64 q_D;
+
+    // Data structures for an integrality optimization:
+    // C = (P^2 + Delta)/D has to be an integer.  So if p | D, there are mod p restrictions on P, Delta
+    // Currently only implemented for the primes 2, 3.  So a length 6 array of length 2 bit arrays.
+    long residues_P[6][2];
+    long residues_D[6][2];
+    long res_P_index;
+    long res_D_index;
  
   public:
     // stores pairs (q, r) that complete a Carmichael of the form Pqr
