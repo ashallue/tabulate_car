@@ -159,8 +159,33 @@ int main(int argc, char* argv[]) {
   // construct Preproduct, need arrays for both P and P-1 
   long ps[] = {193, 257};
   long pms[] = {2, 5, 31};
+  long es[] = {3, 1, 1};
   Preproduct P = Preproduct(49601, ps, 2, pms, 3);
- 
+
+  cout << "\nTesting Odometer\n";
+  vector<long> must_haves = vector<long>();
+  must_haves.push_back(31);
+
+  Odometer od = Odometer(pms, es, 3, must_haves, false);
+  cout << "initial_div = " << od.initial_div << " and div_exp = ";
+  for(long i = 0; i < od.num_length; ++i){
+    cout << od.div_exp[i] << " ";
+  }
+  cout << "\n";
+  cout << "must_have = ";
+  for(long i = 0; i < od.must_have.size(); ++i){
+    cout << od.must_have.at(i) << " ";
+  }
+  cout << "\n";
+
+
+  cout << "Divisors: " << od.get_div() << "\n";
+  od.next_div();
+  while(od.get_div() != od.initial_div){
+    cout << od.get_div() << "\n";
+    od.next_div();
+  } 
+
   /*
   // testing q_factorization 
   // array for factors of (P-1)(P+D)/2
@@ -181,7 +206,8 @@ int main(int argc, char* argv[]) {
   }
   cout << "\n";
   */
- 
+
+  /* 
   auto start_new = high_resolution_clock::now(); 
   c1.preproduct_crossover(P);
   auto end_new = high_resolution_clock::now();
@@ -210,7 +236,7 @@ int main(int argc, char* argv[]) {
   auto end_cd = high_resolution_clock::now();
   auto duration_cd = duration_cast<seconds>(end_cd - start_cd);
   cout << "timing for all_CD method: " << duration_cd.count() << "\n";
-
+  */
   /* 
   Construct_car other_c = Construct_car();
   auto start_old = high_resolution_clock::now();

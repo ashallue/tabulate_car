@@ -317,6 +317,7 @@ void SmallP_Carmichael::tabulate_all_CD(string cars_file){
 void SmallP_Carmichael::DDelta(Preproduct& P, bigint D){
     int64 Delta_bound;  // stores upper bound on Delta to ensure it isn't too big (making q too small)
     int64 div = 1;      // will store divisors of (P-1)(P+D)/2    
+    vector<long> must_divs = vector<long>();  // primes that all Odomter divs must include
 
     // We set up an odometer, which requires primes and powers
     // Note this is not the final value of q, just the one needed to compute divisors.
@@ -336,7 +337,7 @@ void SmallP_Carmichael::DDelta(Preproduct& P, bigint D){
     //if(D == 1000) cout << "Inside DDelta with P = " << P.Prod << " and D = " << D << "\n";
     
     // Set up odometer to run through divisors of (P-1)(P+D)/2
-    Odometer q_od = Odometer(q_primes, q_exps, q_primes_len, true);
+    Odometer q_od = Odometer(q_primes, q_exps, q_primes_len, must_divs, true);
     div = q_od.get_div();
 
     //if(D == 13) cout << "div = " << div << "\n";

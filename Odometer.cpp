@@ -30,6 +30,8 @@ Odometer::Odometer(){
 
   // default must_have is empty
   must_have = vector<long>();
+  // default initial div is 1
+  initial_div = 1;
 }
 
 // set the prime and powers
@@ -55,7 +57,6 @@ Odometer::Odometer(int64* ps, long* pows, long len, vector<long> must_divide, bo
   for(long i = 0; i < num_length; ++i){
     div_exp[i] = 0;
   }
-  div = 1;
 
   // for each prime in must_divide, check that it is in primes.  If so, build must_have
   must_have = vector<long>();
@@ -64,8 +65,11 @@ Odometer::Odometer(int64* ps, long* pows, long len, vector<long> must_divide, bo
   for(long i = 0; i < must_divide.size(); ++i){
     // grab the prime from the input vector
     temp_prime = must_divide.at(i);
+    cout << "Constructor, searching for " << temp_prime << "\n";
+
     // search for it in the prime array
     for(long j = 0; j < num_length; ++j){
+      cout << "testing against prime << " << primes[j] << "\n";
       if(temp_prime == primes[j]){
         // if found, add index to the must_have vector
         must_have.push_back(j);
@@ -77,6 +81,13 @@ Odometer::Odometer(int64* ps, long* pows, long len, vector<long> must_divide, bo
   for(long i = 0; i < must_have.size(); ++i){
     div_exp[ must_have[i] ] = 1;
   }
+
+  // calculate the initial divisor and store it.  set div to initial_div
+  initial_div = 1;
+  for(long i = 0; i < num_length; ++i){
+    initial_div *= pow( primes[i], div_exp[i] );
+  }
+  div = initial_div;
 
   store_divisors = storage;
   // if flag is true, do the work to calculate and store all the divisors
@@ -130,7 +141,7 @@ void Odometer::next_div(){
     // if current index already at the end, rotate around to the beginning
     if(curr_div_index == num_divisors - 1){
       curr_div_index = 0;
-      div = 1;
+      div = initial_div;
     }else{
       curr_div_index++;
       div = all_divisors[curr_div_index];
@@ -143,10 +154,16 @@ void Odometer::next_div(){
     // Along the way, turn intermediate exps to 0
     curr_prime = 0;
     while(curr_prime < num_length && div_exp[curr_prime] == powers[curr_prime]){
-      div_exp[curr_prime] = 0;
+      
+      // if the curr_prime is in the must haves, set to 1 instead
+      if( find(must_have.begin(), must_have.end(), curr_prime) != must_have.end() ){
+        div_exp[curr_prime] = 1;
+      }else{
+        div_exp[curr_prime] = 0;
+      }
 
-      // also update div.  Flipping exp to 0 corresponds to dividing div by p^exp
-      prime_pow = pow( primes[curr_prime] , powers[curr_prime] );
+      // also update div.  Flipping exp to 0 corresponds to dividing div by p^exp or p^(exp - 1)
+      prime_pow = pow( primes[curr_prime] , powers[curr_prime] - div_exp[curr_prime] );
       div = div / prime_pow;     
 
       // increment prime index
