@@ -65,11 +65,9 @@ Odometer::Odometer(int64* ps, long* pows, long len, vector<long> must_divide, bo
   for(long i = 0; i < must_divide.size(); ++i){
     // grab the prime from the input vector
     temp_prime = must_divide.at(i);
-    cout << "Constructor, searching for " << temp_prime << "\n";
 
     // search for it in the prime array
     for(long j = 0; j < num_length; ++j){
-      cout << "testing against prime << " << primes[j] << "\n";
       if(temp_prime == primes[j]){
         // if found, add index to the must_have vector
         must_have.push_back(j);

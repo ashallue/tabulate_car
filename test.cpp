@@ -154,7 +154,8 @@ int main(int argc, char* argv[]) {
 
   
   cout << "\nTesting different methods for P = 49601 = 193 * 257\n";
-  SmallP_Carmichael c1 = SmallP_Carmichael();
+  SmallP_Carmichael c1 = SmallP_Carmichael(2, 1000);
+  c1.tabulate_all_DDelta("all_DD_test.txt");
 
   // construct Preproduct, need arrays for both P and P-1 
   long ps[] = {193, 257};
@@ -164,20 +165,9 @@ int main(int argc, char* argv[]) {
 
   cout << "\nTesting Odometer\n";
   vector<long> must_haves = vector<long>();
-  must_haves.push_back(31);
+  must_haves.push_back(2); must_haves.push_back(7); must_haves.push_back(31);
 
   Odometer od = Odometer(pms, es, 3, must_haves, false);
-  cout << "initial_div = " << od.initial_div << " and div_exp = ";
-  for(long i = 0; i < od.num_length; ++i){
-    cout << od.div_exp[i] << " ";
-  }
-  cout << "\n";
-  cout << "must_have = ";
-  for(long i = 0; i < od.must_have.size(); ++i){
-    cout << od.must_have.at(i) << " ";
-  }
-  cout << "\n";
-
 
   cout << "Divisors: " << od.get_div() << "\n";
   od.next_div();

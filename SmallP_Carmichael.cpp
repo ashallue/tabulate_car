@@ -43,7 +43,8 @@ SmallP_Carmichael::SmallP_Carmichael(){
   qrs.reserve(1000);
 
   // set residues data structures
-  for(long i = 0; i < 6; ++i){
+  total_residue = 6;
+  for(long i = 0; i < total_residue; ++i){
     residues_P[i][0] = i % 2;
     residues_P[i][1] = i % 3;
     residues_D[i][0] = i % 2;
@@ -70,7 +71,8 @@ SmallP_Carmichael::SmallP_Carmichael(int64 B_low_val, int64 B_up_val){
   qrs.reserve(1000);
 
   // set residues data structures
-  for(long i = 0; i < 6; ++i){
+  total_residue = 6;
+  for(long i = 0; i < total_residue; ++i){
     residues_P[i][0] = i % 2;
     residues_P[i][1] = i % 3;
     residues_D[i][0] = i % 2;
@@ -112,6 +114,7 @@ SmallP_Carmichael::SmallP_Carmichael(const SmallP_Carmichael& other){
   }
   res_P_index = other.res_P_index;
   res_D_index = other.res_D_index;
+  total_residue = other.total_residue;
 }
 
 // operator= is very similar to copy constructor
@@ -140,7 +143,8 @@ SmallP_Carmichael SmallP_Carmichael::operator=(const SmallP_Carmichael& other){
   }
   result_ob.res_P_index = other.res_P_index;
   result_ob.res_D_index = other.res_D_index;
-  
+  result_ob.total_residue = other.total_residue; 
+ 
   return result_ob;
 }
 
@@ -161,17 +165,23 @@ void SmallP_Carmichael::all_DDelta(Preproduct& P){
 
   // Basic loop structure: for all D in [2..(P-1)], for all divisors
   // of the expression (P-1)(P+D)/2, do stuff.
+  // First set the D residue
+  res_D_index = 2;
   for(int64 D = 2; D < P.Prod; ++D){
 
     // testing
-    //cout << "P = " << P_product << " " << "D = " << D << "\n";
+    cout << "P = " << P.Prod << " " << "D = " << D << "and D residue = " << res_D_index << "\n";
 
     // go to the next P+D through the Factgen object
     FD.next();
 
     // gather Carmichaels from the DDelta function.  Note: stored in vector qrs
     DDelta(P, D);
-   
+
+    // update the D residue index in preparation for the next cycle   
+    res_D_index++;
+    if(res_D_index >= total_residue) res_D_index -= total_residue;
+
     //if(D_cars.size() > 0) cout << "Cars found when calling DDelta method on D = " << D << "\n";
 
   } // end for D
@@ -183,7 +193,9 @@ void SmallP_Carmichael::all_CD(Preproduct& P){
 
   // loop over D, call CD method.  For this function I shouldn't have to update FD object.
   for(int64 D = 2; D < P.Prod; ++D){
+
     CD(P, D);
+
   }
 }
 
@@ -205,6 +217,9 @@ void SmallP_Carmichael::tabulate_all_DDelta(string cars_file){
 
   // count the number of admissable pre-products
   int64 num_admissable = 0;
+
+  // set P residue
+  res_P_index = 3;
 
   // Now loop over odd pre-products P
   for(int64 P = 3; P < B_upper; P = P + 2){
@@ -243,6 +258,10 @@ void SmallP_Carmichael::tabulate_all_DDelta(string cars_file){
       F.next();
       F.next();
 
+      // update the P index
+      res_P_index += 2;
+      if(res_P_index > total_residue) res_P_index -= total_residue;
+
   } // end for P 
 
   // close file and clear the qrs
@@ -271,7 +290,7 @@ void SmallP_Carmichael::tabulate_all_CD(string cars_file){
   for(int64 P = 3; P < B_upper; P = P + 2){
 
     // testing
-    //cout << "all_CD, loops with P = " << P << "\n";
+    //cout << "all_CD, loops with P = " << P << " that has residue " << res_P_index << "\n";
 
     // retrieve factorizations of P, P-1
     P_factors = F.current;

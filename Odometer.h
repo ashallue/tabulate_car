@@ -26,7 +26,7 @@ using namespace std;
 // The leftmost entry is the least significant, that rotates most often
 class Odometer{
 
-  public:
+  private:
     // primes and powers are intended to stay constant
     // the divisors generated are of this number
     int64* primes;
