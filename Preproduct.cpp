@@ -186,15 +186,33 @@ long Preproduct::q_factorization(int64 q, int64* PplusD, long PplusD_len, int64*
 
   long p, e;
   // loop over the prime divisors of q and compute the exponents
-  for(long i = 0; i < q_primes_len; ++i){
-    p = q_primes[i];
+  // if the exponent is 0, don't include it
+  // important invariant in the following loop: write_index always <= read_index
+  long read_index = 0;
+  long write_index = 0;
+  long start_count = q_primes_len;
+
+  while(read_index < start_count){
+    p = q_primes[read_index];
     e = 0;
     while(q_temp % p == 0){
       e++;
       q_temp = q_temp / p;
     }
-    q_exps[i] = e;
-  }
+    
+    // if e is non-zero, I want to include both p and e.  If 0, I don't
+    // either way I need to re-write the prime, because things might have shifted
+    if(e != 0){
+      q_primes[write_index] = p;
+      q_exps[write_index] = e;
+      read_index++;
+      write_index++;   
+    }else{
+      // if 0, don't write, and only shift the read_index, subtract 1 from length
+      read_index++;
+      q_primes_len--;
+    }
+  } // end while
 
   //return new length of the array
   return q_primes_len;

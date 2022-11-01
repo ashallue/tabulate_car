@@ -155,7 +155,7 @@ int main(int argc, char* argv[]) {
   
   cout << "\nTesting different methods for P = 49601 = 193 * 257\n";
   SmallP_Carmichael c1 = SmallP_Carmichael(2, 1000);
-  c1.tabulate_all_DDelta("all_DD_test.txt");
+  //c1.tabulate_all_DDelta("all_DD_test.txt");
 
   // construct Preproduct, need arrays for both P and P-1 
   long ps[] = {193, 257};
@@ -176,15 +176,19 @@ int main(int argc, char* argv[]) {
     od.next_div();
   } 
 
-  /*
+  
   // testing q_factorization 
   // array for factors of (P-1)(P+D)/2
   long D = 10;
-  int64* pd = new int64[2];
-  pd[0] = 241;  pd[1] = 16747;
+  int64* pd = new int64[3];
+  pd[0] = 3;  pd[1] = 23; pd[2] = 719;
+
+  int64 q = (P.Prod - 1) * (P.Prod + D) / 2;
+  q = q / 3;
+
   int64* q_primes = new int64[10];
   long*  q_exps = new int64[10];
-  long length = P.q_factorization(8144734774216, pd, 2, q_primes, q_exps);
+  long length = P.q_factorization(q, pd, 3, q_primes, q_exps);
   cout << "length = " << length << " ";
   cout << "q_primes: ";
   for(long i = 0; i < length; ++i){
@@ -195,7 +199,7 @@ int main(int argc, char* argv[]) {
     cout << q_exps[i] << " ";
   }
   cout << "\n";
-  */
+  
 
   /* 
   auto start_new = high_resolution_clock::now(); 

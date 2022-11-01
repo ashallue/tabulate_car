@@ -44,6 +44,7 @@ SmallP_Carmichael::SmallP_Carmichael(){
 
   // set residues data structures
   total_residue = 6;
+  num_residues = 2;
   for(long i = 0; i < total_residue; ++i){
     residues_P[i][0] = i % 2;
     residues_P[i][1] = i % 3;
@@ -72,6 +73,7 @@ SmallP_Carmichael::SmallP_Carmichael(int64 B_low_val, int64 B_up_val){
 
   // set residues data structures
   total_residue = 6;
+  num_residues = 2;
   for(long i = 0; i < total_residue; ++i){
     residues_P[i][0] = i % 2;
     residues_P[i][1] = i % 3;
@@ -115,6 +117,7 @@ SmallP_Carmichael::SmallP_Carmichael(const SmallP_Carmichael& other){
   res_P_index = other.res_P_index;
   res_D_index = other.res_D_index;
   total_residue = other.total_residue;
+  num_residues = other.num_residues;
 }
 
 // operator= is very similar to copy constructor
@@ -144,7 +147,8 @@ SmallP_Carmichael SmallP_Carmichael::operator=(const SmallP_Carmichael& other){
   result_ob.res_P_index = other.res_P_index;
   result_ob.res_D_index = other.res_D_index;
   result_ob.total_residue = other.total_residue; 
- 
+  result_ob.num_residues = other.num_residues; 
+
   return result_ob;
 }
 
@@ -170,7 +174,7 @@ void SmallP_Carmichael::all_DDelta(Preproduct& P){
   for(int64 D = 2; D < P.Prod; ++D){
 
     // testing
-    cout << "P = " << P.Prod << " " << "D = " << D << "and D residue = " << res_D_index << "\n";
+    //cout << "P = " << P.Prod << " " << "D = " << D << "and D residue = " << res_D_index << "\n";
 
     // go to the next P+D through the Factgen object
     FD.next();
@@ -332,6 +336,10 @@ void SmallP_Carmichael::tabulate_all_CD(string cars_file){
 
 /* D-Delta method for a single Preproduct, D pair.  Computes all divisors of (P-1)(P+D),
  * Calls completion check, which will write the pair (q,r) to vector qrs if Pqr is Carmichael.
+ *
+ * Later improvement: due to the integrality of C, if p | D then either P, Delta both 0 mod p or both not 0
+ * To make Delta divisible by p, I have added a must_have vector to Odometer.
+ * To make Delta not divisible by p, remove the p power from the list when creating the Odometer
  */
 void SmallP_Carmichael::DDelta(Preproduct& P, bigint D){
     int64 Delta_bound;  // stores upper bound on Delta to ensure it isn't too big (making q too small)
@@ -341,6 +349,21 @@ void SmallP_Carmichael::DDelta(Preproduct& P, bigint D){
     // We set up an odometer, which requires primes and powers
     // Note this is not the final value of q, just the one needed to compute divisors.
     q_D = (P.Prod - 1) * (P.Prod + D) / 2;
+    
+    // for each prime tracked, check if both P and D share it or don't
+    for(long i = 0; i < num_residues; ++i){
+      // if both are 0 mod p, add p to the must_divs
+      if(residues_P[res_P_index][i] == 0 && residues_D[res_D_index][i] == 0){
+        must_divs.push_back( primes[i] );
+      }
+      // if both are not 0 mod p, remove p power from q_D
+      if(residues_P[res_P_index][i] != 0 && residues_D[res_D_index][i] != 0){
+        while(q_D % primes[i] == 0){
+          q_D = q_D / primes[i];
+        }
+      }
+      // if neither is true, no easy improvement, so we do nothing
+    }
 
     // P_minus has the unique prime factors dividing P-1.
     // copy over prev into PplusD
