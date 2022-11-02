@@ -155,7 +155,7 @@ int main(int argc, char* argv[]) {
   
   cout << "\nTesting different methods for P = 49601 = 193 * 257\n";
   SmallP_Carmichael c1 = SmallP_Carmichael(2, 1000);
-  //c1.tabulate_all_DDelta("all_DD_test.txt");
+  c1.tabulate_all_DDelta("all_DD_test.txt");
 
   // construct Preproduct, need arrays for both P and P-1 
   long ps[] = {193, 257};

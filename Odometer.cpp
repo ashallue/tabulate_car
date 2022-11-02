@@ -102,7 +102,7 @@ Odometer::Odometer(int64* ps, long* pows, long len, vector<long> must_divide, bo
         num_divisors *= (powers[i] + 1);
       }
     }
-  
+    
     // allocate memory, call recursive function that does work
     all_divisors = new int64[num_divisors];
     // initially feed the array with 1 as the only divisor
@@ -112,6 +112,16 @@ Odometer::Odometer(int64* ps, long* pows, long len, vector<long> must_divide, bo
     create_divisors(0, 1);
     curr_div_index = 0;
 
+    // create_divisors cuts down on the exp for primes in must_have by 1
+    // to reconcile, we multiply by those primes so all divisors are multiples of them
+    long multiple = 1;
+    for(long i = 0; i < must_have.size(); ++i){
+      multiple *= primes[ must_have.at(i) ];
+    }
+    for(long i = 0; i < num_divisors; ++i){
+      all_divisors[i] = all_divisors[i] * multiple;      
+    }
+    
   }else{
     all_divisors = new int64[1];
     all_divisors[0] = 1;
@@ -203,6 +213,7 @@ int64 Odometer::get_div(){
  * and add the new divisors to the array.  The array has memory allocated, just need to update index.
  */
 void Odometer::create_divisors(long prime_index, long curr_position){
+
   // we are done if the curr_position matches the number of divisors and the prime_index matches length
   if(prime_index == num_length && curr_position == num_divisors){
     return;
@@ -231,17 +242,18 @@ void Odometer::create_divisors(long prime_index, long curr_position){
 
     // for every power of the prime p
     int64 p = primes[prime_index];
-    int64 power;
+    int64 power = 1;
+    long max_exp;
 
-    // if index is in must_have, start at p rather than 1
+    // if index is in must_have, lower max_power by 1
     if( find(must_have.begin(), must_have.end(), prime_index) != must_have.end() ){
-      power = p;
+      max_exp = powers[prime_index] - 1;
     }else{
-      power = 1;
+      max_exp = powers[prime_index];
     }
     
     // now, for every power of that prime up to the maximum, multiply by all existing divisors
-    for(long i = 0; i < powers[prime_index]; ++i){
+    for(long i = 0; i < max_exp; ++i){
       // new prime power is p times the old one
       power *= p;
 

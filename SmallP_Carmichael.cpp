@@ -342,6 +342,8 @@ void SmallP_Carmichael::tabulate_all_CD(string cars_file){
  * To make Delta not divisible by p, remove the p power from the list when creating the Odometer
  */
 void SmallP_Carmichael::DDelta(Preproduct& P, bigint D){
+    //if(P.Prod % 3 == 0 && D % 3 == 0) cout << "Inside DDelta with P = " << P.Prod << " and D = " << D << "\n";
+    
     int64 Delta_bound;  // stores upper bound on Delta to ensure it isn't too big (making q too small)
     int64 div = 1;      // will store divisors of (P-1)(P+D)/2    
     vector<long> must_divs = vector<long>();  // primes that all Odomter divs must include
@@ -350,20 +352,22 @@ void SmallP_Carmichael::DDelta(Preproduct& P, bigint D){
     // Note this is not the final value of q, just the one needed to compute divisors.
     q_D = (P.Prod - 1) * (P.Prod + D) / 2;
     
-    // for each prime tracked, check if both P and D share it or don't
+    // for each prime tracked, first check if D = 0 mod p
     for(long i = 0; i < num_residues; ++i){
-      // if both are 0 mod p, add p to the must_divs
-      if(residues_P[res_P_index][i] == 0 && residues_D[res_D_index][i] == 0){
-        must_divs.push_back( primes[i] );
-      }
-      // if both are not 0 mod p, remove p power from q_D
-      if(residues_P[res_P_index][i] != 0 && residues_D[res_D_index][i] != 0){
-        while(q_D % primes[i] == 0){
-          q_D = q_D / primes[i];
+      if(residues_D[res_D_index][i] == 0){
+        // if P = 0 mod p, then Delta = 0 mod p, so add the prime as a must have
+        if(residues_P[res_P_index][i] == 0){
+          must_divs.push_back( primes[i] );
+        }else{
+        // if P != 0 mod p, then Delta != 0 mod p, so remove p from q
+          while(q_D & primes[i] == 0){
+            q_D = q_D / primes[i];
+          }
         }
       }
-      // if neither is true, no easy improvement, so we do nothing
-    }
+      // nothing changed if the D residue is != 0      
+
+    } // end for loop over residues
 
     // P_minus has the unique prime factors dividing P-1.
     // copy over prev into PplusD
@@ -374,6 +378,15 @@ void SmallP_Carmichael::DDelta(Preproduct& P, bigint D){
     int64* q_primes = new int64[PplusD_len + P.Pminus_len];
     long* q_exps   = new long[PplusD_len + P.Pminus_len];
     long q_primes_len = P.q_factorization(q_D, PplusD, PplusD_len, q_primes, q_exps);  
+
+    /*
+    // testing
+    cout << "Resulting q = " << q_D << ": "<< "\n";
+    for(long i = 0; i < q_primes_len; ++i){
+      cout << q_primes[i] << "^" << q_exps[i] << " ";
+    } 
+    cout << "\n";
+    */
 
     //testing
     //if(D == 1000) cout << "Inside DDelta with P = " << P.Prod << " and D = " << D << "\n";
@@ -399,7 +412,7 @@ void SmallP_Carmichael::DDelta(Preproduct& P, bigint D){
     Delta_bound = Delta_bound / (P.largest_prime() - 1);
     
     // continue looking at divisors until it is back to 1
-    while(div != 1){
+    while(div != q_od.initial_div){
 
       //testing
       //if(D == 13) cout << "inside DDelta, div = " << div << " and Delta_bound = " << Delta_bound << "\n";
