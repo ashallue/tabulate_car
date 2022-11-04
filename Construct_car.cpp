@@ -123,7 +123,6 @@ vector<pair<int64, bigint>> Construct_car::preproduct_construction(int64* P, lon
   int64 p;     // stores a temp prime
   long e;      // stores a temp exponent
   int64 Delta_bound;  // stores upper bound on Delta to ensure it isn't too big
-  vector<long> must_divs = vector<long>();  // no restrictions on divisors
 
   // Generate P as a single integer
   int64 P_product = 1;
@@ -193,7 +192,7 @@ vector<pair<int64, bigint>> Construct_car::preproduct_construction(int64* P, lon
     // Set up odometer to run through divisors of (P-1)(P+D)/2
     // third argument is empty list meaning no restrictions on divisors
 
-    Odometer q_od = Odometer(q_primes, q_exps, q_primes_len, must_divs);
+    Odometer q_od = Odometer(q_primes, q_exps, q_primes_len, 1);
     div = q_od.get_div();
 
     //cout << "div = " << div << "\n";
@@ -556,7 +555,6 @@ vector<pair<int64, bigint>> Construct_car::preproduct_crossover(int64* P, long P
   int64 p;     // stores a temp prime
   long e;      // stores a temp exponent
   int64 Delta_bound;  // stores upper bound on Delta to ensure it isn't too big
-  vector<long> must_divs = vector<long>();  // no restrictions on Odometer divisors
 
   // variables for primality testing, using gmp function so need to convert to mpz_t
   mpz_t q_big;
@@ -676,7 +674,7 @@ vector<pair<int64, bigint>> Construct_car::preproduct_crossover(int64* P, long P
       }
 
       // Set up odometer to run through divisors of (P-1)(P+D)/2
-      Odometer q_od = Odometer(q_primes, q_exps, q_primes_len, must_divs);
+      Odometer q_od = Odometer(q_primes, q_exps, q_primes_len, 1);
       div = q_od.get_div();
 
       // Run the code for divisor Delta = 1

@@ -154,7 +154,7 @@ int main(int argc, char* argv[]) {
 
   
   SmallP_Carmichael c1 = SmallP_Carmichael(2, 1000);
-  c1.tabulate_all_DDelta("all_DD_test.txt");
+  //c1.tabulate_all_DDelta("all_DD_test.txt");
 
   //Construct_car c2 = Construct_car();
   //c2.tabulate_car(10000, 0, 1, "all_old_test.txt", "cars_none.txt");
@@ -165,7 +165,12 @@ int main(int argc, char* argv[]) {
   long es[] = {3, 1, 1};
   Preproduct P = Preproduct(49601, ps, 2, pms, 3);
 
-  
+  Odometer od = Odometer(pms, es, 3, 3, true);
+  for(long i = 0; i < 20; ++i){
+    cout << od.get_div() << " ";
+    od.next_div();
+  } 
+  cout << "\n";
 
   /* 
   auto start_new = high_resolution_clock::now(); 

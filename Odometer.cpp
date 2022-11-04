@@ -28,16 +28,16 @@ Odometer::Odometer(){
   all_divisors[1] = 2;
   curr_div_index = 0;
 
-  // default must_have is empty
-  must_have = vector<long>();
-  // default initial div is 1
+  // default multiple we apply at the end is 1
+  multiple = 1;
+  // default initial div is 1 (times multiple)
   initial_div = 1;
 }
 
 // set the prime and powers
 // by default, do the space-efficient version.  if storage flag turned to true,
 // this constructor will calculate and store all divisors in an array
-Odometer::Odometer(int64* ps, long* pows, long len, vector<long> must_divide, bool storage){
+Odometer::Odometer(int64* ps, long* pows, long len, int64 given_multiple, bool storage){
   num_length = len;
   
   // allocate memory for primes, powers
@@ -58,33 +58,10 @@ Odometer::Odometer(int64* ps, long* pows, long len, vector<long> must_divide, bo
     div_exp[i] = 0;
   }
 
-  // for each prime in must_divide, check that it is in primes.  If so, build must_have
-  must_have = vector<long>();
-  long temp_prime;
-
-  for(long i = 0; i < must_divide.size(); ++i){
-    // grab the prime from the input vector
-    temp_prime = must_divide.at(i);
-
-    // search for it in the prime array
-    for(long j = 0; j < num_length; ++j){
-      if(temp_prime == primes[j]){
-        // if found, add index to the must_have vector
-        must_have.push_back(j);
-        break;
-      }
-    }
-  }
-  // now for each index in must_have, set the exponent to 1, not 0
-  for(long i = 0; i < must_have.size(); ++i){
-    div_exp[ must_have[i] ] = 1;
-  }
+  multiple = given_multiple;
 
   // calculate the initial divisor and store it.  set div to initial_div
-  initial_div = 1;
-  for(long i = 0; i < num_length; ++i){
-    initial_div *= pow( primes[i], div_exp[i] );
-  }
+  initial_div = 1 * multiple;
   div = initial_div;
 
   store_divisors = storage;
@@ -94,13 +71,8 @@ Odometer::Odometer(int64* ps, long* pows, long len, vector<long> must_divide, bo
     // calculate number of divisors from primes and powers
     num_divisors = 1;
     for(long i = 0; i < num_length; ++i){
+      num_divisors *= (powers[i] + 1);
 
-      // if the index is in must_have, multiply by powers[i], otherwise power[i]+1
-      if(find(must_have.begin(), must_have.end(), i) != must_have.end()){
-        num_divisors *= powers[i];
-      }else{
-        num_divisors *= (powers[i] + 1);
-      }
     }
     
     // allocate memory, call recursive function that does work
@@ -112,14 +84,11 @@ Odometer::Odometer(int64* ps, long* pows, long len, vector<long> must_divide, bo
     create_divisors(0, 1);
     curr_div_index = 0;
 
-    // create_divisors cuts down on the exp for primes in must_have by 1
-    // to reconcile, we multiply by those primes so all divisors are multiples of them
-    long multiple = 1;
-    for(long i = 0; i < must_have.size(); ++i){
-      multiple *= primes[ must_have.at(i) ];
-    }
-    for(long i = 0; i < num_divisors; ++i){
-      all_divisors[i] = all_divisors[i] * multiple;      
+    // multiply all divisors by the given multiple, but only if multiple is not 1
+    if(multiple != 1){
+      for(long i = 0; i < num_divisors; ++i){
+        all_divisors[i] = all_divisors[i] * multiple;      
+      }
     }
     
   }else{
@@ -162,16 +131,10 @@ void Odometer::next_div(){
     // Along the way, turn intermediate exps to 0
     curr_prime = 0;
     while(curr_prime < num_length && div_exp[curr_prime] == powers[curr_prime]){
-      
-      // if the curr_prime is in the must haves, set to 1 instead
-      if( find(must_have.begin(), must_have.end(), curr_prime) != must_have.end() ){
-        div_exp[curr_prime] = 1;
-      }else{
-        div_exp[curr_prime] = 0;
-      }
-
-      // also update div.  Flipping exp to 0 corresponds to dividing div by p^exp or p^(exp - 1)
-      prime_pow = pow( primes[curr_prime] , powers[curr_prime] - div_exp[curr_prime] );
+      div_exp[curr_prime] = 0;     
+ 
+      // also update div.  Flipping exp to 0 corresponds to dividing div by p^exp 
+      prime_pow = pow( primes[curr_prime] , powers[curr_prime] );
       div = div / prime_pow;     
 
       // increment prime index
@@ -188,7 +151,7 @@ void Odometer::next_div(){
       div_exp[curr_prime]++;
 
       // also multiply div by the prime at that index
-      div = div * primes[curr_prime];
+      div *= primes[curr_prime];
     }
   }
   return;
@@ -213,7 +176,7 @@ int64 Odometer::get_div(){
  * and add the new divisors to the array.  The array has memory allocated, just need to update index.
  */
 void Odometer::create_divisors(long prime_index, long curr_position){
-
+ 
   // we are done if the curr_position matches the number of divisors and the prime_index matches length
   // Update: now it is possible the last prime is in must_have and has exp = 1, and thus should be skipped
   // So I am changing this to prime_index <= num_length
@@ -247,15 +210,8 @@ void Odometer::create_divisors(long prime_index, long curr_position){
     // for every power of the prime p
     int64 p = primes[prime_index];
     int64 power = 1;
-    long max_exp;
+    long max_exp = powers[prime_index];
 
-    // if index is in must_have, lower max_power by 1
-    if( find(must_have.begin(), must_have.end(), prime_index) != must_have.end() ){
-      max_exp = powers[prime_index] - 1;
-    }else{
-      max_exp = powers[prime_index];
-    }
-    
     // now, for every power of that prime up to the maximum, multiply by all existing divisors
     for(long i = 0; i < max_exp; ++i){
       // new prime power is p times the old one

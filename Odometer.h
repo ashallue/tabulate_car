@@ -41,8 +41,7 @@ class Odometer{
     long* div_exp;
     int64 div;
 
-    // this vector of indices specifies primes from primes array that must divide the divisors
-    vector<long> must_have;
+    int64 multiple;
 
     // if store_divisors flag turned on, instead store all divisors in an array
     bool store_divisors;
@@ -61,9 +60,10 @@ class Odometer{
     // by default, do the space-efficient version.  If storage flag turned to true, 
     // this constructor will calculate and store all divisors in an array
     //
-    // Addition: all divisors generated will be divisible by the must divides
-    // This constructor checks, if they are not part of primes they are not included.
-    Odometer(int64* ps, long* pows, long len, vector<long> must_divide, bool storage = false);
+    // Addition: all divisors generated will be divisible by the multiple
+    // This is implemented by generating all divisors, then multiplying by multiple at the end
+    // No attempt made in this class to confirm that the multiple is "supposed" to divide the integer.
+    Odometer(int64* ps, long* pows, long len, int64 given_multiple, bool storage = false);
 
     // destructor frees memory for primes, powers, div_exp
     ~Odometer();
