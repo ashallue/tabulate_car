@@ -358,7 +358,7 @@ void SmallP_Carmichael::tabulate_all_CD(string cars_file){
  * To make Delta not divisible by p, remove the p power from the list when creating the Odometer
  */
 void SmallP_Carmichael::DDelta(Preproduct& P, bigint D){
-    cout << "Inside DDelta with P = " << P.Prod << " and D = " << D << "\n";
+    //cout << "Inside DDelta with P = " << P.Prod << " and D = " << D << "\n";
 
     int64 Delta_bound;  // stores upper bound on Delta to ensure it isn't too big (making q too small)
     int64 div = 1;      // will store divisors of (P-1)(P+D)/2    
