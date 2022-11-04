@@ -43,13 +43,17 @@ SmallP_Carmichael::SmallP_Carmichael(){
   qrs.reserve(1000);
 
   // set residues data structures
-  total_residue = 6;
-  num_residues = 2;
+  total_residue = 210;
+  num_residues = 4;
   for(long i = 0; i < total_residue; ++i){
     residues_P[i][0] = i % 2;
     residues_P[i][1] = i % 3;
+    residues_P[i][2] = i % 5;
+    residues_P[i][3] = i % 7;
     residues_D[i][0] = i % 2;
-    residues_D[i][1] = i % 3;  
+    residues_D[i][1] = i % 3;
+    residues_D[i][2] = i % 5;
+    residues_D[i][3] = i % 7;  
   }
   res_P_index = 0;
   res_D_index = 0;
@@ -72,13 +76,17 @@ SmallP_Carmichael::SmallP_Carmichael(int64 B_low_val, int64 B_up_val){
   qrs.reserve(1000);
 
   // set residues data structures
-  total_residue = 6;
-  num_residues = 2;
+  total_residue = 210;
+  num_residues = 4;
   for(long i = 0; i < total_residue; ++i){
     residues_P[i][0] = i % 2;
     residues_P[i][1] = i % 3;
+    residues_P[i][2] = i % 5;
+    residues_P[i][3] = i % 7;
     residues_D[i][0] = i % 2;
-    residues_D[i][1] = i % 3;  
+    residues_D[i][1] = i % 3;
+    residues_D[i][2] = i % 5;
+    residues_D[i][3] = i % 7;  
   }
   res_P_index = 0;
   res_D_index = 0;
@@ -108,11 +116,15 @@ SmallP_Carmichael::SmallP_Carmichael(const SmallP_Carmichael& other){
   mpz_set(q_mpz, other.q_mpz);   mpz_set(r_mpz, other.r_mpz);
 
   // set residues data structures
-  for(long i = 0; i < 6; ++i){
+  for(long i = 0; i < 210; ++i){
     residues_P[i][0] = i % 2;
     residues_P[i][1] = i % 3;
+    residues_P[i][2] = i % 5;
+    residues_P[i][3] = i % 7;
     residues_D[i][0] = i % 2;
-    residues_D[i][1] = i % 3;  
+    residues_D[i][1] = i % 3;
+    residues_D[i][2] = i % 5;
+    residues_D[i][3] = i % 7;  
   }
   res_P_index = other.res_P_index;
   res_D_index = other.res_D_index;
@@ -138,11 +150,15 @@ SmallP_Carmichael SmallP_Carmichael::operator=(const SmallP_Carmichael& other){
   mpz_set(result_ob.q_mpz, other.q_mpz);  mpz_set(result_ob.r_mpz, other.r_mpz);
 
   // set residues data structures
-  for(long i = 0; i < 6; ++i){
+  for(long i = 0; i < 210; ++i){
     result_ob.residues_P[i][0] = i % 2;
     result_ob.residues_P[i][1] = i % 3;
+    result_ob.residues_P[i][2] = i % 5;
+    result_ob.residues_P[i][3] = i % 7;
     result_ob.residues_D[i][0] = i % 2;
-    result_ob.residues_D[i][1] = i % 3;  
+    result_ob.residues_D[i][1] = i % 3;
+    result_ob.residues_D[i][2] = i % 5;
+    result_ob.residues_D[i][3] = i % 7;  
   }
   result_ob.res_P_index = other.res_P_index;
   result_ob.res_D_index = other.res_D_index;
@@ -338,15 +354,15 @@ void SmallP_Carmichael::tabulate_all_CD(string cars_file){
  * Calls completion check, which will write the pair (q,r) to vector qrs if Pqr is Carmichael.
  *
  * Later improvement: due to the integrality of C, if p | D then either P, Delta both 0 mod p or both not 0
- * To make Delta divisible by p, I have added a must_have vector to Odometer.
+ * To make Delta divisible by p, I have added a divisor_multiple to Odometer
  * To make Delta not divisible by p, remove the p power from the list when creating the Odometer
  */
 void SmallP_Carmichael::DDelta(Preproduct& P, bigint D){
-    //if(P.Prod % 3 == 0 && D % 3 == 0) cout << "Inside DDelta with P = " << P.Prod << " and D = " << D << "\n";
-    
+    cout << "Inside DDelta with P = " << P.Prod << " and D = " << D << "\n";
+
     int64 Delta_bound;  // stores upper bound on Delta to ensure it isn't too big (making q too small)
     int64 div = 1;      // will store divisors of (P-1)(P+D)/2    
-    vector<long> must_divs = vector<long>();  // primes that all Odomter divs must include
+    int64 divisor_multiple = 1;  // primes that all Odomter divs must include
 
     // We set up an odometer, which requires primes and powers
     // Note this is not the final value of q, just the one needed to compute divisors.
@@ -356,10 +372,15 @@ void SmallP_Carmichael::DDelta(Preproduct& P, bigint D){
     for(long i = 0; i < num_residues; ++i){
       if(residues_D[res_D_index][i] == 0){
         // if P = 0 mod p, then Delta = 0 mod p, so add the prime as a must have
+        // The way this is implemented, we take the prime out of q, then Odometer multiplies by must_divide at end
         if(residues_P[res_P_index][i] == 0){
-          must_divs.push_back( primes[i] );
+          // of course, this is only done if q_D is divisible by the prime in the first place
+          if(q_D % primes[i] == 0){
+            divisor_multiple *= primes[i];
+            q_D = q_D / primes[i];
+          }
         }else{
-        // if P != 0 mod p, then Delta != 0 mod p, so remove p from q
+        // if P != 0 mod p, then Delta != 0 mod p, so remove all factors of p from q
           while(q_D & primes[i] == 0){
             q_D = q_D / primes[i];
           }
@@ -392,7 +413,7 @@ void SmallP_Carmichael::DDelta(Preproduct& P, bigint D){
     //if(D == 1000) cout << "Inside DDelta with P = " << P.Prod << " and D = " << D << "\n";
     
     // Set up odometer to run through divisors of (P-1)(P+D)/2
-    Odometer q_od = Odometer(q_primes, q_exps, q_primes_len, must_divs, true);
+    Odometer q_od = Odometer(q_primes, q_exps, q_primes_len, divisor_multiple, true);
     div = q_od.get_div();
 
     //if(D == 13) cout << "div = " << div << "\n";
@@ -588,7 +609,7 @@ void SmallP_Carmichael::tabulate_car(long processor, long num_threads, string ca
   long   Pminus_factors_len;
 
   // let's also calculate the average value of L/P
-  double avg_ratio = 0;
+  //double avg_ratio = 0;
 
   // file stream object
   ofstream output;
@@ -606,6 +627,9 @@ void SmallP_Carmichael::tabulate_car(long processor, long num_threads, string ca
   // count the number of admissable pre-products
   int64 num_admissable = 0;
 
+  // set the P residue
+  res_P_index = start_P % total_residue;
+
   // Now loop over odd pre-products P
   for(int64 P = start_P; P < B_upper; P = P + 2){
 
@@ -619,7 +643,7 @@ void SmallP_Carmichael::tabulate_car(long processor, long num_threads, string ca
     Preproduct P_ob = Preproduct(P, P_factors, P_factors_len, Pminus_factors, Pminus_factors_len);
 
     // add ratio L/P to the running total
-    avg_ratio += P_ob.L / (P + 0.0) ;
+    //avg_ratio += P_ob.L / (P + 0.0) ;
 
     // check admissability.  If so, add to count
     if(P_ob.admissable) num_admissable++;
@@ -628,6 +652,11 @@ void SmallP_Carmichael::tabulate_car(long processor, long num_threads, string ca
     if( (num_admissable % num_threads) != (processor % num_threads)){
       F.next();
       F.next();
+
+      // update the P index
+      res_P_index += 2;
+      if(res_P_index > total_residue) res_P_index -= total_residue;
+
     }else{
 
       // if admissable, construct Carmichaels
@@ -652,6 +681,10 @@ void SmallP_Carmichael::tabulate_car(long processor, long num_threads, string ca
       F.next();
       F.next();
 
+      // update the P index
+      res_P_index += 2;
+      if(res_P_index > total_residue) res_P_index -= total_residue;
+    
     } // end if correct processor
   } // end for P 
 
@@ -660,7 +693,7 @@ void SmallP_Carmichael::tabulate_car(long processor, long num_threads, string ca
   qrs.clear();
 
   // to stdout print avg ratio
-  cout << "average ratio of L/P is " << avg_ratio / num_admissable << "\n";
+  //cout << "average ratio of L/P is " << avg_ratio / num_admissable << "\n";
 }
 
 /* Construct Carmichaels for prime pre-products P, using just D-Delta method
@@ -682,12 +715,20 @@ void SmallP_Carmichael::tabulate_car_primeP(long processor, long num_threads, st
   // count the number of prime pre-products
   int64 num_prime_P = 0;
 
+  // set P residue
+  res_P_index = 3;
+
   // loop over pre-products
   for(int64 P = 3; P < B_upper; ++P){
     // check if P is prime.  If not, continue
     if(!F.isprime_current()){
       F.next();
       F.next();
+
+      // update the P index
+      res_P_index += 2;
+      if(res_P_index > total_residue) res_P_index -= total_residue;
+
     }else{
       //cout << "Found prime P = " << P << "\n";     
 
@@ -702,6 +743,11 @@ void SmallP_Carmichael::tabulate_car_primeP(long processor, long num_threads, st
       if(num_prime_P % num_threads != processor){
         F.next();
         F.next();
+
+        // update the P index
+        res_P_index += 2;
+        if(res_P_index > total_residue) res_P_index -= total_residue;
+
       }else{
         // construct preproduct object
         P_ob = Preproduct(P, P_factors, P_factors_len, Pminus_factors, Pminus_factors_len);
@@ -717,8 +763,11 @@ void SmallP_Carmichael::tabulate_car_primeP(long processor, long num_threads, st
         // advance window
         F.next();
         F.next();
+      
+        // update the P index
+        res_P_index += 2;
+        if(res_P_index > total_residue) res_P_index -= total_residue;
       }
-   
     }// end if P prime
 
   } // end for P
@@ -740,8 +789,9 @@ void SmallP_Carmichael::tabulate_car_primeP_crossover(long processor, long num_t
   ofstream output;
   output.open(cars_file);
 
-  // initialize Factgen2 object
+  // initialize Factgen2 object and P residue
   F.init(2, B_upper);
+  res_P_index = 3;
 
   // count the number of prime pre-products
   int64 num_prime_P = 0;
@@ -752,6 +802,11 @@ void SmallP_Carmichael::tabulate_car_primeP_crossover(long processor, long num_t
     if(!F.isprime_current()){
       F.next();
       F.next();
+
+      // update the P index
+      res_P_index += 2;
+      if(res_P_index > total_residue) res_P_index -= total_residue;
+    
     }else{
       //cout << "Found prime P = " << P << "\n";     
 
@@ -766,6 +821,11 @@ void SmallP_Carmichael::tabulate_car_primeP_crossover(long processor, long num_t
       if(num_prime_P % num_threads != processor){
         F.next();
         F.next();
+
+        // update the P index
+        res_P_index += 2;
+        if(res_P_index > total_residue) res_P_index -= total_residue;
+      
       }else{
         // construct preproduct object
         P_ob = Preproduct(P, P_factors, P_factors_len, Pminus_factors, Pminus_factors_len);
@@ -782,8 +842,11 @@ void SmallP_Carmichael::tabulate_car_primeP_crossover(long processor, long num_t
         // advance window
         F.next();
         F.next();
-      }
-   
+
+        // update the P index
+        res_P_index += 2;
+        if(res_P_index > total_residue) res_P_index -= total_residue;
+      }  
     }// end if P prime
 
   } // end for P
@@ -837,6 +900,10 @@ void SmallP_Carmichael::preproduct_crossover(Preproduct& P){
 
   // Basic loop structure: for all D in [2..(P-1)], for all divisors
   // of the expression (P-1)(P+D)/2, do stuff.
+  //
+  // Initialize D residue
+  res_D_index = 2;
+
   for(int64 D = 2; D < P.Prod; ++D){
 
     // Start with code to decide whether to do D-Delta or C-D method
@@ -880,6 +947,10 @@ void SmallP_Carmichael::preproduct_crossover(Preproduct& P){
     } // end if D large i.e. end of else
 
     // note the Carmichaels are written to vector qrs by completion_check, called by either DDelta or CD
+
+    // update D residue
+    res_D_index++;
+    if(res_D_index > total_residue) res_D_index -= total_residue;
 
   } // end for D
   //cout << "Crossover with P = " << P.Prod << " did DDelta method " << count_DDelta << " times and the CD method " << count_CD << " many times\n";

@@ -215,11 +215,15 @@ int64 Odometer::get_div(){
 void Odometer::create_divisors(long prime_index, long curr_position){
 
   // we are done if the curr_position matches the number of divisors and the prime_index matches length
-  if(prime_index == num_length && curr_position == num_divisors){
+  // Update: now it is possible the last prime is in must_have and has exp = 1, and thus should be skipped
+  // So I am changing this to prime_index <= num_length
+  if(prime_index <= num_length && curr_position == num_divisors){
     return;
   // it shouldn't happen that only one of those is true.  Check just to be safe
+  // Update: now the second problem can't occur
   }else if(prime_index == num_length){
-    cout << "Error in create_divisors, only prime_index is maxed out\n";
+    cout << "Error in create_divisors, prime_index is maxed out without all divisors constructed\n";
+  /*
   }else if(curr_position == num_divisors){
     cout << "Error in create_divisors, only curr_position is maxed out\n";
     cout << "curr_position = " << curr_position << " num_divisors = " << num_divisors;
@@ -233,7 +237,7 @@ void Odometer::create_divisors(long prime_index, long curr_position){
       cout << powers[i] << " ";
     }
     cout << "\n";
-  
+  */
   // work for the recursive call
   }else{
 

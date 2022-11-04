@@ -153,9 +153,11 @@ int main(int argc, char* argv[]) {
   */
 
   
-  cout << "\nTesting different methods for P = 49601 = 193 * 257\n";
   SmallP_Carmichael c1 = SmallP_Carmichael(2, 1000);
   c1.tabulate_all_DDelta("all_DD_test.txt");
+
+  //Construct_car c2 = Construct_car();
+  //c2.tabulate_car(10000, 0, 1, "all_old_test.txt", "cars_none.txt");
 
   // construct Preproduct, need arrays for both P and P-1 
   long ps[] = {193, 257};
@@ -163,42 +165,6 @@ int main(int argc, char* argv[]) {
   long es[] = {3, 1, 1};
   Preproduct P = Preproduct(49601, ps, 2, pms, 3);
 
-  cout << "\nTesting Odometer\n";
-  vector<long> must_haves = vector<long>();
-  must_haves.push_back(2); must_haves.push_back(7); must_haves.push_back(31);
-
-  Odometer od = Odometer(pms, es, 3, must_haves, false);
-
-  cout << "Divisors: " << od.get_div() << "\n";
-  od.next_div();
-  while(od.get_div() != od.initial_div){
-    cout << od.get_div() << "\n";
-    od.next_div();
-  } 
-
-  
-  // testing q_factorization 
-  // array for factors of (P-1)(P+D)/2
-  long D = 10;
-  int64* pd = new int64[3];
-  pd[0] = 3;  pd[1] = 23; pd[2] = 719;
-
-  int64 q = (P.Prod - 1) * (P.Prod + D) / 2;
-  q = q / 3;
-
-  int64* q_primes = new int64[10];
-  long*  q_exps = new int64[10];
-  long length = P.q_factorization(q, pd, 3, q_primes, q_exps);
-  cout << "length = " << length << " ";
-  cout << "q_primes: ";
-  for(long i = 0; i < length; ++i){
-    cout << q_primes[i] << " ";
-  }
-  cout << " q_exps: ";
-  for(long i = 0; i < length; ++i){
-    cout << q_exps[i] << " ";
-  }
-  cout << "\n";
   
 
   /* 
