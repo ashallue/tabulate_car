@@ -78,18 +78,20 @@ Odometer::Odometer(int64* ps, long* pows, long len, int64 given_multiple, bool s
     // allocate memory, call recursive function that does work
     all_divisors = new int64[num_divisors];
     // initially feed the array with 1 as the only divisor
-    all_divisors[0] = 1;
+    all_divisors[0] = initial_div;
 
     // now do recursive function, and update curr_div_index to the beginning
     create_divisors(0, 1);
     curr_div_index = 0;
 
+    /*
     // multiply all divisors by the given multiple, but only if multiple is not 1
     if(multiple != 1){
       for(long i = 0; i < num_divisors; ++i){
         all_divisors[i] = all_divisors[i] * multiple;      
       }
     }
+    */
     
   }else{
     all_divisors = new int64[1];

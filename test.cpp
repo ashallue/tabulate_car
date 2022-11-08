@@ -153,11 +153,11 @@ int main(int argc, char* argv[]) {
   */
 
   
-  SmallP_Carmichael c1 = SmallP_Carmichael(2, 10000);
-  c1.tabulate_all_DDelta("all_DD_test.txt");
+  SmallP_Carmichael c1 = SmallP_Carmichael(2, 20000);
+  c1.tabulate_car(0, 1, "cars_smallp.txt");
 
   Construct_car c2 = Construct_car();
-  c2.tabulate_car(10000, 0, 1, "all_old_test.txt", "cars_none.txt");
+  c2.tabulate_car(20000, 0, 1, "cars_old.txt", "cars_none.txt");
 
   // construct Preproduct, need arrays for both P and P-1 
   long ps[] = {193, 257};

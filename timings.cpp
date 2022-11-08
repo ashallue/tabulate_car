@@ -55,32 +55,33 @@ int main(int argc, char* argv[]) {
     
   cout << "Timings for tabulation of Carmichaels with pre-product up to " << bound << "\n";
 
-  
+/*  
   auto start_old = high_resolution_clock::now();
   C1.tabulate_car(bound, 0, 1, "cars_old.txt", "cars_none.txt");
   auto end_old = high_resolution_clock::now();
   auto duration_old = duration_cast<seconds>(end_old - start_old);
   cout << "Timing for Construct_car.tabulate_car: " << duration_old.count() << "\n";
-  
+  */
   auto start_new = high_resolution_clock::now();
   S2.tabulate_car(0, 1, "cars_new.txt");
   auto end_new = high_resolution_clock::now();
   auto duration_new = duration_cast<seconds>(end_new - start_new);
   cout << "Timing for SmallP_Carmichael.tabulate_car: " << duration_new.count() << "\n";
   
-  
+  /*
   auto start_DD = high_resolution_clock::now();
   S3.tabulate_all_DDelta("cars_DD.txt");
   auto end_DD = high_resolution_clock::now();
   auto duration_DD = duration_cast<seconds>(end_DD - start_DD);
   cout << "Timing for all_DD method: " << duration_DD.count() << "\n";
-   
+  */
+  /* 
   auto start_CD = high_resolution_clock::now();
   S4.tabulate_all_CD("cars_CD.txt");
   auto end_CD = high_resolution_clock::now();
   auto duration_CD = duration_cast<seconds>(end_CD - start_CD);
   cout << "Timing for all_CD method: " << duration_CD.count() << "\n";
-    
+  */
 
   /* Code for the prime preproduct timing comparisons
 

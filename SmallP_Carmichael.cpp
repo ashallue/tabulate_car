@@ -920,7 +920,7 @@ void SmallP_Carmichael::preproduct_crossover(Preproduct& P){
       }
       // in the dynamic case, switch if L_P / D is less than the count of divisors
       // Divisor count of P-1 stored in Preproduct class as Tau, then include estimate for P+D divisor count
-      if( L_p / D < P.Tau * pow(2, PplusD_len)){
+      if( L_p / D < P.Tau * pow(2, PplusD_len) / 4){
         do_DDelta_method = false;
       }
       
