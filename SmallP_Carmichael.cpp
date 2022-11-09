@@ -400,23 +400,10 @@ void SmallP_Carmichael::DDelta(Preproduct& P, bigint D){
     long* q_exps   = new long[PplusD_len + P.Pminus_len];
     long q_primes_len = P.q_factorization(q_D, PplusD, PplusD_len, q_primes, q_exps);  
 
-    /*
-    // testing
-    cout << "Resulting q = " << q_D << ": "<< "\n";
-    for(long i = 0; i < q_primes_len; ++i){
-      cout << q_primes[i] << "^" << q_exps[i] << " ";
-    } 
-    cout << "\n";
-    */
-
-    //testing
-    //if(D == 1000) cout << "Inside DDelta with P = " << P.Prod << " and D = " << D << "\n";
-    
-    // Set up odometer to run through divisors of (P-1)(P+D)/2
+    // Set up odometer to run through divisors of (P-1)(P+D)/2.  true means we are computing 
+    // and storing divisors up front.  Passing false would mean divisors are computed on the fly
     Odometer q_od = Odometer(q_primes, q_exps, q_primes_len, divisor_multiple, true);
     div = q_od.get_div();
-
-    //if(D == 13) cout << "div = " << div << "\n";
 
     // Run the code for divisor Delta = 1
     // apply completion check subroutine to see if this divisor Delta creates Carmichael
@@ -887,8 +874,10 @@ void SmallP_Carmichael::preproduct_crossover(Preproduct& P){
   // count the number of times we do C-D
   int64 count_CD = 0;
   bool do_DDelta_method = true;
-
   int64 count_DDelta = 0;
+
+  // calculate an estimate for the number of divisors.  Crossover to CD if L_P/D < divisor count
+  int64 divisor_estimate = 1;
 
   // calling either CD or DDelta method will create Carmichael completions
   vector<pair<int64, bigint>> qrs;
@@ -918,9 +907,15 @@ void SmallP_Carmichael::preproduct_crossover(Preproduct& P){
         PplusD = FD.prev;
         PplusD_len = FD.prevlen;
       }
+      // estimate the number of divisors of (P-1)(P+D).  Recall there are fewer if D = 0 mod p for small p
+      divisor_estimate = P.Tau * pow(2, PplusD_len);
+      // correction factor for rebalancing after speeding up DDelta method.  Constant based on experiments.
+      divisor_estimate /= 4;
+
       // in the dynamic case, switch if L_P / D is less than the count of divisors
       // Divisor count of P-1 stored in Preproduct class as Tau, then include estimate for P+D divisor count
-      if( L_p / D < P.Tau * pow(2, PplusD_len) / 4){
+      // Need to rebalance.  Try this: for every p with D = 0 mod p, divide divisor count by 2
+      if( L_p / D < divisor_estimate){
         do_DDelta_method = false;
       }
       
