@@ -3,6 +3,7 @@
 #include <vector>
 #include "math.h"
 #include "functions.h"
+#include "libdivide.h"
 #include "Stack.h"
 #include "Factgen.h"
 #include "LargeP_Carmichael.h"
@@ -153,8 +154,8 @@ int main(int argc, char* argv[]) {
   */
 
   
-  SmallP_Carmichael c1 = SmallP_Carmichael(2, 20000);
-  c1.tabulate_car(0, 1, "cars_smallp.txt");
+  //SmallP_Carmichael c1 = SmallP_Carmichael(2, 20000);
+  //c1.tabulate_car(0, 1, "cars_smallp.txt");
   /*
   Construct_car c2 = Construct_car();
   c2.tabulate_car(20000, 0, 1, "cars_old.txt", "cars_none.txt");
@@ -172,6 +173,12 @@ int main(int argc, char* argv[]) {
     od.next_div();
   } 
   cout << "\n";
+
+  cout << "\nTesting libdivide\n";
+  long top = 1000;
+  libdivide::divider<long> d(101);
+  cout << "Dividing 1000 by 101 normally: " << 1000 / 101 << " " << "\n";
+  cout << "Dividing using libdivide: " << top / d << " " << "\n";
 
   /* 
   auto start_new = high_resolution_clock::now(); 

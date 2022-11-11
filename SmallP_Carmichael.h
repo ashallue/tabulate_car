@@ -11,6 +11,7 @@
 #include "Preproduct.h"
 #include "int.h"
 #include "bigint.h"
+#include "libdivide.h"
 #include "gmp.h"
 #include "Odometer.h"
 #include <vector>

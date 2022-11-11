@@ -379,9 +379,9 @@ void SmallP_Carmichael::DDelta(Preproduct& P, bigint D){
             divisor_multiple *= primes[i];
             q_D = q_D / primes[i];
           }
-        }else{
+        }else if(residues_P[res_P_index][i] == 1){
         // if P != 0 mod p, then Delta != 0 mod p, so remove all factors of p from q
-          while(q_D & primes[i] == 0){
+          while(q_D % primes[i] == 0){
             q_D = q_D / primes[i];
           }
         }
