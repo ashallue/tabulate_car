@@ -187,7 +187,10 @@ void SmallP_Carmichael::all_DDelta(Preproduct& P){
   // of the expression (P-1)(P+D)/2, do stuff.
   // First set the D residue
   res_D_index = 2;
+  libdivide::divider<int64> fast_D;
   for(int64 D = 2; D < P.Prod; ++D){
+   
+    fast_D = libdivide::divider<int64>(D);    
 
     // testing
     //cout << "P = " << P.Prod << " " << "D = " << D << "and D residue = " << res_D_index << "\n";
@@ -196,7 +199,7 @@ void SmallP_Carmichael::all_DDelta(Preproduct& P){
     FD.next();
 
     // gather Carmichaels from the DDelta function.  Note: stored in vector qrs
-    DDelta(P, D);
+    DDelta(P, D, fast_D);
 
     // update the D residue index in preparation for the next cycle   
     res_D_index++;
@@ -210,11 +213,12 @@ void SmallP_Carmichael::all_DDelta(Preproduct& P){
 
 // same as above.  Don't use this for production
 void SmallP_Carmichael::all_CD(Preproduct& P){
-
+  libdivide::divider<int64> fastD;
+  
   // loop over D, call CD method.  For this function I shouldn't have to update FD object.
   for(int64 D = 2; D < P.Prod; ++D){
-
-    CD(P, D);
+    fastD = libdivide::divider<int64>(D);
+    CD(P, D, fastD);
 
   }
 }
@@ -357,7 +361,7 @@ void SmallP_Carmichael::tabulate_all_CD(string cars_file){
  * To make Delta divisible by p, I have added a divisor_multiple to Odometer
  * To make Delta not divisible by p, remove the p power from the list when creating the Odometer
  */
-void SmallP_Carmichael::DDelta(Preproduct& P, bigint D){
+void SmallP_Carmichael::DDelta(Preproduct& P, bigint D, libdivide::divider<int64>& fastD){
     //cout << "Inside DDelta with P = " << P.Prod << " and D = " << D << "\n";
 
     int64 Delta_bound;  // stores upper bound on Delta to ensure it isn't too big (making q too small)
@@ -367,7 +371,8 @@ void SmallP_Carmichael::DDelta(Preproduct& P, bigint D){
     // We set up an odometer, which requires primes and powers
     // Note this is not the final value of q, just the one needed to compute divisors.
     q_D = (P.Prod - 1) * (P.Prod + D) / 2;
-    
+    int64 qtemp = q_D;   
+ 
     // for each prime tracked, first check if D = 0 mod p
     for(long i = 0; i < num_residues; ++i){
       if(residues_D[res_D_index][i] == 0){
@@ -375,14 +380,14 @@ void SmallP_Carmichael::DDelta(Preproduct& P, bigint D){
         // The way this is implemented, we take the prime out of q, then Odometer multiplies by must_divide at end
         if(residues_P[res_P_index][i] == 0){
           // of course, this is only done if q_D is divisible by the prime in the first place
-          if(q_D % primes[i] == 0){
+          if(qtemp % primes[i] == 0){
             divisor_multiple *= primes[i];
-            q_D = q_D / primes[i];
+            qtemp = qtemp / primes[i];
           }
         }else if(residues_P[res_P_index][i] == 1){
         // if P != 0 mod p, then Delta != 0 mod p, so remove all factors of p from q
-          while(q_D % primes[i] == 0){
-            q_D = q_D / primes[i];
+          while(qtemp % primes[i] == 0){
+            qtemp = qtemp / primes[i];
           }
         }
       }
@@ -398,7 +403,7 @@ void SmallP_Carmichael::DDelta(Preproduct& P, bigint D){
     // from PplusD and Pminus, compute full factorization of q_D (see Preproduct class) 
     int64* q_primes = new int64[PplusD_len + P.Pminus_len];
     long* q_exps   = new long[PplusD_len + P.Pminus_len];
-    long q_primes_len = P.q_factorization(q_D, PplusD, PplusD_len, q_primes, q_exps);  
+    long q_primes_len = P.q_factorization(qtemp, PplusD, PplusD_len, q_primes, q_exps);  
 
     // Set up odometer to run through divisors of (P-1)(P+D)/2.  true means we are computing 
     // and storing divisors up front.  Passing false would mean divisors are computed on the fly
@@ -407,7 +412,7 @@ void SmallP_Carmichael::DDelta(Preproduct& P, bigint D){
 
     // Run the code for divisor Delta = 1
     // apply completion check subroutine to see if this divisor Delta creates Carmichael
-    bool some_carmichaels = completion_check(P, div, D);
+    bool some_carmichaels = completion_check(P, div, D, fastD);
     
     // now go to next divisor
     q_od.next_div();
@@ -428,7 +433,7 @@ void SmallP_Carmichael::DDelta(Preproduct& P, bigint D){
       if(div < Delta_bound){
 
         // apply completion check subroutine to see if this divisor Delta creates Carmichael
-        some_carmichaels = completion_check(P, div, D);
+        some_carmichaels = completion_check(P, div, D, fastD);
       } // end if div < Delta_bound
       
       // next iteration
@@ -443,7 +448,7 @@ void SmallP_Carmichael::DDelta(Preproduct& P, bigint D){
 }
 
 // CD method (Pinch algorithm).  Given Preproduct and D, compute Carmichael completions
-void SmallP_Carmichael::CD(Preproduct& P, bigint D){ 
+void SmallP_Carmichael::CD(Preproduct& P, bigint D, libdivide::divider<int64>& fastD){ 
 
   // for CD method we generate all C in an interval.  These are the bounds.
   bigint C_lower = 1 + (P.Prod * P.Prod) / D;
@@ -470,7 +475,7 @@ void SmallP_Carmichael::CD(Preproduct& P, bigint D){
     q_integral = q_D % Delta == 0;
 
     if(q_integral && Delta < Delta_bound){
-      some_carmichaels = completion_check(P, Delta, D, C);
+      some_carmichaels = completion_check(P, Delta, D, fastD, C);
 
     }  
 
@@ -488,7 +493,7 @@ void SmallP_Carmichael::CD(Preproduct& P, bigint D){
   Returns bool: true if there are carmichael completions.  All found are written as pairs to vector qrs
   Update: q, r, and mpz_versions now members of the class.
 */
-bool SmallP_Carmichael::completion_check(Preproduct& P, int64 Delta, int64 D, int64 C_param){
+bool SmallP_Carmichael::completion_check(Preproduct& P, int64 Delta, int64 D, libdivide::divider<int64>& D_div, int64 C_param){
   // setup output.  By default set it to (0, 0) which means false
   pair<int64, bigint> output;
   output.first = 0;   output.second = 0;
@@ -505,8 +510,9 @@ bool SmallP_Carmichael::completion_check(Preproduct& P, int64 Delta, int64 D, in
 
     // compute quotient and rem at the same time, compiler should only use 1 instruction
     intermediate = P_val * P_val + Delta;
-    C = intermediate / D;
-    bigint inter_rem = intermediate % D;
+    C = intermediate / D_div;
+    // update: using libdivide, so need to write intermediate % D = intermediate - q * D
+    bigint inter_rem = intermediate - C * D;
 
     // if rem is not 0, C not integral, return false
     if(inter_rem != 0){
@@ -890,10 +896,12 @@ void SmallP_Carmichael::preproduct_crossover(Preproduct& P){
   // Basic loop structure: for all D in [2..(P-1)], for all divisors
   // of the expression (P-1)(P+D)/2, do stuff.
   //
-  // Initialize D residue
+  // Initialize D residue and libdivide object
   res_D_index = 2;
+  libdivide::divider<int64> fast_D;
 
   for(int64 D = 2; D < P.Prod; ++D){
+    fast_D = libdivide::divider<int64>(D);
 
     // Start with code to decide whether to do D-Delta or C-D method
     // if count_CD > 20, do C-D.  20 chosen without investigation.
@@ -923,7 +931,7 @@ void SmallP_Carmichael::preproduct_crossover(Preproduct& P){
 
     // if D is small, do the D-Delta method
     if(do_DDelta_method){
-      DDelta(P, D);
+      DDelta(P, D, fast_D);
       
       // testing
       //if(qrs.size() > 0) cout << "DDelta method for D = " << D << " found Carmichaels\n";
@@ -934,7 +942,7 @@ void SmallP_Carmichael::preproduct_crossover(Preproduct& P){
 
       // turn counter and perform CD method
       count_CD++;
-      CD(P, D);
+      CD(P, D, fast_D);
 
       //testing
       //if(qrs.size() > 0) cout << "CD method for D = " << D << " found Carmichaels\n";

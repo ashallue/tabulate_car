@@ -94,11 +94,11 @@ class SmallP_Carmichael{
      * picking one or the other.  This function takes a Preproduct and a D and performs D-Delta.
      * Runs through all divisors of (P-1)(P+D)/2, writes pairs (q,r) that complete a Carmichael to vector qrs
      */  
-    void DDelta(Preproduct& P, bigint D);
+    void DDelta(Preproduct& P, bigint D, libdivide::divider<int64>& fastD);
 
     /* Given a Preproduct and a D value, compute all Carmichael numbers.  This algorithm due to Pinch
      */
-    void CD(Preproduct& P, bigint D); 
+    void CD(Preproduct& P, bigint D, libdivide::divider<int64>& fastD); 
 
   /* Once I have the loop over divisors of (P-1)(P+D)/Delta, I need to perform the following steps:
     1) Compute C = (P^2 + Delta)/D, check that it is integral (unless C != 0, meaning given as parameter)
@@ -110,7 +110,7 @@ class SmallP_Carmichael{
   primality of q, r is determined through gmp func: mpz_probab_prime_p, which does Baillie-PSW
   If completion works, returns true and writes pair (q,r) to the qrs vector.  If it doesn't, returns false.
   */
-    bool completion_check(Preproduct& P, int64 Delta, int64 D, int64 C_param = 0);
+    bool completion_check(Preproduct& P, int64 Delta, int64 D, libdivide::divider<int64>& D_div, int64 C_param = 0);
    
   /* Construct Carmichaels for a range of pre-products P
  *   We use a factgen2 object, write to a file.  Only process admissable pre-products, divide up work among
