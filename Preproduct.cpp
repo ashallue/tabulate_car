@@ -68,6 +68,41 @@ Preproduct::Preproduct(int64 Pval, int64* Pfac, long Pfac_len, int64* PMfac, lon
 
 }
 
+// For the large preproduct case, we don't necessarily have factorization of P-1.
+// So this constructor only populates Pprimes, and only computes L
+Preproduct(int64 Pval, int64* Pfac, long Pfac_len){
+
+  // set length variables, then allocate memory for factor arrays
+  Prod = Pval;
+  Pprimes_len = Pfac_len;
+  Pminus_len  = 0;
+  Pprimes = new int64[Pprimes_len];
+  Pminus  = nullptr;
+
+  // copy over the factors for both P and P-1
+  // In the loop for P, also compute L = lcm_{p | P}(p-1) and P
+  L = 1;
+  int64 g;
+  int64 prime;
+
+  for(long i = 0; i < Pprimes_len; ++i){
+    // copying over the factor
+    Pprimes[i] = Pfac[i];
+    prime = Pprimes[i];
+
+    // in computing LCM, we can muliply by p-1 and divide by the gcd
+    g = gcd(prime - 1, L);
+    L = L * (prime - 1) / g;
+  }
+
+  // without factors of P-1, we can't compute Tau, so leave it at 1
+  Tau = 1;
+
+  // set admissable bool by calling is_admissable
+  admissable = is_admissable();
+
+}
+
 // Need a destructor to free the memory, then copy constructors for rule of 3
 Preproduct::~Preproduct(){
   delete[] Pprimes;

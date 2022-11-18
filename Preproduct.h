@@ -32,6 +32,10 @@ class Preproduct{
     // The constructor also calculates L and Tau.
     Preproduct(int64 Pval, int64* Pfac, long Pfac_len, int64* PMfac, long PMfac_len);
 
+    // For the large preproduct case, we don't necessarily have factorization of P-1.
+    // So this constructor only populates Pprimes, and only computes L
+    Preproduct(int64 Pval, int64* Pfac, long Pfac_len);
+
     // Need a destructor to free the memory, then copy constructors for rule of 3
     ~Preproduct();
     Preproduct(const Preproduct& other);
