@@ -138,7 +138,7 @@ class SmallP_Carmichael{
 
     /* prints out admissable pre-products in a given range */
     //void find_admissable(int64 low, int64 high);
- 
+
 };
 
 #endif

@@ -958,4 +958,6 @@ void SmallP_Carmichael::preproduct_crossover(Preproduct& P){
   } // end for D
   //cout << "Crossover with P = " << P.Prod << " did DDelta method " << count_DDelta << " times and the CD method " << count_CD << " many times\n";
  
-} 
+}
+
+ 

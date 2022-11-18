@@ -29,21 +29,16 @@ using namespace std::chrono;
 int main(int argc, char* argv[]) {
   std::cout << "Hello World!\n";
 
-  
-  cout << "Testing producting primes up to X\n";
- 
-  // create num array
-  long B = 100000;
-  long nums[B];
-  for(long i = 0; i < B; i++){
-    nums[i] = i;
+  cout << "Creating a list of Carmichaels up to a bound using small pre-product case\n";
+    
+  long bound = 100000;
+  SmallP_Carmichael c = SmallP_Carmichael(2, bound);
+  c.tabulate_car(0, 1, "cars_smallp.txt");
+  vector<bigint> cars = product_and_sort("cars_smallp.txt");
+  for(long i = 0; i < bound; ++i){
+    cout << cars.at(i) << "\n";
+    if(cars.at(i) >= bound) break;
   }
-  // turn it into a factor sieve
-  factor_sieve(nums, B);  
-  
-  // product primes
-  cout << "Prime product is " << prime_product(102, nums, B);
- 
  
 
   cout << "\nTesting LargeP_Odometer\n";
@@ -67,34 +62,6 @@ int main(int argc, char* argv[]) {
 
   cout << "\n";
 
-  /* Pseudosquare check 
-  Pseudosquare pssquare;
-  pssquare.print();
-  pssquare.check_pseudosquares();
-  */
-
-  cout << "\nTesting setting large integer values from literals\n";
-  
-  string test_string1 = "295363487400900310880401";
-  string test_string2 = "3655334429477057460046489";
-  string test_string3 = "99492945930479213334049";
-
-  bigint final_version = string_to_bigint(test_string1);
-  cout << "original string is " << test_string1 << "\n";
-  cout << "using function we get " << final_version << "\n";
-
-  cout << "Now let's convert back to mpz_t\n";
-  mpz_t num_big;  mpz_init(num_big);
-  mpz_set_si(num_big, 1001);  
-  cout << "Initial mpz_t is ";
-  mpz_out_str(nullptr, 10, num_big);
-  
-  bigint_to_mpz(final_version, num_big);
-  cout << "Resulting mpz_t is ";
-  mpz_out_str(nullptr, 10, num_big);
-  cout << "\n";
-
-  mpz_clear(num_big);
 
 
   /*
