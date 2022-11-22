@@ -31,7 +31,7 @@ int main(int argc, char* argv[]) {
 
   cout << "Creating a list of Carmichaels up to a bound using small pre-product case\n";
     
-  long bound = 100000;
+  long bound = 1000;
   SmallP_Carmichael c = SmallP_Carmichael(2, bound);
   c.tabulate_car(0, 1, "cars_smallp.txt");
   vector<bigint> cars = product_and_sort("cars_smallp.txt");
@@ -42,11 +42,11 @@ int main(int argc, char* argv[]) {
  
 
   cout << "\nTesting LargeP_Odometer\n";
-  LargeP_Odometer odo = LargeP_Odometer();
+  LargeP_Odometer odo = LargeP_Odometer(10000, 10);
   cout << "B = " << odo.B << " X = " << odo.X << " primes up to " << odo.prime_B << "\n";
   cout << "primes: ";
-  for(long i = 0; i < odo.primes.size(); ++i){
-    cout << odo.primes.at(i) << " ";
+  for(long i = 0; i < odo.primes_count; ++i){
+    cout << odo.primes[i] << " ";
   } 
   cout << "\n";
   cout << "P = " << odo.get_P() << " and its largest factor = " << odo.get_largest_prime() << "\n";
@@ -55,8 +55,11 @@ int main(int argc, char* argv[]) {
   cout << "P = " << odo.get_P() << " and its largest factor = " << odo.get_largest_prime() << "\n";
  
   //odo.large_products("test1.txt");
+  cout << "\n";
+  LargeP_Carmichael large_c = LargeP_Carmichael(10000, 10);
+  large_c.pinch(0, 1, "preproducts_test.txt");
 
-  LargeP_Odometer odo2 = LargeP_Odometer();
+
  
   //odo2.trivial_large_products("test2.txt");
 

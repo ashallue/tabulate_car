@@ -70,7 +70,7 @@ Preproduct::Preproduct(int64 Pval, int64* Pfac, long Pfac_len, int64* PMfac, lon
 
 // For the large preproduct case, we don't necessarily have factorization of P-1.
 // So this constructor only populates Pprimes, and only computes L
-Preproduct(int64 Pval, int64* Pfac, long Pfac_len){
+Preproduct::Preproduct(int64 Pval, int64* Pfac, long Pfac_len){
 
   // set length variables, then allocate memory for factor arrays
   Prod = Pval;

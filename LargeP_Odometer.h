@@ -26,7 +26,9 @@ class LargeP_Odometer{
     long max_d;
     long curr_d;  // count of prime factors of n.  count for P is d-2
     long P_len;     // count of prime factors of P.  We have P_len = curr_d - 2
-    vector<long> primes; // vector of primes of size X = B^{1/3}   
+    long* primes;  // array of the primes up to B^{1/3}.  primes_count has the length
+    long primes_count;
+   
     long* uppers;  // upper bounds on prime factors
     long* lowers;  // lower bounds on prime factors
 
@@ -71,6 +73,10 @@ class LargeP_Odometer{
 
     // retrieve current pre-product.  A simple getter function
     bigint get_P();
+
+    // retrieve the factorization of the current pre-product.
+    // Passed pointer gets the array of primes, the return value is its length
+    long get_Pfactors(int64* factors);
 
     // retrieve p_{d-2}, i.e. the largest prime dividing the pre-product
     long get_largest_prime();

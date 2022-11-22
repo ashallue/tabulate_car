@@ -65,6 +65,20 @@ vector<long> primes_fromfs(long* sieved_nums, long B){
   return(output);
 }
 
+/* From a factor sieve, retrieve the primes, stored in the primes array.
+ * The function returns the length, i.e. the number of primes found
+ */
+long primes_array_fromfs(long* sieved_nums, long B, long* primes){
+  long primes_count = 0;
+  for(long i = 2; i < B; ++i){
+    if(sieved_nums[i] == i){
+      primes[primes_count] = i;
+      primes_count++;
+    }
+  }
+  return(primes_count);
+}
+
 /* From a factor sieve, compute primality of a given number.
 n is prime if the largest factor in position n is n, 
 composite otherwise.

@@ -34,6 +34,11 @@ void factor_sieve(long* nums, long B);
 */
 vector<long> primes_fromfs(long* sieved_nums, long B);
 
+/* From a factor sieve, retrieve the primes, stored in the primes array.
+ * The function returns the length, i.e. the number of primes found
+ */
+long primes_array_fromfs(long* sieved_nums, long B, long* primes);
+
 /* From a factor sieve, compute primality of a given number
 */
 bool is_prime(long n, long* sieved_nums, long B);

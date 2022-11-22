@@ -27,13 +27,22 @@ LargeP_Odometer::LargeP_Odometer(){
     nums[i] = i;
   }
   factor_sieve(nums, prime_B);
-  primes = primes_fromfs(nums, prime_B);
  
+  // use factor sieve to create array of primes.  Start with one of size prime_B, 
+  // then copy over to an array of the correct size
+  long* primes_initial = new long[prime_B];
+  primes_count = primes_array_fromfs(nums, prime_B, primes_initial);
+  primes = new long[primes_count];
+  for(long i = 0; i < primes_count; ++i){
+    primes[i] = primes_initial[i];
+  }
+  delete[] primes_initial;
+  
   // Calculate max_d.  
   bigint prod = 1;
   max_d = 1;  //start at p = 3;
   while(prod < B && max_d < prime_B){
-    prod = prod * primes.at(max_d);
+    prod = prod * primes[max_d];
     max_d++;
   }
   // subtract one to get it back less than B
@@ -73,7 +82,6 @@ LargeP_Odometer::LargeP_Odometer(bigint B_init, long X_init){
   curr_d = 3;
   P_len = 1;
 
-  // For now, set B = 1000
   // Let's set preproduct lower bound X at B^{1/3}
   // I need primes up to B^{1/3}.
   B = B_init;
@@ -88,17 +96,34 @@ LargeP_Odometer::LargeP_Odometer(bigint B_init, long X_init){
     nums[i] = i;
   }
   factor_sieve(nums, prime_B);
-  primes = primes_fromfs(nums, prime_B);
+
+  // use factor sieve to create array of primes.  Start with one of size prime_B, 
+  // then copy over to an array of the correct size
+  long* primes_initial = new long[prime_B];
+  primes_count = primes_array_fromfs(nums, prime_B, primes_initial);
+  primes = new long[primes_count];
+  for(long i = 0; i < primes_count; ++i){
+    primes[i] = primes_initial[i];
+  }
+  delete[] primes_initial;
+
+  cout << "factor_sieve resulted in " << primes_count << " many primes: ";
+  for(long i = 0; i < primes_count; ++i){
+    cout << primes[i] << " ";
+  }
+  cout << "\n";
  
   // Calculate max_d.  
   bigint prod = 1;
   max_d = 1;  //start at p = 3;
   while(prod < B && max_d < prime_B){
-    prod = prod * primes.at(max_d);
+    prod = prod * primes[max_d];
     max_d++;
   }
   // subtract one to get it back less than B
   max_d--;
+
+  cout << "Computation of max_d: " << max_d << "\n";
 
   // allocate memory for arrays
   uppers = new long[max_d];
@@ -122,10 +147,23 @@ LargeP_Odometer::LargeP_Odometer(bigint B_init, long X_init){
   }
   // except that first index is the smallest prime greater than X
   indices[0] = find_index_lower(X);
+  
+  cout << "first index is " << indices[0] << " ";
+
   P_curr = primes[ indices[0] ];
+
+  cout << "Which corresponds to the prime " << P_curr << "\n";
 
   // but there might not be such primes, in which case we move on to length-2 pre-products
   if(indices[0] == 0) next_nextd();
+
+  cout << "initial indices array: ";
+  for(long i = 0; i < max_d; ++i){
+    cout << indices[i] << " ";
+  }
+  cout << "\n";
+
+  cout << "curr_d is " << curr_d << " and P_curr is " << P_curr <<  " and P_len is " << P_len << "\n";
 }
 
 // destructor frees memory for the arrays
@@ -133,6 +171,7 @@ LargeP_Odometer::~LargeP_Odometer(){
   delete[] uppers;
   delete[] lowers;
   delete[] indices;
+  delete[] primes;
 }
 
 // copy constructor
@@ -146,17 +185,22 @@ LargeP_Odometer::LargeP_Odometer(const LargeP_Odometer& other_od){
   B       = other_od.B;
   X       = other_od.X;
   prime_B = other_od.prime_B;
-
-  // allocate for the 3 arrays
+  primes_count = other_od.primes_count;
+ 
+  // allocate for the 4 arrays
   uppers = new long[max_d];
   lowers = new long[max_d];
   indices = new long[max_d];
+  primes = new long[primes_count];
 
   // copy over the data for the arrays
   for(long i = 0; i < max_d; ++i){
     uppers[i] = other_od.uppers[i];
     lowers[i] = other_od.lowers[i];
     indices[i] = other_od.indices[i];
+  }
+  for(long i = 0; i < primes_count; ++i){
+    primes[i] = other_od.primes[i];
   }
 }
 
@@ -174,17 +218,22 @@ LargeP_Odometer LargeP_Odometer::operator=(const LargeP_Odometer& other_od){
   result_od.B = other_od.B;
   result_od.X = other_od.X;
   result_od.prime_B = other_od.prime_B;
+  result_od.primes_count = other_od.primes_count;
 
-  // allocate for the 3 arrays
+  // allocate for the 4 arrays
   result_od.uppers = new long[result_od.max_d];
   result_od.lowers = new long[result_od.max_d];
   result_od.indices = new long[result_od.max_d];
- 
+  result_od.primes = new long[result_od.primes_count]; 
+
   // copy over the data for the arrays
   for(long i = 0; i < result_od.max_d; ++i){
     result_od.uppers[i] = other_od.uppers[i];
     result_od.lowers[i] = other_od.lowers[i];
     result_od.indices[i] = other_od.indices[i];
+  }
+  for(long i = 0; i < result_od.primes_count; ++i){
+    result_od.primes[i] = other_od.primes[i];
   }
   
   return result_od;
@@ -210,15 +259,15 @@ long LargeP_Odometer::find_index_lower(long bound){
   cout << "\n";
   */
   // check that bound is smaller than prime_B
-  if(primes[primes.size()-1] < bound){
+  if(primes[primes_count-1] < bound){
     //cout << "Error in find_index_lower, no prime above bound " << bound << "\n";
     return 0;
   }
 
   // start the search at the middle of the set of primes
-  long curr_index = primes.size() / 2;
+  long curr_index = primes_count / 2;
   long min = 0;
-  long max = primes.size() - 1;
+  long max = primes_count - 1;
   long jump = (max - min) / 2;
 
   // continue until primes[curr_index] >= bound and primes[curr_index - 1] < bound 
@@ -314,10 +363,20 @@ bigint LargeP_Odometer::get_P(){
   return P_curr;
 }
   
+// retrieve the factorization of the current pre-product.
+// Passed pointer gets the array of primes, the return value is its length
+long LargeP_Odometer::get_Pfactors(int64* factors){
+  for(long i = 0; i < P_len; ++i){
+    factors[i] = primes[ indices[i] ];
+    
+  }
+  return P_len;
+}
+
 // retrieve p_{d-2}, i.e. the largest prime dividing the pre-product
 // we subtract 3 because the pre-product has two fewer primes than n does.
 long LargeP_Odometer::get_largest_prime(){
-  return primes.at( indices[curr_d - 3] );
+  return primes[ indices[curr_d - 3] ];
 }
   
 // Rotate the indices.  Starts with furthest right index, depending on P_len
@@ -335,7 +394,7 @@ void LargeP_Odometer::next(){
   // work backwards from the last index.  Check if that index is maxed out already.
   // Reasons it could be maxed out:  (1) next prime is above upper bound, (2) curr index at end of array
   // I don't think curr index will be zero.  My plan is to check for that later in this function
-  if(indices[curr_index] == (primes.size() - 1)){
+  if(indices[curr_index] == (primes_count - 1)){
     max = true;
   }else{
     // now I know it is safe to grab the next prime
@@ -351,7 +410,7 @@ void LargeP_Odometer::next(){
       max = false;
     
     // otherwise proceed with the same logic as before
-    }else if(indices[curr_index] == (primes.size() - 1)){
+    }else if(indices[curr_index] == (primes_count - 1)){
       max = true;
     }else{
       next_prime = primes[ indices[curr_index] + 1 ];
