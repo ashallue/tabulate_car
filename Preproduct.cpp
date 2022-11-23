@@ -70,7 +70,7 @@ Preproduct::Preproduct(int64 Pval, int64* Pfac, long Pfac_len, int64* PMfac, lon
 
 // For the large preproduct case, we don't necessarily have factorization of P-1.
 // So this constructor only populates Pprimes, and only computes L
-Preproduct::Preproduct(int64 Pval, int64* Pfac, long Pfac_len){
+Preproduct::Preproduct(bigint Pval, int64* Pfac, long Pfac_len){
 
   // set length variables, then allocate memory for factor arrays
   Prod = Pval;
@@ -160,7 +160,7 @@ Preproduct Preproduct::operator=(const Preproduct& other){
 bool Preproduct::is_admissable(){
   // construct product of the prime factors of P
   // and compute lcm L at the same time
-  int64 P_check = 1;
+  bigint P_check = 1;
   int64 prime;    // stores a prime
   int64 g;        // stores gcd
 

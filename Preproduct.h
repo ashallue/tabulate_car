@@ -22,7 +22,7 @@ class Preproduct{
     long   Pminus_len;
     int64 L;            // will hold lcm_{p | P} (p-1)
     int64 Tau;          // The divisor count of P-1
-    int64 Prod;         // the product of the primes in Pprimes, i.e. the actual pre-product
+    bigint Prod;         // the product of the primes in Pprimes, i.e. the actual pre-product
     bool admissable;    // true if P is squarefree and gcd(p-1, P)=1 forall p | P   
 
     // default constructor
@@ -34,7 +34,7 @@ class Preproduct{
 
     // For the large preproduct case, we don't necessarily have factorization of P-1.
     // So this constructor only populates Pprimes, and only computes L
-    Preproduct(int64 Pval, int64* Pfac, long Pfac_len);
+    Preproduct(bigint Pval, int64* Pfac, long Pfac_len);
 
     // Need a destructor to free the memory, then copy constructors for rule of 3
     ~Preproduct();
