@@ -29,17 +29,6 @@ using namespace std::chrono;
 int main(int argc, char* argv[]) {
   std::cout << "Hello World!\n";
 
-  cout << "Creating a list of Carmichaels up to a bound using small pre-product case\n";
-    
-  long bound = 1000;
-  SmallP_Carmichael c = SmallP_Carmichael(2, bound);
-  c.tabulate_car(0, 1, "cars_smallp.txt");
-  vector<bigint> cars = product_and_sort("cars_smallp.txt");
-  for(long i = 0; i < bound; ++i){
-    cout << cars.at(i) << "\n";
-    if(cars.at(i) >= bound) break;
-  }
- 
 
   cout << "\nTesting LargeP_Odometer\n";
   LargeP_Odometer odo = LargeP_Odometer(10000, 10);
@@ -56,7 +45,7 @@ int main(int argc, char* argv[]) {
  
   //odo.large_products("test1.txt");
   cout << "\n";
-  LargeP_Carmichael large_c = LargeP_Carmichael(10000, 10);
+  LargeP_Carmichael large_c = LargeP_Carmichael(1000000, 10);
   large_c.pinch(0, 1, "preproducts_test.txt");
 
 
@@ -124,12 +113,6 @@ int main(int argc, char* argv[]) {
   */
 
   
-  SmallP_Carmichael c1 = SmallP_Carmichael(2, 1000);
-  c1.tabulate_car(0, 1, "cars_smallp.txt");
-  
-  Construct_car c2 = Construct_car();
-  c2.tabulate_car(1000, 0, 1, "cars_old.txt", "cars_none.txt");
-  
 
   // construct Preproduct, need arrays for both P and P-1 
   long ps[] = {193, 257};
@@ -137,18 +120,7 @@ int main(int argc, char* argv[]) {
   long es[] = {3, 1, 1};
   Preproduct P = Preproduct(49601, ps, 2, pms, 3);
 
-  Odometer od = Odometer(pms, es, 3, 3, true);
-  for(long i = 0; i < 20; ++i){
-    cout << od.get_div() << " ";
-    od.next_div();
-  } 
-  cout << "\n";
-
-  cout << "\nTesting libdivide\n";
-  long top = 1000;
-  libdivide::divider<long> d(101);
-  cout << "Dividing 1000 by 101 normally: " << 1000 / 101 << " " << "\n";
-  cout << "Dividing using libdivide: " << top / d << " " << "\n";
+  large_c.r_search_trial(P, 307, 1000);
 
   /* 
   auto start_new = high_resolution_clock::now(); 
