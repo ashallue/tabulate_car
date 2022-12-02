@@ -26,6 +26,11 @@ class LargeP_Carmichael{
     // uses Pinch's method for large pre-products
     void pinch(long processor, long num_threads, string cars_file); 
 
+    /* For a given preproduct, find all Carmichaels using method of Pinch.
+     * We assume the Carmichael constructed is less than B, and P > X
+     */
+    void preproduct_pinch(Preproduct& P);
+
     /* For preproduct Pq, check divisors of Pq-1 up to trial_bound, for divisor f 
      * check whether r = (Pq - 1)/f + 1 completes the Carmichael.
      * If it does, put (q, r) as a pair into the built-in qrs vector
@@ -41,6 +46,11 @@ class LargeP_Carmichael{
      * For this version, we know r-1 | Pq -1, so we check that Pqr satisfies Korselt, and that r is prime
      */
     bool completion_korselt(Preproduct P, int64 q, bigint r);
+
+    /* The completion check assumes r = (Pq)^{-1} mod L, so we know q-1 | Pqr - 1 
+     * and p-1 | Pqr - 1 for p | P.  We still need to check that r-1 | Pqr - 1, and that r is prime
+     */
+    bool completion_divisible(Preproduct P, int64 q, bigint r);
 
   private:
     bigint B;    // constructing Carmichael numbers n < B

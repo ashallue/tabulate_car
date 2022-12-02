@@ -87,6 +87,47 @@ void LargeP_Carmichael::pinch(long processor, long num_threads, string cars_file
   return;
 } 
 
+/* For a given preproduct, find all Carmichaels using method of Pinch.
+ * Calls subroutines r_search_trial and r_searrch_progression
+ * We assume the Carmichael constructed is less than B, and P > X
+ */
+void LargeP_Carmichael::preproduct_pinch(Preproduct& P){
+  // initialize mpz variable for primality on q
+  mpz_t q_mpz;
+  mpz_init(q_mpz);
+  bool is_prime_q;
+  bool is_admissable;
+  int64 balance_point;  // balance between doing trial division and doing arithmetic progression
+  int64 new_L;          // will hold lcm(P.L, q-1)
+
+  // we want to loop over prime q in the range p_{d-2} < q < sqrt(B/P)
+  int64 q_bound = ceil( sqrt( B / P.Prod ) );
+  for(int64 q = P.largest_prime() + 2; q < q_bound; q = q + 2){
+
+    // code for checking primality of q via Baillie-PSW test
+    mpz_set_si(q_mpz, q);
+    is_prime_q = mpz_probab_prime_p(q_mpz, 0);
+    if(is_prime_q){
+
+      // now check that the addition of q means it is still admissable
+      is_admissable = gcd(q-1, P.Prod) == 1;
+      if(is_admissable){
+     
+        // compute balance point as D = sqrt(Pq / L)
+        new_L = (P.L / gcd(P.L, q-1) ) * (q - 1);
+        balance_point = floor( sqrt( P.Prod * q / new_L ) );
+
+        // do trial division on Pq-1 up to the balance point, arithmetic progression above it
+        r_search_trial(P, q, balance_point);
+        r_search_progression(P, q, balance_point);
+   
+      } // end if admissable
+    } // end if q prime
+  } // end for q
+  // clear q_mpz;
+  mpz_clear(q_mpz);
+
+}
 
 /* For preproduct Pq, check divisors of Pq-1 up to trial_bound, for divisor f 
  * check whether r = (Pq - 1)/f + 1 completes the Carmichael.
@@ -204,8 +245,14 @@ void LargeP_Carmichael::r_search_progression(Preproduct P, int64 q, int64 bound)
 
   // loop over the arithmetic progression.  Steps of size L, target, up to (Pq) / bound
   for(int64 r = target; r <= Pq / bound; r = r + L){
-
-  }
+    // apply completion_divisible to check if r-1 | Pq - 1 and if r is prime
+    if(completion_divisible(P, q, r)){
+      pair<int64, bigint> output_pair;
+      output_pair.first = q;
+      output_pair.second = r;
+      qrs.push_back(output_pair);
+    }
+  } // end for loop over the arithmetic progression
 
 }
   
@@ -247,5 +294,38 @@ bool LargeP_Carmichael::completion_korselt(Preproduct P, int64 q, bigint r){
   // clear mpz and return
   mpz_clear(r_mpz);
   return output;
+}
+
+/* The completion check assumes r = (Pq)^{-1} mod L, so we know q-1 | Pqr - 1 
+ * and p-1 | Pqr - 1 for p | P.  We still need to check that r-1 | Pqr - 1, and that r is prime
+ */
+bool LargeP_Carmichael::completion_divisible(Preproduct P, int64 q, bigint r){
+  bool output = true;
+ 
+  mpz_t r_mpz;   // mpz from gmp package, needed for primality testing
+  mpz_init(r_mpz);
+  int64 LCM = P.L;
+  bigint modrminus;
+  Dual_rep d;
+  bool is_r_prime;
+
+  // In this case for the korselt condition we only check if Pqr = 1 mod (r-1), meaning 
+  // we only need to check if Pq = 1 mod (r-1)
+  modrminus = (q * P.Prod) % (r-1);
+  output = output && (modrminus == 1); 
+
+  // if that passes, do primality
+  if(output){
+    mpz_set_si(r_mpz, d.two_words[1]);
+    mpz_mul_2exp(r_mpz, r_mpz, 64);
+    mpz_add_ui(r_mpz, r_mpz, d.two_words[0]);
+
+    // primality test is Baillie-PSW from gmp
+    is_r_prime = mpz_probab_prime_p(r_mpz, 0);
+    output = output && is_r_prime;
+  }
+ 
+  mpz_clear(r_mpz);
+  return output; 
 
 }
