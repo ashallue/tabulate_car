@@ -46,7 +46,7 @@ int main(int argc, char* argv[]) {
   //odo.large_products("test1.txt");
   cout << "\n";
   LargeP_Carmichael large_c = LargeP_Carmichael(1000000, 10);
-  large_c.pinch(0, 1, "preproducts_test.txt");
+  large_c.pinch(0, 1, "cars_pinch_large.txt");
 
 
  

@@ -63,16 +63,30 @@ void LargeP_Carmichael::pinch(long processor, long num_threads, string cars_file
     long fac_len = od.get_Pfactors(factors);
     Preproduct preprod_ob = Preproduct(preprod, factors, fac_len);
 
+    /*
     cout << "Preprod = " << preprod << " with factors: ";
     for(long i = 0; i < fac_len; ++i){
       cout << factors[i] << " ";
     }
+    */
 
     if(preprod_ob.admissable){
-      cout << "is admissable\n";
+      //cout << "is admissable\n";
       admissable_counter++;
+      
+      // clear the carmichaels corresponding to previous preproduct
+      qrs.clear();
+      preproduct_pinch(preprod_ob);
+
+      cout << "Preproduct = " << preprod << " , found " << qrs.size() << " many carmichaels\n";
+
+      // print to file
+      for(long j = 0; j < qrs.size(); ++j){
+        output << preprod << " " << qrs.at(j).first << " " << qrs.at(j).second << "\n";
+      }
+ 
     }else{
-      cout << "is not admissable\n";
+      //cout << "is not admissable\n";
     }
 
     
@@ -80,10 +94,11 @@ void LargeP_Carmichael::pinch(long processor, long num_threads, string cars_file
     //
     od.next();
   }
+  // cleanup
   delete[] factors;
-
-
+  qrs.clear();
   output.close();
+
   return;
 } 
 
@@ -100,8 +115,10 @@ void LargeP_Carmichael::preproduct_pinch(Preproduct& P){
   int64 balance_point;  // balance between doing trial division and doing arithmetic progression
   int64 new_L;          // will hold lcm(P.L, q-1)
 
-  // we want to loop over prime q in the range p_{d-2} < q < sqrt(B/P)
+  // upper bound on q
   int64 q_bound = ceil( sqrt( B / P.Prod ) );
+  
+  // we want to loop over prime q in the range p_{d-2} < q < sqrt(B/P)
   for(int64 q = P.largest_prime() + 2; q < q_bound; q = q + 2){
 
     // code for checking primality of q via Baillie-PSW test
@@ -116,11 +133,13 @@ void LargeP_Carmichael::preproduct_pinch(Preproduct& P){
         // compute balance point as D = sqrt(Pq / L)
         new_L = (P.L / gcd(P.L, q-1) ) * (q - 1);
         balance_point = floor( sqrt( P.Prod * q / new_L ) );
+        // but have a minimum of 4, so we at least find factors of 2, 3
+        if(balance_point < 4) balance_point = 4;
 
         // do trial division on Pq-1 up to the balance point, arithmetic progression above it
         r_search_trial(P, q, balance_point);
         r_search_progression(P, q, balance_point);
-   
+
       } // end if admissable
     } // end if q prime
   } // end for q
@@ -136,6 +155,8 @@ void LargeP_Carmichael::preproduct_pinch(Preproduct& P){
 void LargeP_Carmichael::r_search_trial(Preproduct P, int64 q, int64 bound){
   bigint Pq = P.Prod * q;
 
+  //cout << "testing inside r_search_trial, Pq - 1 = " << Pq - 1 << " and bound is " << bound << "\n";
+  
   // store prime divs in an array.  The maximum number of possible prime divs is log_2(Pq)
   double logPq = log(Pq) / log(2);
   long prime_divs_allocation = ceil(logPq);
@@ -175,7 +196,8 @@ void LargeP_Carmichael::r_search_trial(Preproduct P, int64 q, int64 bound){
     exps[i] = exp_temp;    
   }
 
-  cout << "testing inside r_search_trial, Pq - 1 = " << Pq - 1 << "\n";
+  // testing
+  /*
   cout << "primes are ";
   for(long i = 0; i < num_prime_divs; ++i){
     cout << prime_divs[i] << " ";
@@ -185,6 +207,7 @@ void LargeP_Carmichael::r_search_trial(Preproduct P, int64 q, int64 bound){
     cout << exps[i] << " ";
   }
   cout << "\n";
+  */
 
   // create Odometer
   Odometer divs_od = Odometer(prime_divs, exps, num_prime_divs, 1, true);
@@ -194,10 +217,15 @@ void LargeP_Carmichael::r_search_trial(Preproduct P, int64 q, int64 bound){
   // variables needed for the loop over divisors 
   bigint r1;
   bigint r2;
-  pair<int64, bigint> output_pair;
+
+  // testing purposes, count number of divisors checked
+  //long loop_count = 0;
 
   // rotate through all of the divisors, keep the ones less than bound
   while(div != divs_od.initial_div){
+    // testing
+    //loop_count++;    
+
     if(div < bound){
       // there are two r's to check, namely div + 1 and (Pq-1)/div + 1   
  
@@ -206,14 +234,14 @@ void LargeP_Carmichael::r_search_trial(Preproduct P, int64 q, int64 bound){
       r2 = div + 1;
 
       // if they yield Carmichaels, write to qrs
-      if(completion_korselt(P, q, r1)){
+      if(q < r1 && completion_korselt(P, q, r1)){
         pair<int64, bigint> output_pair;
         output_pair.first = q;
         output_pair.second = r1;
         qrs.push_back(output_pair);
       }
 
-      if(completion_korselt(P, q, r2)){
+      if(q < r2 && completion_korselt(P, q, r2)){
         pair<int64, bigint> output_pair;
         output_pair.first = q;
         output_pair.second = r2;
@@ -224,6 +252,7 @@ void LargeP_Carmichael::r_search_trial(Preproduct P, int64 q, int64 bound){
     divs_od.next_div();
     div = divs_od.get_div();
   } // end while
+  //cout << "Number of while loop iterations = " << loop_count << " though not all under bound\n";
 
 }
 
@@ -242,9 +271,18 @@ void LargeP_Carmichael::r_search_progression(Preproduct P, int64 q, int64 bound)
 
   // Now compute (Pq)^{-1} mod L with function found in int.h
   int64 target = inv(Pq, L);
+  // start value is the first int congruent to target mod L and greater than q
+  int64 start = L * (q / L) + target;
+  if(start <= q) start = start + L;
+
+  // testing, count number of iterations
+  //long loop_count = 0;
 
   // loop over the arithmetic progression.  Steps of size L, target, up to (Pq) / bound
-  for(int64 r = target; r <= Pq / bound; r = r + L){
+  for(int64 r = start; r <= Pq / bound; r = r + L){
+    // testing
+    //loop_count++;
+
     // apply completion_divisible to check if r-1 | Pq - 1 and if r is prime
     if(completion_divisible(P, q, r)){
       pair<int64, bigint> output_pair;
@@ -253,7 +291,8 @@ void LargeP_Carmichael::r_search_progression(Preproduct P, int64 q, int64 bound)
       qrs.push_back(output_pair);
     }
   } // end for loop over the arithmetic progression
-
+  
+  //cout << "Number of steps in arithmetic progression = " << loop_count << "\n";
 }
   
 /* Completion check.  Returns true if Pqr is Carmichael.  
@@ -301,7 +340,7 @@ bool LargeP_Carmichael::completion_korselt(Preproduct P, int64 q, bigint r){
  */
 bool LargeP_Carmichael::completion_divisible(Preproduct P, int64 q, bigint r){
   bool output = true;
- 
+
   mpz_t r_mpz;   // mpz from gmp package, needed for primality testing
   mpz_init(r_mpz);
   int64 LCM = P.L;
@@ -316,6 +355,7 @@ bool LargeP_Carmichael::completion_divisible(Preproduct P, int64 q, bigint r){
 
   // if that passes, do primality
   if(output){
+    d.double_word = r;
     mpz_set_si(r_mpz, d.two_words[1]);
     mpz_mul_2exp(r_mpz, r_mpz, 64);
     mpz_add_ui(r_mpz, r_mpz, d.two_words[0]);
@@ -326,6 +366,7 @@ bool LargeP_Carmichael::completion_divisible(Preproduct P, int64 q, bigint r){
   }
  
   mpz_clear(r_mpz);
+
   return output; 
 
 }
