@@ -106,6 +106,96 @@ vector<bigint> product_and_merge(vector<string> filenames){
   return output.at(output.size()-1);
 }
 
+/* Merge two files.  Assume files are sorted by the first number in the line, merge into single outputfile
+ * Standard algorithm.
+ */
+void merge_two(string filename1, string filename2, string outputfilename){
+  // open files
+  ifstream cars1;
+  cars1.open(filename1);
+  ifstream cars2;
+  cars2.open(filename2);
+  ofstream output;
+  output.open(outputfilename);
+
+  // variables
+  string line1, line2;
+  vector<bigint> nums1;
+  vector<bigint> nums2;
+  bigint num1 = 0;
+  bigint num2 = 0;
+
+  // grab the first line of each file
+  getline(cars1, line1);
+  getline(cars2, line2);
+
+  // first keep looping as long as both files have lines left
+  while(cars1 && cars2){
+
+    // access first number in each line using istringstream
+    // this solution from stackoverflow: reading-line-of-integers-into-a-vector
+    istringstream numbers1_stream(line1);
+    numbers1_stream >> num1;
+    istringstream numbers2_stream(line2);
+    numbers2_stream >> num2;
+
+    // check the two numbers.  Smaller number: line goes to output, advance through file
+    if(num1 <= num2){
+      output << line1 << "\n";
+      getline(cars1, line1);
+    }else{
+      output << line2 << "\n";
+      getline(cars2, line2);
+    } 
+  } // end while getline
+
+  // if file1 is empty, append all the lines of file2
+  if(!cars1){
+    while(cars2){
+      output << line2 << "\n";
+      getline(cars2, line2);
+    }
+  }
+  // same for file2
+  if(!cars2){
+    while(cars1){
+      output << line1 << "\n";
+      getline(cars1, line1);
+    }
+  }
+
+  // close files
+  cars1.close();
+  cars2.close();
+  output.close();  
+}
+
+
+/* Differs from the previous version of merge.  
+ * Assume the first number in each line is n and that the files are sorted by n.
+ * Merge into a single outputfile
+ */
+void merge(vector<string> filenames, string outputfilename){
+  // merge the first two files
+  merge_two(filenames.at(0), filenames.at(1), outputfilename);  
+
+  // Repeatedly call merge_two on the rest
+  // Note: can't combine with previous output into new output without a different filename
+  // So this code creates a temp file which should be deleted afterwards
+  string temp = "merge_temp.txt";
+
+  for(long i = 2; i < filenames.size(); ++i){
+    if(i % 2 == 0){
+      merge_two(filenames.at(i), outputfilename, temp);
+    }else{
+      merge_two(filenames.at(i), temp, outputfilename);
+    }
+  }
+
+  // at the end, I want the output in outputfilename, not temp
+  if(filenames.size() % 2 == 1) merge_two(temp, outputfilename, outputfilename);
+
+}
 
 /* Given a filename full of Carmichael numbers of the form P q r, confirm that it is indeed Carmichael.
  * Involves completely factoring P, checking q and r are prime with the Pseudosquares test, checking Korselt.

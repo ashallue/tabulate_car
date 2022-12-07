@@ -78,7 +78,7 @@ void LargeP_Carmichael::pinch(long processor, long num_threads, string cars_file
       qrs.clear();
       preproduct_pinch(preprod_ob);
 
-      cout << "Preproduct = " << preprod << " , found " << qrs.size() << " many carmichaels\n";
+      //cout << "Preproduct = " << preprod << " , found " << qrs.size() << " many carmichaels\n";
 
       // print to file
       for(long j = 0; j < qrs.size(); ++j){

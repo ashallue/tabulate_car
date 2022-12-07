@@ -116,8 +116,11 @@ class SmallP_Carmichael{
  *   We use a factgen2 object, write to a file.  Only process admissable pre-products, divide up work among
  *   residue classes (processor modulo num_threads).
  *   Calls preproduct_crossover, which does a mix of D-Delta and C-D methods.  Dynamic flag set to false.
+ *
+ *   Two choices for output:  (1) if verbose is true, print n followed by its factorization (space separated)
+ *   (2) if verbose false, print preproduct, followed by q then r (space separated)
  */
-    void tabulate_car(long processor, long num_threads, string cars_file);
+    void tabulate_car(long processor, long num_threads, string cars_file, bool verbose_output);
 
     /* Construct Carmichaels for prime pre-products P.  Similar to tabulate_car
  *     Note this only does D-Delta.  Thus bad for production; only use for timing comparisons with Pinch

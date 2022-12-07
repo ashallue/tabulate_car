@@ -63,7 +63,7 @@ int main(int argc, char* argv[]) {
   cout << "Timing for Construct_car.tabulate_car: " << duration_old.count() << "\n";
   */
   auto start_new = high_resolution_clock::now();
-  S2.tabulate_car(0, 1, "cars_new.txt");
+  S2.tabulate_car(0, 1, "cars_new.txt", false);
   auto end_new = high_resolution_clock::now();
   auto duration_new = duration_cast<seconds>(end_new - start_new);
   cout << "Timing for SmallP_Carmichael.tabulate_car: " << duration_new.count() << "\n";

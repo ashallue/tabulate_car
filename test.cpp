@@ -28,7 +28,17 @@ using namespace std::chrono;
 
 int main(int argc, char* argv[]) {
   std::cout << "Hello World!\n";
+  cout << "merging files\n";
+  
+  vector<string> files;
+  files.push_back("/home/ashallue/tabulate_car/datafiles_shallue/cars1.txt");
+  files.push_back("/home/ashallue/tabulate_car/datafiles_shallue/cars2.txt");
+  files.push_back("/home/ashallue/tabulate_car/datafiles_shallue/cars3.txt");
+  files.push_back("/home/ashallue/tabulate_car/datafiles_shallue/cars4.txt");
+  files.push_back("/home/ashallue/tabulate_car/datafiles_shallue/cars5.txt");
+  merge(files, "cars_merge.txt");
 
+  //merge_two(files.at(0), files.at(1), "cars_merge.txt");
 
   cout << "\nTesting LargeP_Odometer\n";
   LargeP_Odometer odo = LargeP_Odometer(10000, 10);

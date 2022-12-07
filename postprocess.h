@@ -27,9 +27,18 @@ vector<bigint> product_and_sort(string cars_file);
  */
 vector<bigint> product_and_merge(vector<string> filenames);
 
+/* Differs from the previous.  Assume the first number in each line is n and that the files are sorted by n.
+ * Merge into a single outputfile
+ */
+void merge(vector<string> filenames, string outputfilename);
+
+/* merge calls merge_two, which merges two files at a time
+ */
+void merge_two(string filename1, string filename2, string outputfilename);
+
 /* Given a filename full of Carmichael numbers of the form P q r, confirm that it is indeed Carmichael.
  * Involves completely factoring P, checking q and r are prime with the Pseudosquares test, checking Korselt.
-   Any not carmichael are sent to standard out.  We assume preproducts P are bounded above by B
+  Any not carmichael are sent to standard out.  We assume preproducts P are bounded above by B
  */
 void car_smallp_file_check(string filename, int64 B);
 

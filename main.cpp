@@ -44,7 +44,7 @@ int main(int argc, char* argv[]) {
   // timing code from geeksforgeeks.org
   
   // we want all pre-products up to 10^8, which is 10^5 thousands
-  int64 num_thousands = 10;
+  int64 num_thousands = 1000;
   int64 bound = num_thousands * 1000;
   cout << "Timings for tabulation of Carmichaels with pre-product up to " << bound << "\n";
 
@@ -55,7 +55,8 @@ int main(int argc, char* argv[]) {
 
   //C.tabulate_car(bound, 0, 1, "cars0.txt", "cars_none0.txt");
   cout << "starting tabulation\n";
-  C.tabulate_car(thread, num_threads, cars_file);
+  // use appropriate thread, write to cars_file, set output to verbose, i.e. identical to Pinch
+  C.tabulate_car(thread, num_threads, cars_file, true);
 
   auto end_new = high_resolution_clock::now();
  

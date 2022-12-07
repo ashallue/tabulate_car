@@ -595,11 +595,12 @@ bool SmallP_Carmichael::completion_check(Preproduct& P, int64 Delta, int64 D, li
 
 /* Construct Carmichaels for a range of pre-products P < B
  */
-void SmallP_Carmichael::tabulate_car(long processor, long num_threads, string cars_file){
+void SmallP_Carmichael::tabulate_car(long processor, long num_threads, string cars_file, bool verbose_output){
   int64* P_factors;
   long   P_factors_len;
   int64* Pminus_factors;
   long   Pminus_factors_len;
+  bigint n;
 
   // let's also calculate the average value of L/P
   //double avg_ratio = 0;
@@ -667,7 +668,28 @@ void SmallP_Carmichael::tabulate_car(long processor, long num_threads, string ca
         // print to file
         //output << "Carmichaels for P = " << P << " number of Cars is " << qrs.size() << "\n";
         for(long j = 0; j < qrs.size(); ++j){
-          output << P << " " << qrs.at(j).first << " " << qrs.at(j).second << "\n";
+
+          // output depends on the input bool verbose_output.  If true, give n followed by factors
+          if(verbose_output){
+            // compute n
+            n = 1;
+            for(long k = 0; k < P_ob.Pprimes_len; k++){
+              n = n * P_ob.Pprimes[k];
+            }
+            n = n * qrs.at(j).first;
+            n = n * qrs.at(j).second;
+
+            // now print n followed by its factors, space separated
+            output << n << " ";
+            for(long k = 0; k < P_ob.Pprimes_len; k++){
+              output << P_ob.Pprimes[k] << " ";
+            } 
+            output << qrs.at(j).first << " " << qrs.at(j).second << "\n";
+
+          }else{
+            // otherwise, output preproduct P, followed by q then r
+            output << P << " " << qrs.at(j).first << " " << qrs.at(j).second << "\n";
+          }
         } // end for
       } // end if admissable
       // move the factorization window to next odd number
