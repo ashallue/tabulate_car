@@ -28,20 +28,33 @@ using namespace std::chrono;
 
 int main(int argc, char* argv[]) {
   std::cout << "Hello World!\n";
+
+  /*
+  // code for merging files
   cout << "merging files\n";
   
   vector<string> files;
-  files.push_back("/home/ashallue/tabulate_car/datafiles_shallue/cars1.txt");
-  files.push_back("/home/ashallue/tabulate_car/datafiles_shallue/cars2.txt");
-  files.push_back("/home/ashallue/tabulate_car/datafiles_shallue/cars3.txt");
-  files.push_back("/home/ashallue/tabulate_car/datafiles_shallue/cars4.txt");
-  files.push_back("/home/ashallue/tabulate_car/datafiles_shallue/cars5.txt");
+  for(long i = 1; i < 21; i++){
+    string filename = "/home/ashallue/tabulate_car/datafiles_shallue/cars" + to_string(i) + ".txt";
+    files.push_back(filename);
+  } 
   merge(files, "cars_merge.txt");
+  */
 
-  //merge_two(files.at(0), files.at(1), "cars_merge.txt");
+  cout << "Is 9 admissable?  It shouldn't be\n";
+   
+  // construct Preproduct, need arrays for both P and P-1 
+  long ps[] = {3, 3};
+  long pms[] = {2};
+  long es[] = {3, 1, 1};
+  Preproduct P = Preproduct(9, ps, 2, pms, 1);
+  cout << "P = " << P.Prod << " has admissability: " << P.admissable << "\n";
+  Preproduct P2 = Preproduct(9, ps, 2);
+  cout << "P2 = " << P2.Prod << " has admissability: " << P.admissable << "\n";
 
   cout << "\nTesting LargeP_Odometer\n";
-  LargeP_Odometer odo = LargeP_Odometer(10000, 10);
+  LargeP_Odometer odo0 = LargeP_Odometer();
+  LargeP_Odometer odo = LargeP_Odometer(500000, 10000);
   cout << "B = " << odo.B << " X = " << odo.X << " primes up to " << odo.prime_B << "\n";
   cout << "primes: ";
   for(long i = 0; i < odo.primes_count; ++i){
@@ -53,18 +66,8 @@ int main(int argc, char* argv[]) {
   odo.next();
   cout << "P = " << odo.get_P() << " and its largest factor = " << odo.get_largest_prime() << "\n";
  
-  //odo.large_products("test1.txt");
-  cout << "\n";
-  LargeP_Carmichael large_c = LargeP_Carmichael(1000000, 10);
-  large_c.pinch(0, 1, "cars_pinch_large.txt");
-
 
  
-  //odo2.trivial_large_products("test2.txt");
-
-  cout << "\n";
-
-
 
   /*
   cout << "\nTesting LargeP construction\n";
@@ -123,14 +126,6 @@ int main(int argc, char* argv[]) {
   */
 
   
-
-  // construct Preproduct, need arrays for both P and P-1 
-  long ps[] = {193, 257};
-  long pms[] = {2, 5, 31};
-  long es[] = {3, 1, 1};
-  Preproduct P = Preproduct(49601, ps, 2, pms, 3);
-
-  large_c.r_search_trial(P, 307, 1000);
 
   /* 
   auto start_new = high_resolution_clock::now(); 

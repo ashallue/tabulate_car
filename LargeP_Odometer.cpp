@@ -29,15 +29,16 @@ LargeP_Odometer::LargeP_Odometer(){
   factor_sieve(nums, prime_B);
  
   // use factor sieve to create array of primes.  Start with one of size prime_B, 
-  // then copy over to an array of the correct size
+  // then copy over to an array of the correct size.  Don't copy 2, the first prime.
   long* primes_initial = new long[prime_B];
   primes_count = primes_array_fromfs(nums, prime_B, primes_initial);
   primes = new long[primes_count];
-  for(long i = 0; i < primes_count; ++i){
-    primes[i] = primes_initial[i];
+  for(long i = 1; i < primes_count; ++i){
+    primes[i-1] = primes_initial[i];
   }
   delete[] primes_initial;
-  
+  primes_count--;                    // one less because we removed 2  
+
   // Calculate max_d.  
   bigint prod = 1;
   max_d = 1;  //start at p = 3;
@@ -82,12 +83,13 @@ LargeP_Odometer::LargeP_Odometer(bigint B_init, long X_init){
   curr_d = 3;
   P_len = 1;
 
-  // Let's set preproduct lower bound X at B^{1/3}
-  // I need primes up to B^{1/3}.
+  // Let's set preproduct lower bound X to the given value
+  // I store primes for P and for q.  X < Pqr < B implies q < sqrt(B/X)
   B = B_init;
+  double one_half = 1.0 / 2;
   double one_third = 1.0 / 3;
   X       = X_init;
-  prime_B = ceil(pow(B, one_third));
+  prime_B = ceil(pow( (B / X) + 1, one_half));
 
   // create the primes vector.  This involves setting up an array with nums[i] = i
   // then creating factor_sieve, then retrieving primes from that factor sieve
@@ -98,14 +100,15 @@ LargeP_Odometer::LargeP_Odometer(bigint B_init, long X_init){
   factor_sieve(nums, prime_B);
 
   // use factor sieve to create array of primes.  Start with one of size prime_B, 
-  // then copy over to an array of the correct size
+  // then copy over to an array of the correct size.  Don't copy the prime 2
   long* primes_initial = new long[prime_B];
   primes_count = primes_array_fromfs(nums, prime_B, primes_initial);
   primes = new long[primes_count];
-  for(long i = 0; i < primes_count; ++i){
-    primes[i] = primes_initial[i];
+  for(long i = 1; i < primes_count; ++i){
+    primes[i-1] = primes_initial[i];
   }
   delete[] primes_initial;
+  primes_count--;                 // one less prime b/c we removed 2
 
   cout << "factor_sieve resulted in " << primes_count << " many primes: ";
   for(long i = 0; i < primes_count; ++i){
@@ -147,7 +150,12 @@ LargeP_Odometer::LargeP_Odometer(bigint B_init, long X_init){
   }
   // except that first index is the smallest prime greater than X
   indices[0] = find_index_lower(X);
-  
+ 
+  // however, there might not be a prime greater than X, in which case 
+  // repeatedly move to the next d until we find a minimal smallest pre-product
+  //while( indices[ P_len - 1 ] == 0){
+     // not sure this is the right idea 
+  //}
   cout << "first index is " << indices[0] << " ";
 
   P_curr = primes[ indices[0] ];
@@ -421,6 +429,13 @@ void LargeP_Odometer::next(){
       }
     }
   } // end while
+  
+  cout << "Inside next, max = " << max <<  " and curr_index = " << curr_index << "\n";
+  for(long i = 0; i < curr_d; i++){
+    cout << " " << indices[i];
+  }
+  cout << "\n";
+
   // at this point I have found the correct index to increment, or all indices maxed out
   // in the latter case, call next_nextd() to move on to Carmichaels with more prime factors
   if(curr_index == -1){
@@ -469,6 +484,14 @@ void LargeP_Odometer::next(){
 
     } // end else  
   } // end else
+
+
+  cout << "Inside next at end, max = " << max <<  " and curr_index = " << curr_index <<  "\n";
+  for(long i = 0; i < curr_d; i++){
+    cout << " " << indices[i];
+  }
+  cout << "\n";
+
   return;
 } 
 

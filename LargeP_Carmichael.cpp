@@ -63,6 +63,12 @@ void LargeP_Carmichael::pinch(long processor, long num_threads, string cars_file
     long fac_len = od.get_Pfactors(factors);
     Preproduct preprod_ob = Preproduct(preprod, factors, fac_len);
 
+    cout << "Preprod = " << preprod << " ";
+    for(long i = 0; i < fac_len; ++i){
+      cout << factors[i] << " ";
+    }
+    cout << "\n";
+
     /*
     cout << "Preprod = " << preprod << " with factors: ";
     for(long i = 0; i < fac_len; ++i){
@@ -107,6 +113,8 @@ void LargeP_Carmichael::pinch(long processor, long num_threads, string cars_file
  * We assume the Carmichael constructed is less than B, and P > X
  */
 void LargeP_Carmichael::preproduct_pinch(Preproduct& P){
+  cout << "preproduct_pinch on " << P.Prod << " with admissable = " << P.admissable << "\n";
+
   // initialize mpz variable for primality on q
   mpz_t q_mpz;
   mpz_init(q_mpz);

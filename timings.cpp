@@ -7,6 +7,7 @@
 #include "Factgen.h"
 #include "Construct_car.h"
 #include "SmallP_Carmichael.h"
+#include "LargeP_Carmichael.h"
 #include "Odometer.h"
 #include "bigint.h"
 #include "Pinch.h"
@@ -27,14 +28,27 @@ int main(int argc, char* argv[]) {
    
   long size = atoi(argv[1]);
  
-  int64 num_thousands = size * 10;
-  int64 bound = num_thousands * 1000;
+  int64 num_thousands = size * 1000;
+  int64 bound = num_thousands * 10;
+  int64 preproduct_lower = 1000;  
 
+  cout << "Timings for large preproducts using pinch's method\n";
+  cout << "Carmichaels at most " << bound << " with preproducts at least " << preproduct_lower << "\n";
+
+  LargeP_Carmichael lp = LargeP_Carmichael(bound, preproduct_lower);
+
+  auto start = high_resolution_clock::now();
+  lp.pinch(0, 1, "cars_large.txt");
+  auto end = high_resolution_clock::now();
+  auto duration_old = duration_cast<seconds>(end - start);
+  cout << "Timing for LargeP_Carmichael::pinch: " << duration_old.count() << "\n"; 
+  /*
   Pinch CP = Pinch();
   Construct_car C1 = Construct_car();
   SmallP_Carmichael S2 = SmallP_Carmichael(2, bound);
   SmallP_Carmichael S3 = SmallP_Carmichael(2, bound);
   SmallP_Carmichael S4 = SmallP_Carmichael(2, bound);
+  */
   /*  
   // test preproduct with P = 3
   int64* P_ps = new int64[1];
@@ -53,7 +67,7 @@ int main(int argc, char* argv[]) {
   // Comparison of three methods: D-Delta, CD, and crossover
   // limited to prime preproducts.
     
-  cout << "Timings for tabulation of Carmichaels with pre-product up to " << bound << "\n";
+  //cout << "Timings for tabulation of Carmichaels with pre-product up to " << bound << "\n";
 
 /*  
   auto start_old = high_resolution_clock::now();
@@ -62,12 +76,14 @@ int main(int argc, char* argv[]) {
   auto duration_old = duration_cast<seconds>(end_old - start_old);
   cout << "Timing for Construct_car.tabulate_car: " << duration_old.count() << "\n";
   */
+
+  /*
   auto start_new = high_resolution_clock::now();
   S2.tabulate_car(0, 1, "cars_new.txt", false);
   auto end_new = high_resolution_clock::now();
   auto duration_new = duration_cast<seconds>(end_new - start_new);
   cout << "Timing for SmallP_Carmichael.tabulate_car: " << duration_new.count() << "\n";
-  
+  */
   /*
   auto start_DD = high_resolution_clock::now();
   S3.tabulate_all_DDelta("cars_DD.txt");
