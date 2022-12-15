@@ -13,6 +13,7 @@ using namespace std;
 
 #include "bigint.h"
 #include "functions.h"
+#include "Odometer.h"
 #include <vector>
 #include <math.h>
 #include <fstream>
@@ -40,6 +41,14 @@ class LargeP_Odometer{
     // Algorithm is binary search.  Return 0 if bound is greater than prime_B (corresponds to prime 2)
     // minimum bound that works is 3, otherwise will go into an infinite loop since no prime < 2
     long find_index_lower(long bound);
+
+    // if the starting pre-product is composite rather than prime, this function will find it.
+    // Happens when X > B^{1/3}.  Not efficient: steps through vi Odometer class, calling find_index_lower
+    void set_start_preproduct();
+
+    // helper function.  Given a prime, return the index corresponding to its location in primes array
+    // returns -1 if for some reason it is not found
+    long find_index(long given_prime);
 
     // helper function.  Assuming we have finished pre-products for Carmichael numbers with current length,
     // reset for the next length.  This involves updated variables and changing the indices array

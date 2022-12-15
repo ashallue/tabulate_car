@@ -128,6 +128,10 @@ LargeP_Odometer::LargeP_Odometer(bigint B_init, long X_init){
 
   cout << "Computation of max_d: " << max_d << "\n";
 
+  // if the product of the primes is smaller than X, there are no large preproducts
+  // in this case, print an error message
+  if(prod <= X) cout << "ERROR in LargeP_Odometer constructor: X too big, no large preproducts exist\n";
+
   // allocate memory for arrays
   uppers = new long[max_d];
   lowers = new long[max_d];
@@ -148,22 +152,22 @@ LargeP_Odometer::LargeP_Odometer(bigint B_init, long X_init){
   for(long i = 0; i < max_d; ++i){
     indices[i] = 0;
   }
-  // except that first index is the smallest prime greater than X
-  indices[0] = find_index_lower(X);
- 
-  // however, there might not be a prime greater than X, in which case 
-  // repeatedly move to the next d until we find a minimal smallest pre-product
-  //while( indices[ P_len - 1 ] == 0){
-     // not sure this is the right idea 
-  //}
+  
+  // if largest prime stored is greater than X, we can find the smallest prime > X
+  if(primes[primes_count - 1] > X){
+    // set initial index to correspond to that prime
+    indices[0] = find_index_lower(X);
+
+  }else{
+    // otherwies, use set_start_preproduct helper function to set initial preproduct and bounds
+    set_start_preproduct(); 
+  }
+
   cout << "first index is " << indices[0] << " ";
 
   P_curr = primes[ indices[0] ];
 
   cout << "Which corresponds to the prime " << P_curr << "\n";
-
-  // but there might not be such primes, in which case we move on to length-2 pre-products
-  if(indices[0] == 0) next_nextd();
 
   cout << "initial indices array: ";
   for(long i = 0; i < max_d; ++i){
@@ -309,6 +313,93 @@ long LargeP_Odometer::find_index_lower(long bound){
 
   // when the while loop is done, we have found our index
   return curr_index;
+}
+
+// if the starting pre-product is composite rather than prime, this function will find it.
+// Happens when X > B^{1/3}.  Not efficient: steps through vi Odometer class, calling find_index_lower
+void LargeP_Odometer::set_start_preproduct(){
+  cout << "start of set_start_preproduct\n";
+
+  // set up an Odometer with all the primes stored, with exps all 1
+  long* exps = new long[primes_count];
+  for(long i = 0; i < primes_count; ++i){
+    exps[i] = 1;
+  }
+  Odometer od = Odometer(primes, exps, primes_count, 1);
+
+  cout << "after Odometer creation, initial div = " << od.div << "\n"; 
+
+  // call next to get past divisor 1.  Should result in divisor 3
+  od.next_div();
+  // retrieve that divisor, and call find_index_lower to see if anything matches so that ab > X
+  int64 Pdminus3 = od.div;
+
+  cout << "Pdminus3 = " << Pdminus3 << " and X = " << "\n";
+
+  long target_index = find_index_lower( X / Pdminus3 );
+
+  cout << "Pdminus3 = " << Pdminus3 << " and target_index = " << target_index << "\n";
+
+  // if that index is non-zero, we have found Pdminus3 * p as the first preproduct > X
+  // If that index is 0, Pdminus3 is too small.  We keep rotating around divisors until it works
+  while(target_index == 0){
+    // update odometer, div, target_index
+    od.next_div();
+    Pdminus3 = od.div;
+    target_index = find_index_lower( (X / Pdminus3) + 1 );
+  }
+
+  cout << "Smallest preproduct greater than X is " << Pdminus3 << " times " << primes[target_index] << "\n";
+ 
+  // index found, now we need to update LargeP_Odometer
+  // first task is to convert exponent vector to prime indices
+  int64 od_prime;
+  long prime_index;
+  for(long i = 0; i < od.num_length; ++i){
+    if(od.div_exp[i] == 1){
+      od_prime = od.primes[i];
+      
+      // use helper function to find index, then store in indices
+      prime_index = find_index(od_prime);
+      if(prime_index == -1){
+        cout << "ERROR in set_start_preproduct, prime is outside the bounds of the primes array\n";
+      }else{
+        indices[i] = prime_index;
+      }
+    }
+  } // end for over exps
+
+}
+
+// helper function.  Given a prime, return the index corresponding to its location in primes array
+// returns -1 if for some reason it is not found
+long LargeP_Odometer::find_index(long given_prime){
+  // since the nth prime p is roughly n * log(n), we can guess that n = p / log(p) 
+  long guess = floor( given_prime / log(given_prime) );
+
+  // check that guess is out of bounds, return 0 if so
+  if(guess < 0 || guess > primes_count){
+    return -1;
+
+  // if guess is low, add one until found or until we run out of primes
+  }else if(primes[guess] < given_prime){
+    while(guess < primes_count && primes[guess] < given_prime){
+      guess++;
+    }
+  }
+  // if guess is high, subtract one until found or until we run out of primes
+  else if(primes[guess] > given_prime){
+    while(guess >= 0 && primes[guess] > given_prime){
+      guess--;
+    }
+  }
+  // if we are outside bounds return -1, otherwise return guess
+  if(guess < 0 || guess > primes_count || primes[guess] != given_prime){
+    return -1;
+  }else{
+    return guess;
+  }
+
 }
 
 // helper function.  Assuming we have finished pre-products for Carmichael numbers with current length,
