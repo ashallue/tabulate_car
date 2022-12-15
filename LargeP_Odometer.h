@@ -63,6 +63,7 @@ class LargeP_Odometer{
     LargeP_Odometer();
 
     // Constructor that takes B and X as input.  Calculates max_d, finds first pre-product
+    // Assumes first pre-product has 1, 2, or 3 prime factors.  So fails if X > B^{3/5}.
     LargeP_Odometer(bigint B_init, long X_init);
   
     // destructor releases memory for the arrays;

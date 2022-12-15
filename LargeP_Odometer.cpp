@@ -158,20 +158,24 @@ LargeP_Odometer::LargeP_Odometer(bigint B_init, long X_init){
     // set initial index to correspond to that prime
     indices[0] = find_index_lower(X);
 
+    // set initial values based on this
+    P_curr = primes[ indices[0] ];
+    lowers[0] = P_curr + 1;
+    uppers[0] = ceil(pow( B, one_third ));
+  
   }else{
     // otherwies, use set_start_preproduct helper function to set initial preproduct and bounds
     set_start_preproduct(); 
   }
 
-  cout << "first index is " << indices[0] << " ";
-
-  P_curr = primes[ indices[0] ];
-
-  cout << "Which corresponds to the prime " << P_curr << "\n";
-
   cout << "initial indices array: ";
   for(long i = 0; i < max_d; ++i){
     cout << indices[i] << " ";
+  }
+  cout << "\n";
+  cout << "initial primes in the preproduct: ";
+  for(long i = 0; i < P_len; ++i){
+    cout << primes[ indices[i] ] << " ";
   }
   cout << "\n";
 
@@ -315,59 +319,88 @@ long LargeP_Odometer::find_index_lower(long bound){
   return curr_index;
 }
 
-// if the starting pre-product is composite rather than prime, this function will find it.
-// Happens when X > B^{1/3}.  Not efficient: steps through vi Odometer class, calling find_index_lower
+// Use this if the starting pre-product is composite rather than prime.
+// Searches for 2 and 3 factor preproducts, then gives up if it would require more factors
 void LargeP_Odometer::set_start_preproduct(){
   cout << "start of set_start_preproduct\n";
 
-  // set up an Odometer with all the primes stored, with exps all 1
-  long* exps = new long[primes_count];
-  for(long i = 0; i < primes_count; ++i){
-    exps[i] = 1;
-  }
-  Odometer od = Odometer(primes, exps, primes_count, 1);
+  long last_i;
+  bigint prod;
+  long bound; 
 
-  cout << "after Odometer creation, initial div = " << od.div << "\n"; 
-
-  // call next to get past divisor 1.  Should result in divisor 3
-  od.next_div();
-  // retrieve that divisor, and call find_index_lower to see if anything matches so that ab > X
-  int64 Pdminus3 = od.div;
-
-  cout << "Pdminus3 = " << Pdminus3 << " and X = " << "\n";
-
-  long target_index = find_index_lower( X / Pdminus3 );
-
-  cout << "Pdminus3 = " << Pdminus3 << " and target_index = " << target_index << "\n";
-
-  // if that index is non-zero, we have found Pdminus3 * p as the first preproduct > X
-  // If that index is 0, Pdminus3 is too small.  We keep rotating around divisors until it works
-  while(target_index == 0){
-    // update odometer, div, target_index
-    od.next_div();
-    Pdminus3 = od.div;
-    target_index = find_index_lower( (X / Pdminus3) + 1 );
-  }
-
-  cout << "Smallest preproduct greater than X is " << Pdminus3 << " times " << primes[target_index] << "\n";
- 
-  // index found, now we need to update LargeP_Odometer
-  // first task is to convert exponent vector to prime indices
-  int64 od_prime;
-  long prime_index;
-  for(long i = 0; i < od.num_length; ++i){
-    if(od.div_exp[i] == 1){
-      od_prime = od.primes[i];
+  // check if the largest two prime factors product larger than X.  If so, check starting at the bottom
+  if(primes[primes_count - 1] * primes[primes_count - 2] >= X){
+    for(long i1 = 0; i1 < primes_count - 1; i1++){
+      last_i = find_index_lower( (X / primes[i1]) + 1 );
       
-      // use helper function to find index, then store in indices
-      prime_index = find_index(od_prime);
-      if(prime_index == -1){
-        cout << "ERROR in set_start_preproduct, prime is outside the bounds of the primes array\n";
-      }else{
-        indices[i] = prime_index;
-      }
+      // finding an index means finding p2 such that p1 * p2 >= X.  This fails if function returns -1
+      if(last_i != -1){
+        // if sucess, break out of the loop.  First set all the info
+        // set indices
+        indices[0] = i1;   indices[1] = last_i;
+      
+        // P_len is 2 and curr_d is 4
+        P_len = 2;    curr_d = 4;
+
+        // P_curr is the product of the two primes
+        P_curr = primes[i1] * primes[last_i];
+   
+        // update lower and upper bounds
+        // new lower bound on the 0 index is 1 more than current prime.  Lower on index 1 shouldn't matter
+        lowers[0] = primes[i1] + 1;
+
+        // update the upper bounds.  (B / prod(i))^{1 / (d - i)}
+        prod = 1;
+        for(long i = 0; i < P_len; ++i){
+          bound = ceil(pow( B/prod, 1.0 / (curr_d - i) ));
+          uppers[i] = bound;
+          prod = prod * primes[ indices[i] ]; 
+        }
+
+        // break from the loop
+        break;
+      } 
     }
-  } // end for over exps
+  // check if the largest three prime factors product larger than X.  if so, run through prime pairs
+  }else if(primes[primes_count - 1] * primes[primes_count - 2] * primes[primes_count - 3] >= X){
+    for(long i1 = 0; i1 < primes_count - 2; i1++){
+      for(long i2 = i1 + 1; i2 < primes_count - 1; i2++){
+        last_i = find_index_lower( (X / (primes[i1] * primes[i2])) + 1 );
+
+        // if -1, move to the next pair.  If it is not -1, set information for the preproduct
+        // finding an index means finding p2 such that p1 * p2 >= X.  This fails if function returns -1
+        if(last_i != -1){
+          // if sucess, break out of the loop.  First set all the info
+          // set indices
+          indices[0] = i1;   indices[1] = i2;  indices[2] = last_i;
+      
+          // P_len is 3 and curr_d is 5
+          P_len = 3;    curr_d = 5;
+
+          // P_curr is the product of the three primes
+          P_curr = primes[i1] * primes[i2] * primes[last_i];
+   
+          // update lower and upper bounds
+          // new lower bound on the 0 index is 1 more than current prime.  Similar for index 1
+          lowers[0] = primes[i1] + 1;
+          lowers[1] = primes[i2] + 1;
+
+          // update the upper bounds.  (B / prod(i))^{1 / (d - i)}
+          prod = 1;
+          for(long i = 0; i < P_len; ++i){
+            bound = ceil(pow( B/prod, 1.0 / (curr_d - i) ));
+            uppers[i] = bound;
+            prod = prod * primes[ indices[i] ]; 
+          }
+
+          // break from the loop
+          break;
+        } //end if last_i is not -1
+      } //end for i2
+    }  // end for i1
+  }else{
+    cout << "Error in set_start_preproduct, to be bigger than X requires pre-product with more than 3 factors\n";
+  }
 
 }
 
