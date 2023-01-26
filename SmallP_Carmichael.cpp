@@ -26,6 +26,7 @@ using namespace std;
 SmallP_Carmichael::SmallP_Carmichael(){
   B_upper = 65536;
   B_lower = 1;
+  X = 1000000000;
 
   // create Factgen2 object and initialize
   F = Factgen2();
@@ -60,10 +61,11 @@ SmallP_Carmichael::SmallP_Carmichael(){
 }
 
 // set preproduct bound B to given value.  Initialize F.  FD gets initialized in a separate function.
-SmallP_Carmichael::SmallP_Carmichael(int64 B_low_val, int64 B_up_val){
+SmallP_Carmichael::SmallP_Carmichael(int64 B_low_val, int64 B_up_val, bigint X_val){
   // same as default, except for the B input
   B_upper = B_up_val;
   B_lower = B_low_val;  
+  X       = X_val;
 
   F = Factgen2();
   F.init(B_lower - 1, B_upper);
@@ -595,7 +597,7 @@ bool SmallP_Carmichael::completion_check(Preproduct& P, int64 Delta, int64 D, li
 
 /* Construct Carmichaels for a range of pre-products P < B
  */
-void SmallP_Carmichael::tabulate_car(long processor, long num_threads, string cars_file, bool verbose_output){
+void SmallP_Carmichael::tabulate_car(long processor, long num_threads, string cars_file, bool bounded, bool verbose_output){
   int64* P_factors;
   long   P_factors_len;
   int64* Pminus_factors;

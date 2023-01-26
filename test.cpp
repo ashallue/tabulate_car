@@ -54,7 +54,12 @@ int main(int argc, char* argv[]) {
 
   cout << "\nTesting LargeP_Odometer\n";
   LargeP_Odometer odo0 = LargeP_Odometer();
-  LargeP_Odometer odo = LargeP_Odometer(500000, 10000);
+  LargeP_Odometer odo = LargeP_Odometer(500000, 810);
+ 
+  long p = 53;
+  cout << "prime " << p << " has index " << odo.find_index(p) << "\n";
+ 
+  /*
   cout << "B = " << odo.B << " X = " << odo.X << " primes up to " << odo.prime_B << "\n";
   cout << "primes: ";
   for(long i = 0; i < odo.primes_count; ++i){
@@ -65,7 +70,7 @@ int main(int argc, char* argv[]) {
   cout << " curr_d = " << odo.curr_d << "\n";
   odo.next();
   cout << "P = " << odo.get_P() << " and its largest factor = " << odo.get_largest_prime() << "\n";
- 
+  */
 
  
 

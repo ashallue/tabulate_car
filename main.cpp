@@ -44,7 +44,7 @@ int main(int argc, char* argv[]) {
   // timing code from geeksforgeeks.org
   
   // we want all pre-products up to 10^8, which is 10^5 thousands
-  int64 num_thousands = 1000;
+  int64 num_thousands = 50;
   int64 bound = num_thousands * 1000;
   cout << "Timings for tabulation of Carmichaels with pre-product up to " << bound << "\n";
 
