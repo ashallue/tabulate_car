@@ -27,6 +27,7 @@ SmallP_Carmichael::SmallP_Carmichael(){
   B_upper = 65536;
   B_lower = 1;
   X = 1000000000;
+  bounded_cars = false;
 
   // create Factgen2 object and initialize
   F = Factgen2();
@@ -61,11 +62,12 @@ SmallP_Carmichael::SmallP_Carmichael(){
 }
 
 // set preproduct bound B to given value.  Initialize F.  FD gets initialized in a separate function.
-SmallP_Carmichael::SmallP_Carmichael(int64 B_low_val, int64 B_up_val, bigint X_val){
+SmallP_Carmichael::SmallP_Carmichael(int64 B_low_val, int64 B_up_val, bigint X_val, bool bounded){
   // same as default, except for the B input
   B_upper = B_up_val;
   B_lower = B_low_val;  
   X       = X_val;
+  bounded_cars = bounded; 
 
   F = Factgen2();
   F.init(B_lower - 1, B_upper);
@@ -597,7 +599,7 @@ bool SmallP_Carmichael::completion_check(Preproduct& P, int64 Delta, int64 D, li
 
 /* Construct Carmichaels for a range of pre-products P < B
  */
-void SmallP_Carmichael::tabulate_car(long processor, long num_threads, string cars_file, bool bounded, bool verbose_output){
+void SmallP_Carmichael::tabulate_car(long processor, long num_threads, string cars_file, bool verbose_output){
   int64* P_factors;
   long   P_factors_len;
   int64* Pminus_factors;
@@ -635,6 +637,14 @@ void SmallP_Carmichael::tabulate_car(long processor, long num_threads, string ca
     Pminus_factors = F.prev;
     Pminus_factors_len = F.prevlen;
 
+    /*
+    cout << "inside tabulate_car, considering P = " << P << ": ";
+    for(long i = 0; i < P_factors_len; i++){
+      cout << P_factors[i] << " ";
+    }
+    cout << "\n";
+    */
+
     // construct Preproduct object
     Preproduct P_ob = Preproduct(P, P_factors, P_factors_len, Pminus_factors, Pminus_factors_len);
 
@@ -644,8 +654,16 @@ void SmallP_Carmichael::tabulate_car(long processor, long num_threads, string ca
     // check admissability.  If so, add to count
     if(P_ob.admissable) num_admissable++;
 
-    // if num_admissable has the correct residue, do work, otherwise continue
-    if( (num_admissable % num_threads) != (processor % num_threads)){
+    // If Pp^2 >= X, throw out that preproduct
+    bool bounded_pass;
+    if(!bounded_cars){
+      bounded_pass = true;
+    }else{
+      bounded_pass = P * P_factors[P_factors_len - 1] * P_factors[P_factors_len - 1] < X;
+    }
+
+    // if num_admissable has the correct residue and pass bounded check, do work, otherwise continue
+    if( (num_admissable % num_threads) != (processor % num_threads) || !bounded_pass){
       F.next();
       F.next();
 
@@ -654,7 +672,6 @@ void SmallP_Carmichael::tabulate_car(long processor, long num_threads, string ca
       if(res_P_index > total_residue) res_P_index -= total_residue;
 
     }else{
-
       // if admissable, construct Carmichaels
       if(P_ob.admissable){
      
@@ -671,26 +688,31 @@ void SmallP_Carmichael::tabulate_car(long processor, long num_threads, string ca
         //output << "Carmichaels for P = " << P << " number of Cars is " << qrs.size() << "\n";
         for(long j = 0; j < qrs.size(); ++j){
 
-          // output depends on the input bool verbose_output.  If true, give n followed by factors
-          if(verbose_output){
-            // compute n
-            n = 1;
-            for(long k = 0; k < P_ob.Pprimes_len; k++){
-              n = n * P_ob.Pprimes[k];
+          // compute n
+          n = 1;
+          for(long i = 0; i < P_ob.Pprimes_len; i++){
+            n = n * P_ob.Pprimes[i];
+          }
+          n *= qrs.at(j).first;
+          n *= qrs.at(j).second;
+          
+          // if bounded, only print if n < X
+          if(bounded_cars && n < X){
+
+            // output depends on the input bool verbose_output.  If true, give n followed by factors
+            if(verbose_output){
+
+              // now print n followed by its factors, space separated
+              output << n << " ";
+              for(long k = 0; k < P_ob.Pprimes_len; k++){
+                output << P_ob.Pprimes[k] << " ";
+              } 
+              output << qrs.at(j).first << " " << qrs.at(j).second << "\n";
+
+            }else{
+              // otherwise, output preproduct P, followed by q then r
+              output << P << " " << qrs.at(j).first << " " << qrs.at(j).second << "\n";
             }
-            n = n * qrs.at(j).first;
-            n = n * qrs.at(j).second;
-
-            // now print n followed by its factors, space separated
-            output << n << " ";
-            for(long k = 0; k < P_ob.Pprimes_len; k++){
-              output << P_ob.Pprimes[k] << " ";
-            } 
-            output << qrs.at(j).first << " " << qrs.at(j).second << "\n";
-
-          }else{
-            // otherwise, output preproduct P, followed by q then r
-            output << P << " " << qrs.at(j).first << " " << qrs.at(j).second << "\n";
           }
         } // end for
       } // end if admissable

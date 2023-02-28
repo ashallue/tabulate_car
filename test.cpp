@@ -74,7 +74,7 @@ int main(int argc, char* argv[]) {
 
  
 
-  /*
+  
   cout << "\nTesting LargeP construction\n";
   LargeP_Odometer od3 = LargeP_Odometer();
   for(long i = 0; i < 100; ++i){
@@ -84,15 +84,9 @@ int main(int argc, char* argv[]) {
   cout << "\n";
 
   cout << "The value of max_d for od3 is " << od3.max_d << "\n";
-  LargeP_Odometer od4 = od3;
-  cout << "The value of max_d for od4 is " << od4.max_d << "\n";
-  LargeP_Odometer od5(od3);
-  cout << "The value of max_d for od5 is " << od5.max_d << "\n";
 
   od3.large_products("odometer_output3.txt");
-  od4.large_products("odometer_output4.txt");
-  od5.large_products("odometer_output5.txt");
-  */
+  
 
   //LargeP_Carmichael lpconstruct = LargeP_Carmichael();
   //lpconstruct.tabulate_car(1, 1, "cars.txt");

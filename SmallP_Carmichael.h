@@ -41,6 +41,7 @@ class SmallP_Carmichael{
     int64 B_lower;
     // X is the upper bound on Carmichaels constructed.  Certain functions may choose to ignore this
     bigint X;
+    bool bounded_cars;
 
     // variables for q, r.  Used in completion check.  mpz are for primality testing.
     int64 q;  bigint r;
@@ -68,7 +69,7 @@ class SmallP_Carmichael{
     SmallP_Carmichael();
 
     // set preproduct bounds and Carmichael bound.  Initialize F.  FD gets initialized in a separate function.
-    SmallP_Carmichael(int64 B_low_val, int64 B_up_val, bigint X_val);
+    SmallP_Carmichael(int64 B_low_val, int64 B_up_val, bigint X_val, bool bounded);
 
     // destructor to clear the mpz_t variables.  Then copy construtors to follow rule of 3.
     ~SmallP_Carmichael();
@@ -124,7 +125,7 @@ class SmallP_Carmichael{
  *   Two choices for output:  (1) if verbose is true, print n followed by its factorization (space separated)
  *   (2) if verbose false, print preproduct, followed by q then r (space separated)
  */
-    void tabulate_car(long processor, long num_threads, string cars_file, bool bounded, bool verbose_output);
+    void tabulate_car(long processor, long num_threads, string cars_file, bool verbose_output);
 
     /* Construct Carmichaels for prime pre-products P.  Similar to tabulate_car
  *     Note this only does D-Delta.  Thus bad for production; only use for timing comparisons with Pinch

@@ -44,11 +44,11 @@ int main(int argc, char* argv[]) {
   // timing code from geeksforgeeks.org
   
   // we want all pre-products up to 10^8, which is 10^5 thousands
-  int64 num_thousands = 50;
+  int64 num_thousands = 10;
   int64 bound = num_thousands * 1000;
   cout << "Timings for tabulation of Carmichaels with pre-product up to " << bound << "\n";
 
-  SmallP_Carmichael C = SmallP_Carmichael(3, bound);
+  SmallP_Carmichael C = SmallP_Carmichael(3, 200, 200000, true);
   //Construct_car C = Construct_car();
 
   auto start_new = high_resolution_clock::now();
