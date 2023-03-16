@@ -92,3 +92,48 @@ LargePreproduct::LargePreproduct(bigint B_init, long X_init){
   cout << "\n";
   cout << "max_d = " << max_d << "\n"; 
 }
+
+
+// Following rule of 3 to clean up the primes array
+LargePreproduct::~LargePreproduct(){
+  delete[] primes;
+}
+
+LargePreproduct& LargePreproduct::operator=(const LargePreproduct &other){
+  cout << "Inside operator=\n";
+
+  // copy over the basic variables
+  this->B = other.B;
+  this->X = other.X;
+  this->max_d = other.max_d;
+  this->prime_B = other.prime_B;
+
+  // copy over the primes array
+  this->primes_count = other.primes_count;
+  this->primes = new long[this->primes_count];
+  for(long i = 0; i < this->primes_count; ++i){
+    this->primes[i] = other.primes[i];
+  }
+
+  // return the object constructed
+  return *this;
+}
+
+LargePreproduct::LargePreproduct(const LargePreproduct &other){
+  cout << "Inside copy constructor\n";
+
+  // copy over the basic variables
+  B = other.B;
+  X = other.X;
+  max_d = other.max_d;
+  prime_B = other.prime_B;
+
+  // copy over the primes array
+  primes_count = other.primes_count;
+  primes = new long[primes_count];
+  for(long i = 0; i < primes_count; ++i){
+    primes[i] = other.primes[i];
+  }
+}
+
+

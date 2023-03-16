@@ -20,7 +20,7 @@ using namespace std;
  */
 
 class LargePreproduct{
-  private:
+  public:
     bigint B;  // bound on Carmichaels constructted
     long   X;  // lower bound on preproducts
     long max_d;  // largest possible value for d

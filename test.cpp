@@ -41,21 +41,38 @@ int main(int argc, char* argv[]) {
   merge(files, "cars_merge.txt");
   */
 
-  cout << "Is 9 admissable?  It shouldn't be\n";
-   
-  // construct Preproduct, need arrays for both P and P-1 
-  long ps[] = {3, 3};
-  long pms[] = {2};
-  long es[] = {3, 1, 1};
-  Preproduct P = Preproduct(9, ps, 2, pms, 1);
-  cout << "P = " << P.Prod << " has admissability: " << P.admissable << "\n";
-  Preproduct P2 = Preproduct(9, ps, 2);
-  cout << "P2 = " << P2.Prod << " has admissability: " << P.admissable << "\n";
-
   cout << "\nTesting LargePreproduct\n";
   LargePreproduct od1 = LargePreproduct();
-  LargePreproduct od2 = LargePreproduct(1000000, 10000);
- 
+  LargePreproduct od2 = LargePreproduct(1000, 50);
+  LargePreproduct od3(od2);
+
+  cout <<  "primes from od2: ";
+  for(long i = 0; i < od2.primes_count; i++){
+    cout << od2.primes[i] << " ";
+  }
+  cout << "\n";
+
+  cout <<  "primes from od3: ";
+  for(long i = 0; i < od3.primes_count; i++){
+    cout << od3.primes[i] << " ";
+  }
+  cout << "\n";
+
+  LargePreproduct* od4 = new LargePreproduct[2];
+  od4[0] = od2;
+  od4[1] = od3;
+  
+  cout <<  "primes from od4: ";
+  for(long i = 0; i < od4[0].primes_count; i++){
+    cout << od4[0].primes[i] << " ";
+  }
+  cout << "\n";
+
+  cout <<  "primes from od4: ";
+  for(long i = 0; i < od4[1].primes_count; i++){
+    cout << od4[1].primes[i] << " ";
+  }
+  cout << "\n";
   /*
   cout << "B = " << odo.B << " X = " << odo.X << " primes up to " << odo.prime_B << "\n";
   cout << "primes: ";
