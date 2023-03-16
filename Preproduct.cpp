@@ -157,10 +157,9 @@ Preproduct Preproduct::operator=(const Preproduct& other){
 // Tests whether a given pre-product P is admissable, 
 // i.e. that gcd(p-1, P) = 1 for all p | P, and squarefree
 // returns 0 if not admissable
+// Update: didn't work if a prime appears in Pprimes more than once, 
+// so squarefree check now involves division.
 bool Preproduct::is_admissable(){
-  // construct product of the prime factors of P
-  // and compute lcm L at the same time
-  bigint P_check = 1;
   int64 prime;    // stores a prime
   int64 g;        // stores gcd
 
@@ -168,21 +167,19 @@ bool Preproduct::is_admissable(){
   // Then gcd(p-1, P_p) = 1 for all p => gcd(p-1, P) = 1 for all p
   // because p-1 can't share factors with primes larger than p.
   for(long i = 0; i < Pprimes_len; ++i){
-    // grow the product P
-    P_check = P_check * Pprimes[i];
 
     // grow the LCM
     // first compute gcd(p-1, P)
     prime = Pprimes[i];
-    g = gcd(prime - 1, P_check);
+    g = gcd(prime - 1, Prod);
 
     // Not admissable if gcd not 1
     if(g != 1) return false;
-  
+ 
+    // Not admissable if P / p == 0 mod p
+    if((Prod / prime) % prime == 0) return false;
+ 
   }  // end for over Pprimes
-
-  // not squarefree if this product is not P
-  if(P_check != Prod) return false;
 
   // if computer gets to this point then P is admissable
   return true;

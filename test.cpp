@@ -54,7 +54,7 @@ int main(int argc, char* argv[]) {
 
   cout << "\nTesting LargePreproduct\n";
   LargePreproduct od1 = LargePreproduct();
-  LargePreproduct od2 = LargePreproduct(1000000, 100);
+  LargePreproduct od2 = LargePreproduct(1000000, 10000);
  
   /*
   cout << "B = " << odo.B << " X = " << odo.X << " primes up to " << odo.prime_B << "\n";

@@ -25,6 +25,10 @@ class LargePreproduct{
     long   X;  // lower bound on preproducts
     long max_d;  // largest possible value for d
     long prime_B;  // largest value for q = p_{d-1}
+    
+    // primes array
+    long* primes;
+    long primes_count;
 
   public: 
     // default values are B = 100,001 and X = B^{1/3}
@@ -32,6 +36,10 @@ class LargePreproduct{
     // constructor that takes B, X as input
     LargePreproduct(bigint B_init, long X_init);
 
+    // Following rule of 3 to clean up the primes array
+    ~LargePreproduct();
+    LargePreproduct& operator=(const LargePreproduct &other);
+    LargePreproduct(const LargePreproduct &other);
 
 };
 
