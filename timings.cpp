@@ -32,16 +32,6 @@ int main(int argc, char* argv[]) {
   int64 bound = num_thousands * 10;
   int64 preproduct_lower = 1000;  
 
-  cout << "Timings for large preproducts using pinch's method\n";
-  cout << "Carmichaels at most " << bound << " with preproducts at least " << preproduct_lower << "\n";
-
-  LargeP_Carmichael lp = LargeP_Carmichael(bound, preproduct_lower);
-
-  auto start = high_resolution_clock::now();
-  lp.pinch(0, 1, "cars_large.txt");
-  auto end = high_resolution_clock::now();
-  auto duration_old = duration_cast<seconds>(end - start);
-  cout << "Timing for LargeP_Carmichael::pinch: " << duration_old.count() << "\n"; 
   /*
   Pinch CP = Pinch();
   Construct_car C1 = Construct_car();

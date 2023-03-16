@@ -17,7 +17,7 @@
 #include "gmp.h"
 #include "Pseudosquare.h"
 #include <string>
-#include "LargeP_Odometer.h"
+#include "LargePreproduct.h"
 #include "Preproduct.h"
 
 using namespace std::chrono;
@@ -52,12 +52,9 @@ int main(int argc, char* argv[]) {
   Preproduct P2 = Preproduct(9, ps, 2);
   cout << "P2 = " << P2.Prod << " has admissability: " << P.admissable << "\n";
 
-  cout << "\nTesting LargeP_Odometer\n";
-  LargeP_Odometer odo0 = LargeP_Odometer();
-  LargeP_Odometer odo = LargeP_Odometer(500000, 810);
- 
-  long p = 53;
-  cout << "prime " << p << " has index " << odo.find_index(p) << "\n";
+  cout << "\nTesting LargePreproduct\n";
+  LargePreproduct od1 = LargePreproduct();
+  LargePreproduct od2 = LargePreproduct(1000000, 100);
  
   /*
   cout << "B = " << odo.B << " X = " << odo.X << " primes up to " << odo.prime_B << "\n";
@@ -74,7 +71,7 @@ int main(int argc, char* argv[]) {
 
  
 
-  
+ /* 
   cout << "\nTesting LargeP construction\n";
   LargeP_Odometer od3 = LargeP_Odometer();
   for(long i = 0; i < 100; ++i){
@@ -86,7 +83,7 @@ int main(int argc, char* argv[]) {
   cout << "The value of max_d for od3 is " << od3.max_d << "\n";
 
   od3.large_products("odometer_output3.txt");
-  
+  */
 
   //LargeP_Carmichael lpconstruct = LargeP_Carmichael();
   //lpconstruct.tabulate_car(1, 1, "cars.txt");

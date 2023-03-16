@@ -1,7 +1,7 @@
 paths = -I/usr/local/include -L/usr/local/lib
 tags = -lntl -lm -lgmp -O3 -ggdb 
 debugtags = -lntl -lm -lgmp 
-objects = bigint.o Preproduct.o Pseudosquare.o Pinch.o Construct_car.o LargeP_Carmichael.o SmallP_Carmichael.o Factgen.o functions.o int.o LargeP_Odometer.o Odometer.o primetest.o postprocess.o 
+objects = bigint.o Preproduct.o Pseudosquare.o Pinch.o Construct_car.o SmallP_Carmichael.o LargePreproduct.o Factgen.o functions.o int.o Odometer.o primetest.o postprocess.o 
 
 all: main test int_testing timings
 
