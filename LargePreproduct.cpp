@@ -47,8 +47,11 @@ LargePreproduct::LargePreproduct(bigint B_init, long X_init){
   B = B_init;
   X = X_init;
 
-  // we have Xq < Xr < (Pq)r < B, and so q < B/X.  Thus B/X is the largest prime I'm constructing
-  prime_B = B / X + 1;
+  // we have Xqr < Xqq < B, and so q < sqrt(B/X).
+  // I've tested B / X and it works correctly: bigint / long casts to bigint
+  // then storing it in prime_B (type long) is fine as long as sqrt is < 64 bits 
+  double one_half = 1.0 / 2;
+  prime_B = ceil(pow(B / X, one_half));
  
   // create primes array.  First set up nums with nums[i] = i, then apply factor_sieve.
   // the largest prime is prime_B, so that is the upper bound on the array
@@ -100,7 +103,6 @@ LargePreproduct::~LargePreproduct(){
 }
 
 LargePreproduct& LargePreproduct::operator=(const LargePreproduct &other){
-  cout << "Inside operator=\n";
 
   // copy over the basic variables
   this->B = other.B;
@@ -120,7 +122,6 @@ LargePreproduct& LargePreproduct::operator=(const LargePreproduct &other){
 }
 
 LargePreproduct::LargePreproduct(const LargePreproduct &other){
-  cout << "Inside copy constructor\n";
 
   // copy over the basic variables
   B = other.B;
@@ -136,4 +137,210 @@ LargePreproduct::LargePreproduct(const LargePreproduct &other){
   }
 }
 
+// helper function.  Given lower bound, find index of the smallest prime larger than the bound
+// Algorithm is binary search.  Return 0 if bound is greater than prime_B (corresponds to prime 2)
+long LargePreproduct::find_index_lower(long bound){
+  // testing
+  /*
+  cout << "This is find_index_lower with bound " << bound << "\n";
+  cout << "The primes are \n";
+  for(long i = 0; i < primes.size(); i++){
+    cout << primes[i] << " ";
+  }
+  cout << "\n";
+  */
+  // check that bound is smaller than prime_B, if not return -1
+  if(primes[primes_count-1] < bound){
+    //cout << "Error in find_index_lower, no prime above bound " << bound << "\n";
+    return -1;
+  }
 
+  // start the search at the middle of the set of primes
+  long curr_index = primes_count / 2;
+  long min = 0;
+  long max = primes_count - 1;
+  long jump = (max - min) / 2;
+
+  // continue until primes[curr_index] >= bound and primes[curr_index - 1] < bound 
+  bool done = false;
+  while(!done){
+    // testing
+    //cout << "min = " << min << " max = " << max << " curr_index = " << curr_index << "\n";
+ 
+    // check if done
+    if(primes[curr_index] >= bound && primes[curr_index - 1] < bound){
+      done = true;
+    }else{
+      // if interval down to size 1, the answer should be one higher than current
+      if( (max - min) == 1 ){
+        curr_index++;
+      }
+      // now update to either the top half or bottom half
+      else if(primes[curr_index] > bound){
+        // jump down
+        max = curr_index;
+        jump = (max - min) / 2;
+        curr_index -= jump;
+      }else{
+        // else jump up
+        min = curr_index;
+        jump = (max - min) / 2;
+        curr_index += jump;
+      }
+    }
+  } // end while
+  // return index found
+  return curr_index;
+}
+
+// helper function.  Given num, den, root compute bound = (num / den)^(1/root), then find the index 
+// of the largest prime smaller than that bound and return that index
+long LargePreproduct::find_index_upper(bigint num, bigint den, long root){
+  // final check involves gmp exponentiation
+  mpz_t bound_prod1;
+  mpz_t bound_prod2;
+  mpz_t big_den;
+  mpz_t big_num;
+  mpz_inits(bound_prod1, bound_prod2, big_den, big_num, 0);
+  
+  // convert num and den to mpz_t type for comparisons
+  bigint_to_mpz(den, big_den);
+  bigint_to_mpz(num, big_num);
+  mpz_set_ui(big_den, 0);
+  mpz_set_ui(big_num, 0);
+
+  // compute the bound
+  long bound = ceil(pow( num / den, 1.0 / root ));
+
+  // make an index guess.  Since p = n * log(n), guess n = p / log(p)
+  long guess = floor( bound / log(bound) );
+  cout << "guess is " << guess << "\n";
+  long output;  // will store the output to return
+
+  // if guess is at the maximum of the primes list or above, simply take the maximum
+  if(guess >= primes_count){
+    output = primes_count;
+
+  // if guess is less than 0, we assume nothing works, so output will be -1
+  }else if(guess < 0){
+    output = -1;
+  
+  // case for if the guess is too low
+  }else if(primes[guess] < bound){
+
+    // if guess is low, add one until guess is high
+    while(primes[guess] < bound && guess < primes_count){
+      guess++;
+    }
+   
+    // if we hit the upper limit, simply return that
+    if(guess == primes_count){
+      cout << "problem in find_index_upper, while loop hit the upper limit\n";
+      output = primes_count;
+    
+    // otherwise the correct result is probably guess--, check to make sure
+    }else{
+      // first compute the upper bound den * p2^root
+      mpz_set_ui(bound_prod2, primes[guess]);
+      mpz_pow_ui(bound_prod2, bound_prod2, root);
+      mpz_mul(bound_prod2, bound_prod2, big_den);
+
+      // now subtract 1 from guess and compute den * p1^root
+      guess--;
+      mpz_set_ui(bound_prod1, primes[guess]);
+      mpz_pow_ui(bound_prod1, bound_prod1, root);
+      mpz_mul(bound_prod1, bound_prod1, big_den);
+      
+      // we want bound_prod1 < num and bound_prod2 > num
+      if(mpz_cmp(bound_prod1, big_num) < 0 && mpz_cmp(bound_prod2, big_num) >= 0){
+
+        output = guess;
+
+      }else{
+        cout << "failure in find_index_upper, the guess found did not satisfy the bounds\n";
+        output = -1;
+      }
+    }
+  // case for if the guess is too big
+  }else{
+  
+    // subtract one from guess until it is no longer too big
+    while(primes[guess] >= bound && guess > 0){
+      guess--;
+    }
+    // if we hit the lower limit, return -1 to signify failure
+    if(guess == 0){
+      cout << "problem in find_index_upper, while loop hit the lower limit\n";
+      output = -1;
+
+    //otherwise, guess should be what we want, compute two bounds to check 
+    }else{
+
+      // first compute the lower bound den * p1^root
+      mpz_set_ui(bound_prod1, primes[guess]);
+      mpz_pow_ui(bound_prod1, bound_prod1, root);
+      mpz_mul(bound_prod1, bound_prod1, big_den);
+
+      // now compute den * p2^root where p2 is prime above the guess
+      mpz_set_ui(bound_prod2, primes[guess + 1]);
+      mpz_pow_ui(bound_prod2, bound_prod2, root);
+      mpz_mul(bound_prod2, bound_prod2, big_den);
+
+      // we want bound_prod1 < num and bound_prod2 > num
+      if(mpz_cmp(bound_prod1, big_num) < 0 && mpz_cmp(bound_prod2, big_num) >= 0){
+        output = guess;
+      }else{
+        cout << "failure in find_index_upper, the guess found did not satisfy the bounds\n";
+        output = -1;
+      }
+    }
+
+  }
+  // clear the mpz and return output
+  mpz_clears(bound_prod1, bound_prod2, big_den, big_num, 0);
+  return output;
+}
+
+// this one constructs Carmichaels with d = 4 and writes to file
+void LargePreproduct::cars4(string cars_file){
+  //setup file
+  ofstream output;
+  output.open(cars_file);
+
+  // primes out of the primes index
+  long p1, p2, q;
+  long lower_index;
+  long upper1, upper2, upper3;
+
+  // nested for loops
+  // compute first upper bound as B^{1/4}
+  upper1 = find_index_upper(B, 1, 4);
+  cout << "upper1 = " << upper1 << "\n"; 
+ 
+  for(long i1 = 1; i1 < upper1; ++i1){
+
+    p1 = primes[i1];
+
+    // since p1 * p2 > X, and p2 > p1, we need to find i2 that makes both of these true
+    lower_index = find_index_lower(X / p1);
+    if(i1 + 1 < lower_index) lower_index = i1 + 1;
+  
+    // also need to compute the corresponding upper bound: (B/p1)^{1/3}
+    upper2 = find_index_upper(B, p1, 3);
+    cout << "then lower_index = " << lower_index << " and upper2 = " << upper2 << "\n";
+
+    for(long i2 = lower_index; i2 < upper2; ++i2){
+      p2 = primes[i2];
+   
+      // lower bound for q is just the previous prime, upper is (B/p1p2)^{1/2}
+      upper3 = find_index_upper(B, p1 * p2, 2);
+
+      for(long i3 = i2 + 1; i3 < upper3; ++i3){
+        q = primes[i3];
+        cout << "now find r for the preproduct " << p1 << " " << p2 << " " << q << "\n";
+      }
+    } 
+  }
+
+  output.close();
+}
