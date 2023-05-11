@@ -46,7 +46,7 @@ class LargePreproduct{
     // this one constructs Carmichaels with d = 4 and writes to file
     void cars4(string cars_file);
 
-  private:
+  public:
 
     // helper function.  Given lower bound, find index of the smallest prime larger than the bound
     // Algorithm is binary search.  Return 0 if bound is greater than prime_B (corresponds to prime 2)
@@ -56,6 +56,9 @@ class LargePreproduct{
     // helper function.  Given num, den, root compute bound = (num / den)^(1/root), then find the index 
     // of the largest prime smaller than that bound and return that index
     long find_index_upper(bigint num, bigint den, long root);
+
+    // helper function.  Return (num / den)^(1/root) as an integer
+    long find_upper(bigint num, bigint den, long root);
 
 };
 

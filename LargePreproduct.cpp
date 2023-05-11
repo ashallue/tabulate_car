@@ -195,6 +195,7 @@ long LargePreproduct::find_index_lower(long bound){
 
 // helper function.  Given num, den, root compute bound = (num / den)^(1/root), then find the index 
 // of the largest prime smaller than that bound and return that index
+// Update: deprecating this function.  Too complicated.
 long LargePreproduct::find_index_upper(bigint num, bigint den, long root){
   // final check involves gmp exponentiation
   mpz_t bound_prod1;
@@ -301,46 +302,80 @@ long LargePreproduct::find_index_upper(bigint num, bigint den, long root){
   return output;
 }
 
+// Helper function that returns (num / den)^(1/root) as an integer
+// Note that a double should be enough precision: 128 / 3 < 43, 
+// and a double is 64 bits total.
+long LargePreproduct::find_upper(bigint num, bigint den, long root){
+  // exponent is 1 / root
+  double exp = 1.0 / root;
+  // base is num / den
+  long double base = num * 1.0 / den;
+
+  // then use pow function to calculate result
+  long double pow_result = pow(base, exp);
+
+  // take the ceiling and return
+  return ceil(pow_result);
+}
+
 // this one constructs Carmichaels with d = 4 and writes to file
 void LargePreproduct::cars4(string cars_file){
   //setup file
   ofstream output;
   output.open(cars_file);
 
-  // primes out of the primes index
+  // primes out of the primes index, their indices
   long p1, p2, q;
+  long i1, i2, i3;
+  // lower bounds are given in terms of index, uppers in terms of values
   long lower_index;
   long upper1, upper2, upper3;
 
   // nested for loops
   // compute first upper bound as B^{1/4}
-  upper1 = find_index_upper(B, 1, 4);
-  cout << "upper1 = " << upper1 << "\n"; 
- 
-  for(long i1 = 1; i1 < upper1; ++i1){
+  upper1 = find_upper(B, 1, 4);
+  cout << "upper1 = " << upper1 << "\n";
 
-    p1 = primes[i1];
+  // start p1 at the first prime, which should be 3 
+  i1 = 0;
+  p1 = primes[0]; 
+  while(p1 < upper1){
+
 
     // since p1 * p2 > X, and p2 > p1, we need to find i2 that makes both of these true
     lower_index = find_index_lower(X / p1);
     if(i1 + 1 < lower_index) lower_index = i1 + 1;
-  
+    i2 = lower_index;  
+
     // also need to compute the corresponding upper bound: (B/p1)^{1/3}
-    upper2 = find_index_upper(B, p1, 3);
+    upper2 = find_upper(B, p1, 3);
     cout << "then lower_index = " << lower_index << " and upper2 = " << upper2 << "\n";
 
-    for(long i2 = lower_index; i2 < upper2; ++i2){
-      p2 = primes[i2];
+    p2 = primes[i2];
+    while(p2 < upper2){
    
       // lower bound for q is just the previous prime, upper is (B/p1p2)^{1/2}
-      upper3 = find_index_upper(B, p1 * p2, 2);
+      upper3 = find_upper(B, p1 * p2, 2);
+      i3 = i2 + 1;
+      q = primes[i3];
 
-      for(long i3 = i2 + 1; i3 < upper3; ++i3){
-        q = primes[i3];
+      while(q < upper3){
         cout << "now find r for the preproduct " << p1 << " " << p2 << " " << q << "\n";
-      }
-    } 
-  }
+ 
+        // next prime
+        i3++;
+        q = primes[i3];
+      } // end for i3
+
+      // next prime
+      i2++;
+      p2 = primes[i2];
+    } // end for i2
+
+    // next prime
+    i1++;
+    p1 = primes[i1]; 
+  } // end for i1
 
   output.close();
 }
