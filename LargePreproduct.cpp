@@ -10,7 +10,7 @@ LargePreproduct::LargePreproduct(){
   B = 1000001;
   double one_third = 1.0 / 3;
   X = ceil(pow(B, one_third));
-  prime_B = ceil(pow(B, one_third));
+  prime_B = ceil(pow(B, 1.0 / 2));
 
   // 3 * 5 * 7 * 11 * 13 * 17 * 19 > 4.8 million, 3 * 5 * 7 * 11 * 13 * 17 = 255255
   max_d = 6;
@@ -47,11 +47,12 @@ LargePreproduct::LargePreproduct(bigint B_init, long X_init){
   B = B_init;
   X = X_init;
 
-  // we have Xqr < Xqq < B, and so q < sqrt(B/X).
+  // we have Xqq < Xqr < B, and so q < sqrt(B/X).  This is the upper bound 
+  // at the high end.  At the low end, q could be as large as sqrt(B)
   // I've tested B / X and it works correctly: bigint / long casts to bigint
   // then storing it in prime_B (type long) is fine as long as sqrt is < 64 bits 
   double one_half = 1.0 / 2;
-  prime_B = ceil(pow(B / X, one_half));
+  prime_B = ceil(pow(B, one_half));
  
   // create primes array.  First set up nums with nums[i] = i, then apply factor_sieve.
   // the largest prime is prime_B, so that is the upper bound on the array
@@ -138,7 +139,7 @@ LargePreproduct::LargePreproduct(const LargePreproduct &other){
 }
 
 // helper function.  Given lower bound, find index of the smallest prime larger than the bound
-// Algorithm is binary search.  Return 0 if bound is greater than prime_B (corresponds to prime 2)
+// Algorithm is binary search.  Return -1 if bound is greater than prime_B (corresponds to prime 2)
 long LargePreproduct::find_index_lower(long bound){
   // testing
   /*
@@ -153,6 +154,10 @@ long LargePreproduct::find_index_lower(long bound){
   if(primes[primes_count-1] < bound){
     //cout << "Error in find_index_lower, no prime above bound " << bound << "\n";
     return -1;
+  }
+  if(primes[0] > bound){
+    //cout << "Error in find_index_lower, at bottom of the primes array\n";
+    return primes[0];
   }
 
   // start the search at the middle of the set of primes
@@ -344,7 +349,8 @@ void LargePreproduct::cars4(string cars_file){
 
     // since p1 * p2 > X, and p2 > p1, we need to find i2 that makes both of these true
     lower_index = find_index_lower(X / p1);
-    if(i1 + 1 < lower_index) lower_index = i1 + 1;
+    cout << "for p1 = " << p1 << " lower index found is " << lower_index << "\n";
+    if(lower_index < i1 + 1) lower_index = i1 + 1;
     i2 = lower_index;  
 
     // also need to compute the corresponding upper bound: (B/p1)^{1/3}
@@ -352,10 +358,13 @@ void LargePreproduct::cars4(string cars_file){
     cout << "then lower_index = " << lower_index << " and upper2 = " << upper2 << "\n";
 
     p2 = primes[i2];
-    while(p2 < upper2){
+    // if no appropriate prime, i2 == -1
+    while(i2 != -1 && p2 < upper2){
    
       // lower bound for q is just the previous prime, upper is (B/p1p2)^{1/2}
       upper3 = find_upper(B, p1 * p2, 2);
+      cout << "For p2 = " << p2 << " upper bound is " << upper3 << "\n";
+
       i3 = i2 + 1;
       q = primes[i3];
 
