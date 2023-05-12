@@ -336,6 +336,10 @@ void LargePreproduct::cars4(string cars_file){
   long lower_index;
   long upper1, upper2, upper3;
 
+  // keep running computation of lcm_p|P p-1
+  bigint L1, L2, L3;
+  long g;
+
   // nested for loops
   // compute first upper bound as B^{1/4}
   upper1 = find_upper(B, 1, 4);
@@ -343,9 +347,11 @@ void LargePreproduct::cars4(string cars_file){
 
   // start p1 at the first prime, which should be 3 
   i1 = 0;
-  p1 = primes[0]; 
-  while(p1 < upper1){
+  p1 = primes[0];
+  do{
 
+    // compute L1
+    L1 = p1 - 1;
 
     // since p1 * p2 > X, and p2 > p1, we need to find i2 that makes both of these true
     lower_index = find_index_lower(X / p1);
@@ -358,33 +364,45 @@ void LargePreproduct::cars4(string cars_file){
     cout << "then lower_index = " << lower_index << " and upper2 = " << upper2 << "\n";
 
     p2 = primes[i2];
+    L2 = L1 * (p2 - 1);
+    g = gcd(L1, p2 - 1);
+    L2 = L2 / g;
     // if no appropriate prime, i2 == -1
-    while(i2 != -1 && p2 < upper2){
-   
+    do{
+  
+      //update L2
+      L2 = L1 * (p2 - 1);
+      g = gcd(L1, p2 - 1);
+      L2 = L2 / g;
+ 
       // lower bound for q is just the previous prime, upper is (B/p1p2)^{1/2}
       upper3 = find_upper(B, p1 * p2, 2);
       cout << "For p2 = " << p2 << " upper bound is " << upper3 << "\n";
 
       i3 = i2 + 1;
       q = primes[i3];
+      do{
+        // update L3
+        L3 = L2 * (q - 1);
+        g = gcd(L2, q - 1);
+        L3 = L3 / g;
 
-      while(q < upper3){
-        cout << "now find r for the preproduct " << p1 << " " << p2 << " " << q << "\n";
+        cout << "now find r for the preproduct " << p1 << " " << p2 << " " << q << " with L = " << L3 << "\n";
  
-        // next prime
+        // next prime q
         i3++;
         q = primes[i3];
-      } // end for i3
+      } while(q < upper3);
 
-      // next prime
+      // next prime and update L2
       i2++;
       p2 = primes[i2];
-    } // end for i2
+    }while(p2 < upper2);
 
-    // next prime
+    // next prime, reset L1 to p1 - 1
     i1++;
     p1 = primes[i1]; 
-  } // end for i1
+  }while(p1 < upper1);
 
   output.close();
 }
