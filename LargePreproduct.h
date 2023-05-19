@@ -60,6 +60,11 @@ class LargePreproduct{
     // helper function.  Return (num / den)^(1/root) as an integer
     long find_upper(bigint num, bigint den, long root);
 
+    // employ the two-divisors result for large L (Lemma 2.1 of Coppersmith, Howgrave-Graham, Nagaraj
+    // if L is too small, return empty vector.  If L large, return the two divisors of (Pq-1)/g
+    // Here preproduct is of the form Pq, i.e. d-1 prime factors, L is lambda(preprod)
+    void r_2divisors(bigint preprod, bigint L, vector<long> &rs);
+
 };
 
 #endif

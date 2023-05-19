@@ -64,6 +64,44 @@ istream & operator>>(istream & is, bigint &x)
 bigint min(bigint x, bigint y)
   { return x<y ? x : y; }
 
+// copy of Jon Sorenson's extgcd for int64
+bigint extgcd128(bigint a, bigint b, bigint &x, bigint &y)
+{
+  cout << "Inside bigint extgcd\n";  
+
+  bigint ux=1,uy=0,vx=0,vy=1,u=a,v=b,r,rx,ry,q;
+  bigint asign=1, bsign=1;
+  if(a<0) { a=-a; asign=-1; }
+  if(b<0) { b=-b; bsign=-1; }
+  while(v>0)
+  {
+
+    q=u/v; r=u-q*v;
+    rx=ux-q*vx; ux=vx; vx=rx;  ry=uy-q*vy; uy=vy; vy=ry; 
+    u=v; v=r;
+
+
+    cout << "q = " << q << " r = " << r << "\n";
+    cout << "rx = " << rx << " ry = " << ry << "\n";
+  }
+  x=asign*ux; y=bsign*uy;
+  return u;
+}
+
+// returns the inverse of x modulo m
+// copy of Jon Sorenson's inv for int64
+bigint inv128(bigint x, bigint m)
+{
+  cout << "Inside bigint inv\n";
+
+  bigint a,b,g;
+  g = extgcd128(x%m, m, a, b);
+  if(g!=1) return 0;
+  if(a>0 && a<m) return a;
+  if(a>0) return a%m;
+  if(a>-m) return m+a;
+  return m-((-a)%m);
+}
 
 // code from this point on written by Andrew Shallue
 

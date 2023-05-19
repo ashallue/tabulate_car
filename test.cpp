@@ -19,6 +19,7 @@
 #include <string>
 #include "LargePreproduct.h"
 #include "Preproduct.h"
+#include <iomanip>    // using setprecision
 
 using namespace std::chrono;
 
@@ -41,38 +42,19 @@ int main(int argc, char* argv[]) {
   merge(files, "cars_merge.txt");
   */
 
-  cout << "\nTesting LargePreproduct\n";
-  LargePreproduct od1 = LargePreproduct();
-  LargePreproduct od2 = LargePreproduct(1000, 50);
-  LargePreproduct od3(od2);
+  cout << "\nTesting cars4\n";
+  LargePreproduct od2 = LargePreproduct(10000, 30);
+  //od2.cars4("large_4_output.txt");
 
-  cout <<  "primes from od2: ";
-  for(long i = 0; i < od2.primes_count; i++){
-    cout << od2.primes[i] << " ";
-  }
-  cout << "\n";
+  vector<long> rs;
+  bigint P = pow(10, 9);
+  cout << "P = " << P << "\n";
+  bigint L = 101;
+  od2.r_2divisors(P, L, rs);
 
-  cout <<  "primes from od3: ";
-  for(long i = 0; i < od3.primes_count; i++){
-    cout << od3.primes[i] << " ";
-  }
-  cout << "\n";
-
-  LargePreproduct* od4 = new LargePreproduct[2];
-  od4[0] = od2;
-  od4[1] = od3;
-  
-  cout <<  "primes from od4: ";
-  for(long i = 0; i < od4[0].primes_count; i++){
-    cout << od4[0].primes[i] << " ";
-  }
-  cout << "\n";
-
-  cout <<  "primes from od4: ";
-  for(long i = 0; i < od4[1].primes_count; i++){
-    cout << od4[1].primes[i] << " ";
-  }
-  cout << "\n";
+  cout << "\n\n";
+  od2.r_2divisors(3*11*17, 61, rs);
+ 
   /*
   cout << "B = " << odo.B << " X = " << odo.X << " primes up to " << odo.prime_B << "\n";
   cout << "primes: ";

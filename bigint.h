@@ -38,6 +38,10 @@ istream & operator>>(istream & is, bigint &x);
 
 bigint min(bigint x, bigint y);
 
+bigint extgcd128(bigint a, bigint b, bigint &x, bigint &y);
+
+bigint inv128(bigint x, bigint m);
+
 // These next functions are written by Andrew Shallue
 
 // compute a^e mod n

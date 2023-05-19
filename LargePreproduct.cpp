@@ -323,6 +323,15 @@ long LargePreproduct::find_upper(bigint num, bigint den, long root){
   return ceil(pow_result);
 }
 
+// employ the two-divisors result for large L (Lemma 2.1 of Coppersmith, Howgrave-Graham, Nagaraj
+// if L is too small, return empty vector.  If L large, return the two divisors of (Pq-1)/g
+// Here preproduct is of the form Pq, i.e. d-1 prime factors, L is lambda(preprod)
+void LargePreproduct::r_2divisors(bigint preprod, bigint L, vector<long> &rs){
+  // calculate Pqinv = (Pq)^{-1} mod L, then g = gcd(inv - 1, L)
+  bigint Pqinv = inv128(preprod, L);
+  cout << "(Pq)^-1 = " << Pqinv << "\n";
+}
+
 // this one constructs Carmichaels with d = 4 and writes to file
 void LargePreproduct::cars4(string cars_file){
   //setup file
@@ -365,10 +374,15 @@ void LargePreproduct::cars4(string cars_file){
     upper2 = find_upper(B, p1, 3);
     cout << "then lower_index = " << lower_index << " and upper2 = " << upper2 << "\n";
 
+    // finding the start index for p2 
     p2 = primes[i2];
+    // check admissability, bump ahead until found
+    while( gcd( p2 - 1, P1) != 1){
+      i2++;
+      p2 = primes[i2];
+    }
     P2 = P1 * p2;
-    //if(gcd( p2 - 1, P1 ) != 1) continue;
-    //above doesn't work, instead put a while loop inside
+  
     do{
   
       //update L2
@@ -380,9 +394,16 @@ void LargePreproduct::cars4(string cars_file){
       upper3 = find_upper(B, P2, 2);
       cout << "For p2 = " << p2 << " upper bound is " << upper3 << "\n";
 
+      // finding the start index and prime for q
       i3 = i2 + 1;
       q = primes[i3];
+      // check admissability, bump ahead until found
+      while( gcd( q - 1, P2 ) != 1 ){
+        i3++;
+        q = primes[i3];
+      }
       P3 = P2 * q;
+
       do{
         // update L3
         L3 = L2 * (q - 1);
@@ -390,6 +411,8 @@ void LargePreproduct::cars4(string cars_file){
         L3 = L3 / g;
 
         cout << "now find r for the preproduct " << p1 << " " << p2 << " " << q << " with L = " << L3 << "\n";
+        vector<long> rs;   
+        r_2divisors(P3, L3, rs);       
  
         // find next q that makes P2 * q admissable
         do{

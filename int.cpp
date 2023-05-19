@@ -40,6 +40,8 @@ int64 extgcd(int64 a, int64 b, int64 &x, int64 &y)
 // returns the inverse of x modulo m
 int64 inv(int64 x, int64 m)
 {
+  cout << "calling int64 inv\n";
+
   int64 a,b,g;
   g=extgcd(x%m,m,a,b);
   if(g!=1) return 0;
