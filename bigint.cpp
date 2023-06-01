@@ -67,7 +67,7 @@ bigint min(bigint x, bigint y)
 // copy of Jon Sorenson's extgcd for int64
 bigint extgcd128(bigint a, bigint b, bigint &x, bigint &y)
 {
-  cout << "Inside bigint extgcd\n";  
+  //cout << "Inside bigint extgcd\n";  
 
   bigint ux=1,uy=0,vx=0,vy=1,u=a,v=b,r,rx,ry,q;
   bigint asign=1, bsign=1;
@@ -81,18 +81,27 @@ bigint extgcd128(bigint a, bigint b, bigint &x, bigint &y)
     u=v; v=r;
 
 
-    cout << "q = " << q << " r = " << r << "\n";
-    cout << "rx = " << rx << " ry = " << ry << "\n";
+    //cout << "q = " << q << " r = " << r << "\n";
+    //cout << "rx = " << rx << " ry = " << ry << "\n";
   }
   x=asign*ux; y=bsign*uy;
   return u;
+}
+
+// GCD and inverse functions
+bigint gcd128(bigint x, bigint y)
+{
+  if(x<0) x= -x; if(y<0) y= -y;
+  bigint r;
+  while(y!=0) { r=x%y; x=y; y=r; }
+  return x;
 }
 
 // returns the inverse of x modulo m
 // copy of Jon Sorenson's inv for int64
 bigint inv128(bigint x, bigint m)
 {
-  cout << "Inside bigint inv\n";
+  //cout << "Inside bigint inv\n";
 
   bigint a,b,g;
   g = extgcd128(x%m, m, a, b);

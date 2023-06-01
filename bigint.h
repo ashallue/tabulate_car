@@ -38,6 +38,8 @@ istream & operator>>(istream & is, bigint &x);
 
 bigint min(bigint x, bigint y);
 
+bigint gcd128(bigint x, bigint y);
+
 bigint extgcd128(bigint a, bigint b, bigint &x, bigint &y);
 
 bigint inv128(bigint x, bigint m);

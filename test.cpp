@@ -43,9 +43,10 @@ int main(int argc, char* argv[]) {
   */
 
   cout << "\nTesting cars4\n";
-  LargePreproduct od2 = LargePreproduct(10000, 30);
-  //od2.cars4("large_4_output.txt");
+  LargePreproduct od2 = LargePreproduct(1000000, 300);
+  od2.cars4("large_4_output.txt");
 
+  /*
   vector<long> rs;
   bigint P = pow(10, 9);
   cout << "P = " << P << "\n";
@@ -54,7 +55,7 @@ int main(int argc, char* argv[]) {
 
   cout << "\n\n";
   od2.r_2divisors(3*11*17, 61, rs);
- 
+  */
   /*
   cout << "B = " << odo.B << " X = " << odo.X << " primes up to " << odo.prime_B << "\n";
   cout << "primes: ";

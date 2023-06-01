@@ -60,10 +60,14 @@ class LargePreproduct{
     // helper function.  Return (num / den)^(1/root) as an integer
     long find_upper(bigint num, bigint den, long root);
 
+    // boolean function, checks Korselt condition, applies Baillie-PSW test to r
+    bool korselt_check(bigint Pq, bigint L, bigint r);
+
     // employ the two-divisors result for large L (Lemma 2.1 of Coppersmith, Howgrave-Graham, Nagaraj
-    // if L is too small, return empty vector.  If L large, return the two divisors of (Pq-1)/g
-    // Here preproduct is of the form Pq, i.e. d-1 prime factors, L is lambda(preprod)
-    void r_2divisors(bigint preprod, bigint L, vector<long> &rs);
+    // i.e. find divisors of (Pq - 1) congruent to (Pq)^{-1} - 1 mod L.  Requires gcd 1, 
+    // so division by a gcd is performed.  At most 2 divisors found, placed into rs vector.
+    // Returns boolean value, false if L too small for technique, true if L * L > = Pq - 1
+    bool r_2divisors(bigint preprod, bigint L, vector<long> &rs);
 
 };
 

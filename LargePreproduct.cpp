@@ -323,13 +323,69 @@ long LargePreproduct::find_upper(bigint num, bigint den, long root){
   return ceil(pow_result);
 }
 
+// boolean function, checks Korselt condition, applies Baillie-PSW test to r
+bool LargePreproduct::korselt_check(bigint Pq, bigint L, bigint r){
+  // check Korselt.  Sufficient to show that Pq * r = 1 mod lcm(L, r-1)
+  // compute product modulo L and modulo r-1
+  bigint modL = (Pq % L) * (r % L) % L;
+  bigint modrminus = Pq % (r-1);
+  if(modL != 1 || modrminus != 1) return false;
+
+  // now for primality testing of r.  Convert it to type mpz, which requires Dual_rep
+  mpz_t r_big;
+  mpz_init(r_big);
+  Dual_rep d;
+  d.double_word = r;
+
+  // set the high bits, multiply by 2**64, add the low bits
+  mpz_set_si(r_big, d.two_words[1]);
+  mpz_mul_2exp(r_big, r_big, 64);
+  mpz_add_ui(r_big, r_big, d.two_words[0]);
+
+  // now apply Baillie-PSW test. Implementation from GMP
+  if(mpz_probab_prime_p(r_big, 0) == 0){
+    return false;
+  }
+
+  // at this point, passed the test, return true;
+  mpz_clear(r_big);
+  return true;
+}
+
 // employ the two-divisors result for large L (Lemma 2.1 of Coppersmith, Howgrave-Graham, Nagaraj
-// if L is too small, return empty vector.  If L large, return the two divisors of (Pq-1)/g
-// Here preproduct is of the form Pq, i.e. d-1 prime factors, L is lambda(preprod)
-void LargePreproduct::r_2divisors(bigint preprod, bigint L, vector<long> &rs){
+// i.e. find divisors of (Pq - 1) congruent to (Pq)^{-1} - 1 mod L.  Requires gcd 1, 
+// so division by a gcd is performed.  At most 2 divisors found, placed into rs vector.
+// Returns boolean value, false if L too small for technique, true if L * L > = Pq - 1
+bool LargePreproduct::r_2divisors(bigint preprod, bigint L, vector<long> &rs){
+  // clear the rs vector
+  rs.clear();
+
   // calculate Pqinv = (Pq)^{-1} mod L, then g = gcd(inv - 1, L)
   bigint Pqinv = inv128(preprod, L);
-  cout << "(Pq)^-1 = " << Pqinv << "\n";
+  //cout << "(Pq)^-1 = " << Pqinv << "\n";
+
+  bigint g = gcd128(Pqinv - 1, L);
+
+  // then r1 = (Pq)^-1 - 1 / g, L1 = L / g
+  bigint r1 = (Pqinv - 1) / g;
+  bigint L1 = L / g;
+
+  // we will find divisors of scriptP that are congruent to r1 mod L1
+  bigint scriptP = (preprod - 1) / g;
+
+  // if L1^2 < scriptP, return empty rs
+  if(L1 * L1 < scriptP){
+    return false;
+  }else{
+    // otherwise the potential divisors are r1 and scriptP / r1
+    // then the r we want satisfies r-1 = r1 * g, i.e. r = r1 * g + 1
+    if(scriptP % r1 == 0){
+      rs.push_back( r1 * g + 1 );
+      rs.push_back( g * (preprod - 1) / r1 + 1 );
+    }
+    return true;
+  }
+
 }
 
 // this one constructs Carmichaels with d = 4 and writes to file
@@ -350,6 +406,9 @@ void LargePreproduct::cars4(string cars_file){
   bigint L1, L2, L3;
   long g;
 
+  bool twocheck;  // boolean is true if L^2 > Pq
+  bigint twocheck_count = 0;  // count the number of times two-div strategy employed
+
   // nested for loops
   // compute first upper bound as B^{1/4}
   upper1 = find_upper(B, 1, 4);
@@ -366,13 +425,13 @@ void LargePreproduct::cars4(string cars_file){
 
     // since p1 * p2 > X, and p2 > p1, we need to find i2 that makes both of these true
     lower_index = find_index_lower(X / p1);
-    cout << "for p1 = " << p1 << " lower index found is " << lower_index << "\n";
+    //cout << "for p1 = " << p1 << " lower index found is " << lower_index << "\n";
     if(lower_index < i1 + 1) lower_index = i1 + 1;
     i2 = lower_index;  
 
     // also need to compute the corresponding upper bound: (B/p1)^{1/3}
     upper2 = find_upper(B, p1, 3);
-    cout << "then lower_index = " << lower_index << " and upper2 = " << upper2 << "\n";
+    //cout << "then lower_index = " << lower_index << " and upper2 = " << upper2 << "\n";
 
     // finding the start index for p2 
     p2 = primes[i2];
@@ -392,7 +451,7 @@ void LargePreproduct::cars4(string cars_file){
  
       // lower bound for q is just the previous prime, upper is (B/p1p2)^{1/2}
       upper3 = find_upper(B, P2, 2);
-      cout << "For p2 = " << p2 << " upper bound is " << upper3 << "\n";
+      //cout << "For p2 = " << p2 << " upper bound is " << upper3 << "\n";
 
       // finding the start index and prime for q
       i3 = i2 + 1;
@@ -410,9 +469,23 @@ void LargePreproduct::cars4(string cars_file){
         g = gcd(L2, q - 1);
         L3 = L3 / g;
 
-        cout << "now find r for the preproduct " << p1 << " " << p2 << " " << q << " with L = " << L3 << "\n";
+        //cout << "now find r for the preproduct " << p1 << " " << p2 << " " << q << " with L = " << L3 << "\n";
         vector<long> rs;   
-        r_2divisors(P3, L3, rs);       
+        twocheck = r_2divisors(P3, L3, rs);       
+        if(twocheck){
+          // increment count
+          twocheck_count++;
+
+          // write to file.  Pq, followed by r
+          for(long i = 0; i < rs.size(); i++){
+            output << P3 << " ";
+            output << rs[i] << "\n";
+          }
+
+        }else{
+          //cout << "L/g too small for 2 divisors tactic\n";
+        }
+  
  
         // find next q that makes P2 * q admissable
         do{
