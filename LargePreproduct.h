@@ -69,6 +69,10 @@ class LargePreproduct{
     // Returns boolean value, false if L too small for technique, true if L * L > = Pq - 1
     bool r_2divisors(bigint preprod, bigint L, vector<long> &rs);
 
+    // use sieving to find r such that r = (Pq)^{-1} mod L, call korselt_check, those that pass go in rs
+    // currently no attempt to deal with small L
+    void r_sieving(bigint preprod, bigint L, vector<long> &rs);
+
 };
 
 #endif

@@ -385,7 +385,40 @@ bool LargePreproduct::r_2divisors(bigint preprod, bigint L, vector<long> &rs){
     }
     return true;
   }
+}
 
+// use sieving to find r such that r = (Pq)^{-1} mod L, the ones that pass Korselt get placed in rs
+// currently no attempt to deal with small L
+void LargePreproduct::r_sieving(bigint preprod, bigint L, vector<long> &rs){
+  // clear the rs vector
+  rs.clear();
+  long r, r1, r2;
+
+  // using trial division up to sqrt(Pq / L), check for r-1 | Pq -1 
+  long division_bound = floor(sqrt(preprod / L));
+  for(long d = 0; d < division_bound; d++){
+    if( (preprod - 1) % d == 0){
+      // this gives two divisors, the other being (Pq - 1) / d
+      // r - 1 = d, so r = d + 1
+      r1 = d + 1;
+      r2 = (preprod - 1) / d + 1;
+
+      // check korselt and primality of r, if it passes add to rs vector
+      if(korselt_check(preprod, L, r1)){
+        rs.push_back(r1);
+      }
+      if(korselt_check(preprod, L, r2)){
+        rs.push_back(r2);
+      }
+    }
+  } // end for d
+
+  // now sieve r = (Pq)^{-1} mod L up to (Pq - 1) / division_bound
+  // we also know that max(q, division_bound) < r < min(B, B/Pq)
+  
+
+  // comput Pqinv
+  bigint Pqinv = inv128(preprod, L);
 }
 
 // this one constructs Carmichaels with d = 4 and writes to file
@@ -476,10 +509,13 @@ void LargePreproduct::cars4(string cars_file){
           // increment count
           twocheck_count++;
 
-          // write to file.  Pq, followed by r
+          // check Korselt and primality of r.  If passes, write to file.  Pq, followed by r
           for(long i = 0; i < rs.size(); i++){
-            output << P3 << " ";
-            output << rs[i] << "\n";
+            if(korselt_check(P3, L3, rs[i])){
+
+              output << P3 << " ";
+              output << rs[i] << "\n";
+            }
           }
 
         }else{
