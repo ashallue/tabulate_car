@@ -389,14 +389,14 @@ bool LargePreproduct::r_2divisors(bigint preprod, bigint L, vector<long> &rs){
 
 // use sieving to find r such that r = (Pq)^{-1} mod L, the ones that pass Korselt get placed in rs
 // currently no attempt to deal with small L
-void LargePreproduct::r_sieving(bigint preprod, bigint L, vector<long> &rs){
+void LargePreproduct::r_sieving(bigint preprod, long q, bigint L, vector<long> &rs){
   // clear the rs vector
   rs.clear();
   long r, r1, r2;
 
   // using trial division up to sqrt(Pq / L), check for r-1 | Pq -1 
   long division_bound = floor(sqrt(preprod / L));
-  for(long d = 0; d < division_bound; d++){
+  for(long d = 0; d <= division_bound; d++){
     if( (preprod - 1) % d == 0){
       // this gives two divisors, the other being (Pq - 1) / d
       // r - 1 = d, so r = d + 1
@@ -414,11 +414,33 @@ void LargePreproduct::r_sieving(bigint preprod, bigint L, vector<long> &rs){
   } // end for d
 
   // now sieve r = (Pq)^{-1} mod L up to (Pq - 1) / division_bound
-  // we also know that max(q, division_bound) < r < min(B, B/Pq)
-  
-
-  // comput Pqinv
+  // we also know that max(q, division_bound) < r < B/Pq
+  bigint sieve_lower = q;
+  if(division_bound > sieve_lower) sieve_lower = division_bound;
+  bigint sieve_upper = (preprod - 1) / division_bound;
+  if(B / preprod < sieve_upper) sieve_upper = B / preprod;
+ 
+  // compute (Pq)^{-1} mod L
   bigint Pqinv = inv128(preprod, L);
+  
+  // for starting point, want smallest int = (Pq)^{-1} greater than sieve_lower
+  // If we take the generic x = k * n + a > B, solution is k = floor( (B-a)/n ) + 1 
+  bigint k = 0;
+  if( Pqinv < sieve_lower ){
+    k = (sieve_lower - Pqinv) / L + 1;  
+  }
+  
+  // now loop with stepsize L
+  for(bigint d = k * L + Pqinv; d < sieve_upper; d += L){
+    // potential r is d+1
+    r = d + 1;
+    // if it passes korselt, add to rs vector
+    if(korselt_check(preprod, L, r)){
+      rs.push_back(r);
+    }
+
+  } // end of sieving loop
+
 }
 
 // this one constructs Carmichaels with d = 4 and writes to file

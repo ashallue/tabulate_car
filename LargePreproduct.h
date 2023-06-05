@@ -71,7 +71,7 @@ class LargePreproduct{
 
     // use sieving to find r such that r = (Pq)^{-1} mod L, call korselt_check, those that pass go in rs
     // currently no attempt to deal with small L
-    void r_sieving(bigint preprod, bigint L, vector<long> &rs);
+    void r_sieving(bigint preprod, long q, bigint L, vector<long> &rs);
 
 };
 
