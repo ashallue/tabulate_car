@@ -526,6 +526,8 @@ void LargePreproduct::cars4(string cars_file){
 
         //cout << "now find r for the preproduct " << p1 << " " << p2 << " " << q << " with L = " << L3 << "\n";
         vector<long> rs;   
+      
+        // first attempt the two divisor technique.  Works if L large enough
         twocheck = r_2divisors(P3, L3, rs);       
         if(twocheck){
           // increment count
@@ -539,9 +541,14 @@ void LargePreproduct::cars4(string cars_file){
               output << rs[i] << "\n";
             }
           }
-
+        // otherwise sieve.  If L is too small, this will take a very long time
         }else{
-          //cout << "L/g too small for 2 divisors tactic\n";
+          r_sieving(P3, q, L3, rs);
+          // r_sieving function checks korselt.  Write results to file.  Pq, followed by r
+          for(long i = 0; i < rs.size(); i++){
+            output << P3 << " ";
+            output << rs[i] << "\n";
+          }  
         }
   
  
