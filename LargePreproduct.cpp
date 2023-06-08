@@ -396,7 +396,7 @@ void LargePreproduct::r_sieving(bigint preprod, long q, bigint L, vector<long> &
 
   // using trial division up to sqrt(Pq / L), check for r-1 | Pq -1 
   long division_bound = floor(sqrt(preprod / L));
-  for(long d = 0; d <= division_bound; d++){
+  for(long d = q; d <= division_bound; d++){
     if( (preprod - 1) % d == 0){
       // this gives two divisors, the other being (Pq - 1) / d
       // r - 1 = d, so r = d + 1
@@ -530,6 +530,7 @@ void LargePreproduct::cars4(string cars_file){
         // first attempt the two divisor technique.  Works if L large enough
         twocheck = r_2divisors(P3, L3, rs);       
         if(twocheck){
+          //cout << "Inside two divisor case\n";
           // increment count
           twocheck_count++;
 
@@ -543,6 +544,8 @@ void LargePreproduct::cars4(string cars_file){
           }
         // otherwise sieve.  If L is too small, this will take a very long time
         }else{
+          //cout << "inside sieve case\n";
+
           r_sieving(P3, q, L3, rs);
           // r_sieving function checks korselt.  Write results to file.  Pq, followed by r
           for(long i = 0; i < rs.size(); i++){
