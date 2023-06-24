@@ -155,7 +155,7 @@ long LargePreproduct::find_index_lower(long bound){
     //cout << "Error in find_index_lower, no prime above bound " << bound << "\n";
     return -1;
   }
-  if(primes[0] > bound){
+  if(primes[0] >= bound){
     //cout << "Error in find_index_lower, at bottom of the primes array\n";
     return primes[0];
   }
@@ -173,7 +173,7 @@ long LargePreproduct::find_index_lower(long bound){
     //cout << "min = " << min << " max = " << max << " curr_index = " << curr_index << "\n";
  
     // check if done
-    if(primes[curr_index] >= bound && primes[curr_index - 1] < bound){
+    if(primes[curr_index] > bound && primes[curr_index - 1] <= bound){
       done = true;
     }else{
       // if interval down to size 1, the answer should be one higher than current
@@ -181,7 +181,7 @@ long LargePreproduct::find_index_lower(long bound){
         curr_index++;
       }
       // now update to either the top half or bottom half
-      else if(primes[curr_index] > bound){
+      else if(primes[curr_index] >= bound){
         // jump down
         max = curr_index;
         jump = (max - min) / 2;
@@ -357,7 +357,6 @@ bool LargePreproduct::korselt_check(bigint Pq, bigint L, bigint r){
 // so division by a gcd is performed.  At most 2 divisors found, placed into rs vector.
 // Returns boolean value, false if L too small for technique, true if L * L > = Pq - 1
 bool LargePreproduct::r_2divisors(bigint preprod, long q, bigint L, vector<long> &rs){
-  if(preprod == 19459) cout << "319 processed by 2 divisors\n";
 
   // clear the rs vector
   rs.clear();
@@ -398,7 +397,6 @@ bool LargePreproduct::r_2divisors(bigint preprod, long q, bigint L, vector<long>
 // use sieving to find r such that r = (Pq)^{-1} mod L, the ones that pass Korselt get placed in rs
 // currently no attempt to deal with small L
 void LargePreproduct::r_sieving(bigint preprod, long q, bigint L, vector<long> &rs){
-  if(preprod == 19459) cout << "319 processed by sieving\n";
 
   // clear the rs vector
   rs.clear();
@@ -441,9 +439,7 @@ void LargePreproduct::r_sieving(bigint preprod, long q, bigint L, vector<long> &
   }
   
   // now loop with stepsize L
-  for(bigint d = k * L + Pqinv; d < sieve_upper; d += L){
-    // potential r is d+1
-    r = d + 1;
+  for(bigint r = k * L + Pqinv; r < sieve_upper; r += L){
     // if it passes korselt, add to rs vector
     if(korselt_check(preprod, L, r)){
       rs.push_back(r);
@@ -541,7 +537,7 @@ void LargePreproduct::cars4(string cars_file){
         vector<long> rs;   
       
         // first attempt the two divisor technique.  Works if L large enough
-        twocheck = r_2divisors(P3, L3, rs);       
+        twocheck = r_2divisors(P3, q, L3, rs);       
         if(twocheck){
           //cout << "Inside two divisor case\n";
           // increment count

@@ -46,8 +46,9 @@ int main(int argc, char* argv[]) {
   LargePreproduct od2 = LargePreproduct(1000000, 300);
   od2.cars4("large_4_output.txt");
 
-  cout << "\nExtracting 4 - cars from pinch's table\n";
-  extract("./datafiles_pinch/carmichael-16", "pinch4-10m", 10000000, 4);
+  cout << "\nExtracting 4\n";
+  extract("./cars4_small_sorted.txt", "cars4_small.txt", 10000000, 4);
+  extract("./cars4_large_sorted.txt", "cars4_large.txt", 10000000, 4);
 
   /*
   vector<long> rs;
