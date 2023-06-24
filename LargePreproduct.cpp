@@ -356,9 +356,13 @@ bool LargePreproduct::korselt_check(bigint Pq, bigint L, bigint r){
 // i.e. find divisors of (Pq - 1) congruent to (Pq)^{-1} - 1 mod L.  Requires gcd 1, 
 // so division by a gcd is performed.  At most 2 divisors found, placed into rs vector.
 // Returns boolean value, false if L too small for technique, true if L * L > = Pq - 1
-bool LargePreproduct::r_2divisors(bigint preprod, bigint L, vector<long> &rs){
+bool LargePreproduct::r_2divisors(bigint preprod, long q, bigint L, vector<long> &rs){
+  if(preprod == 19459) cout << "319 processed by 2 divisors\n";
+
   // clear the rs vector
   rs.clear();
+  // variables for the two rs constructed
+  bigint fst_r, snd_r;  
 
   // calculate Pqinv = (Pq)^{-1} mod L, then g = gcd(inv - 1, L)
   bigint Pqinv = inv128(preprod, L);
@@ -380,8 +384,12 @@ bool LargePreproduct::r_2divisors(bigint preprod, bigint L, vector<long> &rs){
     // otherwise the potential divisors are r1 and scriptP / r1
     // then the r we want satisfies r-1 = r1 * g, i.e. r = r1 * g + 1
     if(scriptP % r1 == 0){
-      rs.push_back( r1 * g + 1 );
-      rs.push_back( g * (preprod - 1) / r1 + 1 );
+      fst_r = r1 * g + 1;
+      snd_r = g * (preprod - 1) / r1 + 1;
+
+      // only include rs that are greater than q
+      if(fst_r > q) rs.push_back(fst_r);
+      if(snd_r > q) rs.push_back(snd_r);
     }
     return true;
   }
@@ -390,6 +398,8 @@ bool LargePreproduct::r_2divisors(bigint preprod, bigint L, vector<long> &rs){
 // use sieving to find r such that r = (Pq)^{-1} mod L, the ones that pass Korselt get placed in rs
 // currently no attempt to deal with small L
 void LargePreproduct::r_sieving(bigint preprod, long q, bigint L, vector<long> &rs){
+  if(preprod == 19459) cout << "319 processed by sieving\n";
+
   // clear the rs vector
   rs.clear();
   long r, r1, r2;
@@ -479,9 +489,12 @@ void LargePreproduct::cars4(string cars_file){
     L1 = p1 - 1;
 
     // since p1 * p2 > X, and p2 > p1, we need to find i2 that makes both of these true
-    lower_index = find_index_lower(X / p1);
-    //cout << "for p1 = " << p1 << " lower index found is " << lower_index << "\n";
-    if(lower_index < i1 + 1) lower_index = i1 + 1;
+    // this is equivalent to saying that p1 > sqrt(X) if and only if i2 = i1 + 1
+    if(p1 * p1 > X){
+      lower_index = i1 + 1;
+    }else{
+      lower_index = find_index_lower(X / p1);
+    }
     i2 = lower_index;  
 
     // also need to compute the corresponding upper bound: (B/p1)^{1/3}
@@ -534,12 +547,12 @@ void LargePreproduct::cars4(string cars_file){
           // increment count
           twocheck_count++;
 
-          // check Korselt and primality of r.  If passes, write to file.  Pq, followed by r
+          // check Korselt and primality of r.  If passes, write to file.  n, followed by factors
           for(long i = 0; i < rs.size(); i++){
             if(korselt_check(P3, L3, rs[i])){
 
-              output << P3 << " ";
-              output << rs[i] << "\n";
+              output << P3 * rs[i] << " ";
+              output << p1 << " " << p2 << " " << q << " " << rs[i] << "\n";
             }
           }
         // otherwise sieve.  If L is too small, this will take a very long time

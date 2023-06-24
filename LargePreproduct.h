@@ -16,7 +16,7 @@ using namespace std;
 
 /* Notation:
  * We are constructing Carmichael numbers up to B. These numbers have d prime factors.
- * Preproducts constructed have d-2 prime factors, and are larger than X.
+ * Preproducts constructed have d-2 prime factors, and are larger than X (or equal to X).
  * max_d is the largest possible value for d, given B, i.e. product of primes up to n
  */
 
@@ -67,7 +67,7 @@ class LargePreproduct{
     // i.e. find divisors of (Pq - 1) congruent to (Pq)^{-1} - 1 mod L.  Requires gcd 1, 
     // so division by a gcd is performed.  At most 2 divisors found, placed into rs vector.
     // Returns boolean value, false if L too small for technique, true if L * L > = Pq - 1
-    bool r_2divisors(bigint preprod, bigint L, vector<long> &rs);
+    bool r_2divisors(bigint preprod, long q, bigint L, vector<long> &rs);
 
     // use sieving to find r such that r = (Pq)^{-1} mod L, call korselt_check, those that pass go in rs
     // currently no attempt to deal with small L

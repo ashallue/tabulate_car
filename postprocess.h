@@ -42,4 +42,10 @@ void merge_two(string filename1, string filename2, string outputfilename);
  */
 void car_smallp_file_check(string filename, int64 B);
 
+/* Given a filename with Carmichaels of the form n <factorization>, where the primes separated by spaces,
+ * extract those which are less than the bound and have k prime factors.
+ * Assumes the file is sorted by n.
+ */
+void extract(string in_file, string out_file, int64 B, long k);
+
 #endif

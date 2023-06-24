@@ -295,3 +295,49 @@ void car_smallp_file_check(string filename, int64 B){
   delete[] nums;
   return;
 }
+
+
+/* Given a filename with Carmichaels of the form n <factorization>, where the primes separated by spaces,
+ * extract those which are less than the bound and have k prime factors.
+ * Assumes the file is sorted by n.
+ */
+void extract(string in_file, string out_file, int64 B, long k){
+  // create file objects and open them
+  ifstream input_nums;
+  input_nums.open(in_file);
+
+  ofstream output_nums;
+  output_nums.open(out_file);
+
+  string line;
+  vector<bigint> linenums;
+  bigint num;
+  char c_numstring[128]; 
+  string numstring;
+
+  // while there is a line to get, keep getting lines
+  while(getline(input_nums, line)){
+    // access each number in the line and place into a vector
+    // this solution from stackoverflow: reading-line-of-integers-into-a-vector
+    istringstream numbers_stream(line);
+    linenums.clear();
+
+    // notice this only works if the line has exactly three numbers
+    // I tried using a while loop, but had problems with some variable not being intialized.  num?
+    while(numbers_stream >> num){
+      linenums.push_back(num);
+    } // end for that reads the line
+
+    // keep it if n < B (the 0 index num) and the count of factors is k (size - 1)
+    if(linenums.at(0) >= B) break;
+    if(linenums.size() - 1 == k){
+      //tostring(linenums.at(0), c_numstring);
+      //numstring = string(c_numstring);
+      output_nums << line << "\n";
+    }
+
+  } // end while
+
+  input_nums.close();
+  output_nums.close();
+}
