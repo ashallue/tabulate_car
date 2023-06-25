@@ -397,7 +397,7 @@ bool LargePreproduct::r_2divisors(bigint preprod, long q, bigint L, vector<long>
 // use sieving to find r such that r = (Pq)^{-1} mod L, the ones that pass Korselt get placed in rs
 // currently no attempt to deal with small L
 void LargePreproduct::r_sieving(bigint preprod, long q, bigint L, vector<long> &rs){
-
+  if(preprod == 19721) cout << "inside sieving case for 19721\n";
   // clear the rs vector
   rs.clear();
   long r, r1, r2;
@@ -406,6 +406,7 @@ void LargePreproduct::r_sieving(bigint preprod, long q, bigint L, vector<long> &
   long division_bound = floor(sqrt(preprod / L));
   for(long d = q; d <= division_bound; d++){
     if( (preprod - 1) % d == 0){
+      if(preprod == 19721) cout << "found divisor d = " << d << "\n";
       // this gives two divisors, the other being (Pq - 1) / d
       // r - 1 = d, so r = d + 1
       r1 = d + 1;
@@ -431,15 +432,25 @@ void LargePreproduct::r_sieving(bigint preprod, long q, bigint L, vector<long> &
   // compute (Pq)^{-1} mod L
   bigint Pqinv = inv128(preprod, L);
   
-  // for starting point, want smallest int = (Pq)^{-1} greater than sieve_lower
+  // for starting point, want smallest int = (Pq)^{-1} greater than sieve_lower and greater than q
   // If we take the generic x = k * n + a > B, solution is k = floor( (B-a)/n ) + 1 
-  bigint k = 0;
+  bigint k1 = 0;
   if( Pqinv < sieve_lower ){
-    k = (sieve_lower - Pqinv) / L + 1;  
+    k1 = (sieve_lower - Pqinv) / L + 1;  
   }
+  // calculat the k value that makes starting point greater than q
+  bigint k2 = 0;
+  if( Pqinv < q ){
+    k2 = (q - Pqinv) / L + 1;
+  }
+  // set k to be the maximum of k1 and k2
+  bigint k = k1;
+  if(k < k2) k = k2;
   
   // now loop with stepsize L
   for(bigint r = k * L + Pqinv; r < sieve_upper; r += L){
+    if(preprod == 19721) cout << "sieving at r = " << r << "\n";     
+
     // if it passes korselt, add to rs vector
     if(korselt_check(preprod, L, r)){
       rs.push_back(r);
@@ -533,7 +544,7 @@ void LargePreproduct::cars4(string cars_file){
         g = gcd(L2, q - 1);
         L3 = L3 / g;
 
-        //cout << "now find r for the preproduct " << p1 << " " << p2 << " " << q << " with L = " << L3 << "\n";
+        cout << "now find r for the preproduct " << p1 << " " << p2 << " " << q << " with L = " << L3 << "\n";
         vector<long> rs;   
       
         // first attempt the two divisor technique.  Works if L large enough
@@ -558,8 +569,8 @@ void LargePreproduct::cars4(string cars_file){
           r_sieving(P3, q, L3, rs);
           // r_sieving function checks korselt.  Write results to file.  Pq, followed by r
           for(long i = 0; i < rs.size(); i++){
-            output << P3 << " ";
-            output << rs[i] << "\n";
+            output << P3 * rs[i] << " ";
+            output << p1 << " " << p2 << " " << q << " " << rs[i] << "\n";
           }  
         }
   
