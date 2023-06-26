@@ -397,6 +397,7 @@ bool LargePreproduct::r_2divisors(bigint preprod, long q, bigint L, vector<long>
 // use sieving to find r such that r = (Pq)^{-1} mod L, the ones that pass Korselt get placed in rs
 // currently no attempt to deal with small L
 void LargePreproduct::r_sieving(bigint preprod, long q, bigint L, vector<long> &rs){
+
   // clear the rs vector
   rs.clear();
   long r, r1, r2;
@@ -438,16 +439,15 @@ void LargePreproduct::r_sieving(bigint preprod, long q, bigint L, vector<long> &
   }
   // calculat the k value that makes starting point greater than q
   bigint k2 = 0;
-  if( Pqinv < q ){
+  if( Pqinv <= q ){
     k2 = (q - Pqinv) / L + 1;
   }
   // set k to be the maximum of k1 and k2
   bigint k = k1;
   if(k < k2) k = k2;
-  
+ 
   // now loop with stepsize L
   for(bigint r = k * L + Pqinv; r < sieve_upper; r += L){
-    if(preprod == 19721) cout << "sieving at r = " << r << "\n";     
 
     // if it passes korselt, add to rs vector
     if(korselt_check(preprod, L, r)){
@@ -542,7 +542,7 @@ void LargePreproduct::cars4(string cars_file){
         g = gcd(L2, q - 1);
         L3 = L3 / g;
 
-        cout << "now find r for the preproduct " << p1 << " " << p2 << " " << q << " with L = " << L3 << "\n";
+        //cout << "now find r for the preproduct " << p1 << " " << p2 << " " << q << " with L = " << L3 << "\n";
         vector<long> rs;   
      
         // if P * lambda(P) > B, we know that there is only one r to check, namely (Pq)^{-1}
@@ -604,6 +604,159 @@ void LargePreproduct::cars4(string cars_file){
 
     // next prime p1
     i1++;
+    p1 = primes[i1]; 
+    P1 = p1;
+  }while(p1 < upper1);  // end of do p1
+
+  output.close();
+}
+
+// threaded version of cars4
+void LargePreproduct::cars4_threaded(string cars_file, long thread, long num_threads){
+  //setup file
+  ofstream output;
+  output.open(cars_file);
+
+  // primes out of the primes index, their indices
+  long p1, p2, q;
+  long i1, i2, i3;
+  // lower bounds are given in terms of index, uppers in terms of values
+  long lower_index;
+  long upper1, upper2, upper3;
+
+  // keep running computation of P and lcm_p|P p-1
+  bigint P1, P2, P3;
+  bigint L1, L2, L3;
+  long g;
+
+  bool twocheck;  // boolean is true if L^2 > Pq
+  bigint twocheck_count = 0;  // count the number of times two-div strategy employed
+
+  // nested for loops
+  // compute first upper bound as B^{1/4}
+  upper1 = find_upper(B, 1, 4);
+  cout << "upper1 = " << upper1 << "\n";
+
+  // start p1 at the prime corresponding to thread number 
+  i1 = thread;
+  p1 = primes[i1];
+  P1 = p1;
+  do{
+
+    // compute L1
+    L1 = p1 - 1;
+
+    // since p1 * p2 > X, and p2 > p1, we need to find i2 that makes both of these true
+    // this is equivalent to saying that p1 > sqrt(X) if and only if i2 = i1 + 1
+    if(p1 * p1 > X){
+      lower_index = i1 + 1;
+    }else{
+      lower_index = find_index_lower(X / p1);
+    }
+    i2 = lower_index;  
+
+    // also need to compute the corresponding upper bound: (B/p1)^{1/3}
+    upper2 = find_upper(B, p1, 3);
+    //cout << "then lower_index = " << lower_index << " and upper2 = " << upper2 << "\n";
+
+    // finding the start index for p2 
+    p2 = primes[i2];
+    // check admissability, bump ahead until found
+    while( gcd( p2 - 1, P1) != 1){
+      i2++;
+      p2 = primes[i2];
+    }
+    P2 = P1 * p2;
+  
+    do{
+  
+      //update L2
+      L2 = L1 * (p2 - 1);
+      g = gcd(L1, p2 - 1);
+      L2 = L2 / g;
+ 
+      // lower bound for q is just the previous prime, upper is (B/p1p2)^{1/2}
+      upper3 = find_upper(B, P2, 2);
+      //cout << "For p2 = " << p2 << " upper bound is " << upper3 << "\n";
+
+      // finding the start index and prime for q
+      i3 = i2 + 1;
+      q = primes[i3];
+      // check admissability, bump ahead until found
+      while( gcd( q - 1, P2 ) != 1 ){
+        i3++;
+        q = primes[i3];
+      }
+      P3 = P2 * q;
+
+      do{
+        // update L3
+        L3 = L2 * (q - 1);
+        g = gcd(L2, q - 1);
+        L3 = L3 / g;
+
+        //cout << "now find r for the preproduct " << p1 << " " << p2 << " " << q << " with L = " << L3 << "\n";
+        vector<long> rs;   
+     
+        // if P * lambda(P) > B, we know that there is only one r to check, namely (Pq)^{-1}
+        if(P3 * L3 > B){
+          // compute (Pq)^{-1} mod L
+          bigint Pqinv = inv128(P3, L3);
+          if(Pqinv > q && korselt_check(P3, L3, Pqinv)){
+            output << P3 * Pqinv << " ";
+            output << p1 << " " << p2 << " " << q << " " << Pqinv << "\n";
+          }
+
+        // otherwise, use other techniques to find r
+        }else{
+          // first attempt the two divisor technique.  Works if L large enough
+          twocheck = r_2divisors(P3, q, L3, rs);       
+          if(twocheck){
+            //cout << "Inside two divisor case\n";
+            // increment count
+            twocheck_count++;
+
+            // check Korselt and primality of r.  If passes, write to file.  n, followed by factors
+            for(long i = 0; i < rs.size(); i++){
+              if(korselt_check(P3, L3, rs[i])){
+
+                output << P3 * rs[i] << " ";
+                output << p1 << " " << p2 << " " << q << " " << rs[i] << "\n";
+              }
+            }
+          // otherwise sieve.  If L is too small, this will take a very long time
+          }else{
+            //cout << "inside sieve case\n";
+
+            r_sieving(P3, q, L3, rs);
+            // r_sieving function checks korselt.  Write results to file.  Pq, followed by r
+            for(long i = 0; i < rs.size(); i++){
+              output << P3 * rs[i] << " ";
+              output << p1 << " " << p2 << " " << q << " " << rs[i] << "\n";
+            }    
+          } // end else twocheck
+        } // end else P3 * L3 > B
+ 
+        // find next q that makes P2 * q admissable
+        do{
+          i3++;
+          q = primes[i3];
+        }while( gcd( q - 1, P2 ) != 1 );
+        P3 = P2 * q; 
+      
+      } while(q < upper3); // end of do q
+
+      // find next p2 that makes p1*p2 admissable
+      do{
+        i2++;
+        p2 = primes[i2];
+      }while( gcd( p2 - 1, P1 ) != 1 );
+      P2 = P1 * p2;   
+ 
+    }while(p2 < upper2);  // end of do p2
+
+    // next prime p1
+    i1 += num_threads;
     p1 = primes[i1]; 
     P1 = p1;
   }while(p1 < upper1);  // end of do p1

@@ -46,6 +46,9 @@ class LargePreproduct{
     // this one constructs Carmichaels with d = 4 and writes to file
     void cars4(string cars_file);
 
+    // threaded version.  Embarrasingly parallel, distributes according to residue class of outer prime index
+    void cars4_threaded(string cars_file, long thread, long num_threads);
+
   public:
 
     // helper function.  Given lower bound, find index of the smallest prime larger than the bound
