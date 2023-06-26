@@ -397,7 +397,6 @@ bool LargePreproduct::r_2divisors(bigint preprod, long q, bigint L, vector<long>
 // use sieving to find r such that r = (Pq)^{-1} mod L, the ones that pass Korselt get placed in rs
 // currently no attempt to deal with small L
 void LargePreproduct::r_sieving(bigint preprod, long q, bigint L, vector<long> &rs){
-  if(preprod == 19721) cout << "inside sieving case for 19721\n";
   // clear the rs vector
   rs.clear();
   long r, r1, r2;
@@ -406,7 +405,6 @@ void LargePreproduct::r_sieving(bigint preprod, long q, bigint L, vector<long> &
   long division_bound = floor(sqrt(preprod / L));
   for(long d = q; d <= division_bound; d++){
     if( (preprod - 1) % d == 0){
-      if(preprod == 19721) cout << "found divisor d = " << d << "\n";
       // this gives two divisors, the other being (Pq - 1) / d
       // r - 1 = d, so r = d + 1
       r1 = d + 1;
@@ -546,34 +544,45 @@ void LargePreproduct::cars4(string cars_file){
 
         cout << "now find r for the preproduct " << p1 << " " << p2 << " " << q << " with L = " << L3 << "\n";
         vector<long> rs;   
-      
-        // first attempt the two divisor technique.  Works if L large enough
-        twocheck = r_2divisors(P3, q, L3, rs);       
-        if(twocheck){
-          //cout << "Inside two divisor case\n";
-          // increment count
-          twocheck_count++;
+     
+        // if P * lambda(P) > B, we know that there is only one r to check, namely (Pq)^{-1}
+        if(P3 * L3 > B){
+          // compute (Pq)^{-1} mod L
+          bigint Pqinv = inv128(P3, L3);
+          if(Pqinv > q && korselt_check(P3, L3, Pqinv)){
+            output << P3 * Pqinv << " ";
+            output << p1 << " " << p2 << " " << q << " " << Pqinv << "\n";
+          }
 
-          // check Korselt and primality of r.  If passes, write to file.  n, followed by factors
-          for(long i = 0; i < rs.size(); i++){
-            if(korselt_check(P3, L3, rs[i])){
+        // otherwise, use other techniques to find r
+        }else{
+          // first attempt the two divisor technique.  Works if L large enough
+          twocheck = r_2divisors(P3, q, L3, rs);       
+          if(twocheck){
+            //cout << "Inside two divisor case\n";
+            // increment count
+            twocheck_count++;
 
+            // check Korselt and primality of r.  If passes, write to file.  n, followed by factors
+            for(long i = 0; i < rs.size(); i++){
+              if(korselt_check(P3, L3, rs[i])){
+
+                output << P3 * rs[i] << " ";
+                output << p1 << " " << p2 << " " << q << " " << rs[i] << "\n";
+              }
+            }
+          // otherwise sieve.  If L is too small, this will take a very long time
+          }else{
+            //cout << "inside sieve case\n";
+
+            r_sieving(P3, q, L3, rs);
+            // r_sieving function checks korselt.  Write results to file.  Pq, followed by r
+            for(long i = 0; i < rs.size(); i++){
               output << P3 * rs[i] << " ";
               output << p1 << " " << p2 << " " << q << " " << rs[i] << "\n";
-            }
-          }
-        // otherwise sieve.  If L is too small, this will take a very long time
-        }else{
-          //cout << "inside sieve case\n";
-
-          r_sieving(P3, q, L3, rs);
-          // r_sieving function checks korselt.  Write results to file.  Pq, followed by r
-          for(long i = 0; i < rs.size(); i++){
-            output << P3 * rs[i] << " ";
-            output << p1 << " " << p2 << " " << q << " " << rs[i] << "\n";
-          }  
-        }
-  
+            }    
+          } // end else twocheck
+        } // end else P3 * L3 > B
  
         // find next q that makes P2 * q admissable
         do{
