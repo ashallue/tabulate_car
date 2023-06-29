@@ -20,6 +20,7 @@
 #include "LargePreproduct.h"
 #include "Preproduct.h"
 #include <iomanip>    // using setprecision
+#include <mpi.h>
 
 using namespace std::chrono;
 
@@ -47,8 +48,11 @@ int main(int argc, char* argv[]) {
   od2.cars4("large_4_output.txt");
 
   cout << "\nExtracting 4\n";
-  extract("./cars4_small_sorted.txt", "cars4_small.txt", 10000000, 4);
-  extract("./cars4_large_sorted.txt", "cars4_large.txt", 10000000, 4);
+  extract("./cars4_small_sorted.txt", "cars4_small.txt", 1000000000, 4);
+  extract("./cars4_large_sorted.txt", "cars4_large.txt", 1000000000, 4);
+
+  cout << "\nExtracting from Pinch\n";
+  extract("./datafiles_pinch/carmichael-16", "pinch4-1b", 1000000000, 4);
 
   /*
   vector<long> rs;

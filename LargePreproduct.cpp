@@ -367,10 +367,8 @@ bool LargePreproduct::r_2divisors(bigint preprod, long q, bigint L, vector<long>
   bigint Pqinv = inv128(preprod, L);
   //cout << "(Pq)^-1 = " << Pqinv << "\n";
 
+  // calculate gcd of Pqinv - 1 and L, then L1 = L / g
   bigint g = gcd128(Pqinv - 1, L);
-
-  // then r1 = (Pq)^-1 - 1 / g, L1 = L / g
-  bigint r1 = (Pqinv - 1) / g;
   bigint L1 = L / g;
 
   // we will find divisors of scriptP that are congruent to r1 mod L1
@@ -380,6 +378,23 @@ bool LargePreproduct::r_2divisors(bigint preprod, long q, bigint L, vector<long>
   if(L1 * L1 < scriptP){
     return false;
   }else{
+    // r1 = (Pq)^{-1} - 1 / g
+    // have r1 * r2 = scriptP mod L1, so r2 = scriptP * r1^{-1} mod L1
+    bigint r1 = (Pqinv - 1) / g;
+    r1 = r1 % L1;
+    bigint r2 = (scriptP * inv128(r1, L1)) % L1;
+   
+    // the other divisor is then scriptP / r2.  We lift both via:  r = g * div + 1
+    if(scriptP % r1 == 0){
+      fst_r = r1 * g + 1;
+      snd_r = g * (scriptP / r2) + 1;
+
+      // include rs greater than q
+      if(fst_r > q) rs.push_back(fst_r);
+      if(snd_r > q) rs.push_back(snd_r);
+    }
+
+    /* OLD BUGGED VERSION
     // otherwise the potential divisors are r1 and scriptP / r1
     // then the r we want satisfies r-1 = r1 * g, i.e. r = r1 * g + 1
     if(scriptP % r1 == 0){
@@ -390,6 +405,7 @@ bool LargePreproduct::r_2divisors(bigint preprod, long q, bigint L, vector<long>
       if(fst_r > q) rs.push_back(fst_r);
       if(snd_r > q) rs.push_back(snd_r);
     }
+    */
     return true;
   }
 }
@@ -397,7 +413,7 @@ bool LargePreproduct::r_2divisors(bigint preprod, long q, bigint L, vector<long>
 // use sieving to find r such that r = (Pq)^{-1} mod L, the ones that pass Korselt get placed in rs
 // currently no attempt to deal with small L
 void LargePreproduct::r_sieving(bigint preprod, long q, bigint L, vector<long> &rs){
-
+  if(preprod == 139751) cout << "Sieving 139751 with L = " << L << "\n";
   // clear the rs vector
   rs.clear();
   long r, r1, r2;
@@ -405,6 +421,7 @@ void LargePreproduct::r_sieving(bigint preprod, long q, bigint L, vector<long> &
   // using trial division up to sqrt(Pq / L), check for r-1 | Pq -1 
   long division_bound = floor(sqrt(preprod / L));
   for(long d = q; d <= division_bound; d++){
+    if(preprod == 139751) cout << "checking d = " << d << "\n";
     if( (preprod - 1) % d == 0){
       // this gives two divisors, the other being (Pq - 1) / d
       // r - 1 = d, so r = d + 1
@@ -448,7 +465,7 @@ void LargePreproduct::r_sieving(bigint preprod, long q, bigint L, vector<long> &
  
   // now loop with stepsize L
   for(bigint r = k * L + Pqinv; r < sieve_upper; r += L){
-
+    if(preprod == 139751) cout << "checking r = " << r << "\n";
     // if it passes korselt, add to rs vector
     if(korselt_check(preprod, L, r)){
       rs.push_back(r);
@@ -456,6 +473,13 @@ void LargePreproduct::r_sieving(bigint preprod, long q, bigint L, vector<long> &
 
   } // end of sieving loop
 
+  if(preprod == 139751){
+    cout << "rs found for 139751: \n";
+    for(long i = 0; i < rs.size(); i++){
+      cout << rs[i] << " ";
+    }
+    cout << "\n";
+  }
 }
 
 // this one constructs Carmichaels with d = 4 and writes to file
@@ -542,7 +566,7 @@ void LargePreproduct::cars4(string cars_file){
         g = gcd(L2, q - 1);
         L3 = L3 / g;
 
-        //cout << "now find r for the preproduct " << p1 << " " << p2 << " " << q << " with L = " << L3 << "\n";
+        if(p1 == 29) cout << "now find r for the preproduct " << p1 << " " << p2 << " " << q << " with L = " << L3 << "\n";
         vector<long> rs;   
      
         // if P * lambda(P) > B, we know that there is only one r to check, namely (Pq)^{-1}
@@ -578,6 +602,7 @@ void LargePreproduct::cars4(string cars_file){
             r_sieving(P3, q, L3, rs);
             // r_sieving function checks korselt.  Write results to file.  Pq, followed by r
             for(long i = 0; i < rs.size(); i++){
+              if(P3 == 139751) cout << "printing r = " << rs[i] << "\n";
               output << P3 * rs[i] << " ";
               output << p1 << " " << p2 << " " << q << " " << rs[i] << "\n";
             }    

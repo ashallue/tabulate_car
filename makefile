@@ -21,10 +21,10 @@ tab_serial: tab_serial.o $(objects)
 	g++ $(paths) tab_serial.o $(objects) -o tab_serial $(tags)
 
 test.o:	test.cpp
-	g++ $(paths) -c test.cpp Stack.h
+	mpic++ $(paths) -c test.cpp Stack.h
 
 test:	test.o $(objects)
-	g++ $(paths) test.o $(objects) -o test $(tags)
+	mpic++ $(paths) test.o $(objects) -o test $(tags)
 
 int_testing.o:	int_testing.cpp
 	g++ $(paths) -c int_testing.cpp
