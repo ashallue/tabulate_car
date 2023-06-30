@@ -3,7 +3,7 @@ tags = -lntl -lm -lgmp -O3 -ggdb
 debugtags = -lntl -lm -lgmp 
 objects = bigint.o Preproduct.o Pseudosquare.o Pinch.o Construct_car.o SmallP_Carmichael.o LargePreproduct.o Factgen.o functions.o int.o Odometer.o primetest.o postprocess.o 
 
-all: main tab_serial test int_testing timings
+all: main tab_serial tab_parallel test int_testing timings
 
 %.o:	%.cpp
 	g++ $(paths) -c $<
@@ -20,11 +20,17 @@ tab_serial.o: tab_serial.cpp
 tab_serial: tab_serial.o $(objects)
 	g++ $(paths) tab_serial.o $(objects) -o tab_serial $(tags)
 
+tab_parallel.o: tab_parallel.cpp
+	mpic++ $(paths) -c tab_parallel.cpp Stack.h
+
+tab_parallel: tab_parallel.o $(objects)
+	mpic++ $(paths) tab_parallel.o $(objects) -o tab_parallel $(tags)
+
 test.o:	test.cpp
-	mpic++ $(paths) -c test.cpp Stack.h
+	g++ $(paths) -c test.cpp Stack.h
 
 test:	test.o $(objects)
-	mpic++ $(paths) test.o $(objects) -o test $(tags)
+	g++ $(paths) test.o $(objects) -o test $(tags)
 
 int_testing.o:	int_testing.cpp
 	g++ $(paths) -c int_testing.cpp
