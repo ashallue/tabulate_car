@@ -47,19 +47,24 @@ LargePreproduct::LargePreproduct(bigint B_init, long X_init){
   B = B_init;
   X = X_init;
 
+  cout << "Constructing LargePreproduct object with B = " << B << " and X = " << X << "\n";
+
   // we have Xqq < Xqr < B, and so q < sqrt(B/X).  This is the upper bound 
   // at the high end.  At the low end, q could be as large as sqrt(B)
   // I've tested B / X and it works correctly: bigint / long casts to bigint
   // then storing it in prime_B (type long) is fine as long as sqrt is < 64 bits 
   double one_half = 1.0 / 2;
   prime_B = ceil(pow(B, one_half));
+
+  cout << "prime_B = " << prime_B << "\n";
  
   // create primes array.  First set up nums with nums[i] = i, then apply factor_sieve.
   // the largest prime is prime_B, so that is the upper bound on the array
-  long nums[prime_B];
+  long* nums = new long[prime_B];
   for(long i = 0; i < prime_B; i++){
     nums[i] = i;
   }
+
   factor_sieve(nums, prime_B);
 
   // now copy over the primes to the primes array, starting with 3
@@ -71,6 +76,7 @@ LargePreproduct::LargePreproduct(bigint B_init, long X_init){
     primes[i-1] = primes_initial[i];
   }
   delete[] primes_initial;
+  delete[] nums;
   primes_count--;
 
   // compute max_d.  keep producting primes until bigger than B
