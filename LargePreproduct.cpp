@@ -12,6 +12,9 @@ LargePreproduct::LargePreproduct(){
   X = ceil(pow(B, one_third));
   prime_B = ceil(pow(B, 1.0 / 2));
 
+  // magical number.  Idea is that if only small number of sieve steps, do that instead of complicated inner loop
+  long small_sieve_steps = 50;
+
   // 3 * 5 * 7 * 11 * 13 * 17 * 19 > 4.8 million, 3 * 5 * 7 * 11 * 13 * 17 = 255255
   max_d = 6;
 
@@ -47,6 +50,9 @@ LargePreproduct::LargePreproduct(bigint B_init, long X_init){
   B = B_init;
   X = X_init;
 
+  // magical number.  Idea is that if only small number of sieve steps, do that instead of complicated inner loop
+  long small_sieve_steps = 50;
+  
   cout << "Constructing LargePreproduct object with B = " << B << " and X = " << X << "\n";
 
   // we have Xqq < Xqr < B, and so q < sqrt(B/X).  This is the upper bound 
@@ -118,6 +124,7 @@ LargePreproduct& LargePreproduct::operator=(const LargePreproduct &other){
   this->X = other.X;
   this->max_d = other.max_d;
   this->prime_B = other.prime_B;
+  this->small_sieve_steps = other.small_sieve_steps;
 
   // copy over the primes array
   this->primes_count = other.primes_count;
@@ -137,6 +144,7 @@ LargePreproduct::LargePreproduct(const LargePreproduct &other){
   X = other.X;
   max_d = other.max_d;
   prime_B = other.prime_B;
+  small_sieve_steps = other.small_sieve_steps;
 
   // copy over the primes array
   primes_count = other.primes_count;
@@ -366,8 +374,6 @@ bool LargePreproduct::korselt_check(bigint Pq, bigint L, bigint r){
 // Returns boolean value, false if L too small for technique, true if L * L > = Pq - 1
 bool LargePreproduct::r_2divisors(bigint preprod, long q, bigint L, vector<long> &rs){
 
-  // clear the rs vector
-  rs.clear();
   // variables for the two rs constructed
   bigint fst_r, snd_r;  
 
@@ -396,14 +402,17 @@ bool LargePreproduct::r_2divisors(bigint preprod, long q, bigint L, vector<long>
     if(scriptP % r1 == 0){
       fst_r = r1 * g + 1;
      
-      // include rs greater than q
-      if(fst_r > q) rs.push_back(fst_r);
+      // include rs greater than q and passes korselt check
+      if(fst_r > q && korselt_check(preprod, L, fst_r)){
+        rs.push_back(fst_r);
+      }
     }
     // check if r2 is a divisor
     if(scriptP % r2 == 0){
       snd_r = g * (scriptP / r2) + 1;
-      if(snd_r > q && snd_r != fst_r) rs.push_back(snd_r);
-
+      if(snd_r > q && snd_r != fst_r && korselt_check(preprod, L, snd_r)){
+        rs.push_back(snd_r);
+      }
     }
 
     return true;
@@ -413,8 +422,6 @@ bool LargePreproduct::r_2divisors(bigint preprod, long q, bigint L, vector<long>
 // use sieving to find r such that r = (Pq)^{-1} mod L, the ones that pass Korselt get placed in rs
 // currently no attempt to deal with small L
 void LargePreproduct::r_sieving(bigint preprod, long q, bigint L, vector<long> &rs){
-  // clear the rs vector
-  rs.clear();
   long r, r1, r2;
 
   // using trial division up to sqrt(Pq / L), check for r-1 | Pq -1 
@@ -470,6 +477,49 @@ void LargePreproduct::r_sieving(bigint preprod, long q, bigint L, vector<long> &
     }
   } // end of sieving loop
 
+}
+
+// Function which does all the inner loop work.  For given preproduct P of length d-1, finds r.
+// Current strategy: 1) check if only one potential r, check if at most small number of sieve steps,
+// then 2) attempt 2 divisors strategy, and if that fails do basic sieving.
+// Void function, fills the given vector with the rs found
+void LargePreproduct::inner_loop_work(bigint preprod, long q, bigint L, vector<long> &rs){ 
+  // clear the rs vector and compute (Pq)^{-1} mod L
+  rs.clear();
+  bigint Pqinv = inv128(preprod, L);    
+  bool twocheck;
+ 
+  // if P * lambda(P) > B, we know that there is only one r to check, namely (Pq)^{-1}
+  if(preprod * L > B){
+    // if it is greater than q and passes korselt check, add to list
+    if(Pqinv > q && korselt_check(preprod, L, Pqinv)){
+      rs.push_back(Pqinv);
+    }
+ 
+  // if c * P * lambda(P) > B, we know there are only c r's to check
+  }else if(small_sieve_steps * preprod * L > B){
+          
+    // now loop with stepsize L
+    for(bigint r = Pqinv; r < B / preprod; r += L){
+      // if it passes korselt, add to rs vector
+      if(r > q && korselt_check(preprod, L, r)){
+        rs.push_back(Pqinv);
+      }
+    } // end of sieving loop
+
+  // otherwise, use other techniques to find r
+  // these will apply korselt check, and for rs that pass, they get pushed onto rs vector
+  }else{
+    // first attempt the two divisor technique.  Works if L large enough
+    twocheck = r_2divisors(preprod, q, L, rs);
+
+    // if it failed, do sieving instead       
+    if(!twocheck){
+
+      r_sieving(preprod, q, L, rs);
+    }    
+  } // end else twocheck
+  
 }
 
 // this one constructs Carmichaels with d = 4 and writes to file
@@ -570,7 +620,7 @@ void LargePreproduct::cars4(string cars_file){
           }
 
         // if 100 * P * lambda(P) > B, we know there are only 100 r's to check
-        }else if(50 * P3 * L3 > B){
+        }else if(small_sieve_steps * P3 * L3 > B){
           
           // now loop with stepsize L
           for(bigint r = Pqinv; r < B / P3; r += L3){
@@ -723,6 +773,7 @@ void LargePreproduct::cars4_threaded(string cars_file, long thread, long num_thr
         L3 = L3 / g;
 
         //cout << "now find r for the preproduct " << p1 << " " << p2 << " " << q << " with L = " << L3 << "\n";
+        
         vector<long> rs;   
         bigint Pqinv = inv128(P3, L3);    
  
@@ -735,7 +786,7 @@ void LargePreproduct::cars4_threaded(string cars_file, long thread, long num_thr
           }
  
         // if 100 * P * lambda(P) > B, we know there are only 100 r's to check
-        }else if(50 * P3 * L3 > B){
+        }else if(small_sieve_steps * P3 * L3 > B){
           
           // now loop with stepsize L
           for(bigint r = Pqinv; r < B / P3; r += L3){

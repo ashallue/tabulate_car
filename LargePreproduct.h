@@ -31,6 +31,9 @@ class LargePreproduct{
     long* primes;
     long primes_count;
 
+    // magical number.  In the inner loop, if at most this many sieve steps do that instead of other work
+    long small_sieve_steps = 50;
+
   public: 
     // default values are B = 100,001 and X = B^{1/3}
     LargePreproduct();
@@ -48,6 +51,9 @@ class LargePreproduct{
 
     // threaded version.  Embarrasingly parallel, distributes according to residue class of outer prime index
     void cars4_threaded(string cars_file, long thread, long num_threads);
+
+    // recursive version.
+    void cars4_rec(string cars_file, long level);
 
   public:
 
@@ -75,6 +81,12 @@ class LargePreproduct{
     // use sieving to find r such that r = (Pq)^{-1} mod L, call korselt_check, those that pass go in rs
     // currently no attempt to deal with small L
     void r_sieving(bigint preprod, long q, bigint L, vector<long> &rs);
+
+    // Function which does all the inner loop work.  For given preproduct P of length d-1, finds r.
+    // Current strategy: 1) check if only one potential r, check if at most small number of sieve steps,
+    // then 2) attempt 2 divisors strategy, and if that fails do basic sieving.
+    // Void function, fills the given vector with the rs found
+    void inner_loop_work(bigint preprod, long q, bigint L, vector<long> &rs); 
 
 };
 

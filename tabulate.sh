@@ -19,7 +19,7 @@
 cd ~ashallue/tabulate_car
 
 # run command
-LD_LIBRARY_PATH=/share/apps/lib64 ./tab_parallel ${SGE_TASK_ID} 4
+LD_LIBRARY_PATH=/share/apps/lib64 ./tabulate ${SGE_TASK_ID} 4
 
 #LD_LIBRARY_PATH=/share/apps/lib64 ./tabulate
 

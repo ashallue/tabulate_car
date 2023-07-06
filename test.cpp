@@ -49,6 +49,7 @@ int main(int argc, char* argv[]) {
   cout << "\nExtracting 4\n";
   extract("./cars4_small_sorted.txt", "cars4_small.txt", 100000000000000, 4);
   extract("./cars4_large_sorted.txt", "cars4_large.txt", 100000000000000, 4);
+  extract("./cars4.txt", "cars4_extracted.txt", 100000000000000, 4);
 
   cout << "\nExtracting from Pinch\n";
   extract("./datafiles_pinch/carmichael-16", "pinch4-100t", 100000000000000, 4);
