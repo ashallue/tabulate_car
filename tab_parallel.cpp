@@ -24,23 +24,29 @@ using namespace std::chrono;
  * timing code from geeksforgeeks.org
  */
 
-// expecting two arguments: thread number and total number of threads
 int main(int argc, char* argv[]) {
-  std::cout << "This is tab_parallel\n";
+  std::cout << "This is tab_parallel with argc = " << argc << "\n";
 
   int thread = 0;
   int num_threads = 1;
+  int size, rank;
 
+  /*
   // argc being 3 means two arguments given
   if(argc == 3){
     thread = atoi(argv[1]);
     num_threads = atoi(argv[2]);
   }
+  */
 
-  // set up MPI
+  // set up MPI, including current processor (rank) and total number (size)
   MPI_Init(&argc, &argv);
-  MPI_Comm_rank(MPI_COMM_WORLD, &num_threads);
-  MPI_Comm_size(MPI_COMM_WORLD, &thread);
+  MPI_Comm_rank(MPI_COMM_WORLD, &rank);
+  MPI_Comm_size(MPI_COMM_WORLD, &size);
+
+  // rename to thread and num_threads, just for my sake
+  thread = rank;
+  num_threads = size;
  
   cout << "This is thread " << thread << " of " << num_threads << " total\n";
 
@@ -54,10 +60,11 @@ int main(int argc, char* argv[]) {
   double one_third = 1.0 / 3;
   bigint X = ceil(pow(upper, one_third));
 
-
+  cout << "This is child process " << thread << "\n";
   std::cout << "Tabulating Carmichael numbers with d = 4 up to " << num_thousands_upper << " thousand, ";
   std::cout << "where the small-large crossover point is " << X << "\n";  
-
+  
+  
   // code for large case
   LargePreproduct C = LargePreproduct(upper, X);
 
@@ -67,6 +74,9 @@ int main(int argc, char* argv[]) {
 
   auto duration_large = duration_cast<seconds>(end_large - start_large);
   cout << "Timing for large preproduct case: " << duration_large.count() << "\n\n";
+  
+  MPI_Finalize();
+  return 0;
 
  /* 
   // This code computes Carmichaels in two different ways as a check
