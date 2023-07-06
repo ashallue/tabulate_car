@@ -541,8 +541,8 @@ void LargePreproduct::cars4(string cars_file){
   long g;
   bigint Pqinv;
 
-  bool twocheck;  // boolean is true if L^2 > Pq
-  bigint twocheck_count = 0;  // count the number of times two-div strategy employed
+  //vector for storing rs found
+  vector<long> rs;
 
   // nested for loops
   // compute first upper bound as B^{1/4}
@@ -607,59 +607,17 @@ void LargePreproduct::cars4(string cars_file){
         g = gcd(L2, q - 1);
         L3 = L3 / g;
 
-        //if(p1 == 71 && p2 == 211) cout << "now find r for the preproduct " << p1 << " " << p2 << " " << q << " with L = " << L3 << "\n";
-        // declare empty rs vector, compute (Pq)^{-1} mod L
-        vector<long> rs;   
-        Pqinv = inv128(P3, L3);
-
-        // if P * lambda(P) > B, we know that there is only one r to check, namely (Pq)^{-1}
-        if(P3 * L3 > B){
-          if(Pqinv > q && korselt_check(P3, L3, Pqinv)){
-            output << P3 * Pqinv << " ";
-            output << p1 << " " << p2 << " " << q << " " << Pqinv << "\n";
-          }
-
-        // if 100 * P * lambda(P) > B, we know there are only 100 r's to check
-        }else if(small_sieve_steps * P3 * L3 > B){
-          
-          // now loop with stepsize L
-          for(bigint r = Pqinv; r < B / P3; r += L3){
-            // if it passes korselt, add to rs vector
-            if(r > q && korselt_check(P3, L3, r)){
-              output << P3 * r << " ";
-              output << p1 << " " << p2 << " " << q << " " << r << "\n";
-            }
-          } // end of sieving loop
-
-        // otherwise, use other techniques to find r
-        }else{
-          // first attempt the two divisor technique.  Works if L large enough
-          twocheck = r_2divisors(P3, q, L3, rs);       
-          if(twocheck){
-            //cout << "Inside two divisor case\n";
-            // increment count
-            twocheck_count++;
-
-            // check Korselt and primality of r.  If passes, write to file.  n, followed by factors
-            for(long i = 0; i < rs.size(); i++){
-              if(korselt_check(P3, L3, rs[i])){
-
-                output << P3 * rs[i] << " ";
-                output << p1 << " " << p2 << " " << q << " " << rs[i] << "\n";
-              }
-            }
-          // otherwise sieve.  If L is too small, this will take a very long time
-          }else{
-            //cout << "inside sieve case\n";
-
-            r_sieving(P3, q, L3, rs);
-            // r_sieving function checks korselt.  Write results to file.  Pq, followed by r
-            for(long i = 0; i < rs.size(); i++){
-              output << P3 * rs[i] << " ";
-              output << p1 << " " << p2 << " " << q << " " << rs[i] << "\n";
-            }    
-          } // end else twocheck
-        } // end else P3 * L3 > B
+        //cout << "now find r for the preproduct " << p1 << " " << p2 << " " << q << " with L = " << L3 << "\n";
+        
+        // complicated inner loop work that finds r's that make carmichaels
+        // clears rs vector and refills it
+        inner_loop(P3, q, L3, rs);
+  
+        // write to file
+        for(long i = 0; i < rs.size(); i++){
+          output << P3 * rs[i] << " ";
+          output << p1 << " " << p2 << " " << q << " " << rs[i] << "\n";
+        }
  
         // find next q that makes P2 * q admissable
         do{
@@ -706,8 +664,7 @@ void LargePreproduct::cars4_threaded(string cars_file, long thread, long num_thr
   bigint L1, L2, L3;
   long g;
 
-  bool twocheck;  // boolean is true if L^2 > Pq
-  bigint twocheck_count = 0;  // count the number of times two-div strategy employed
+  vector<long> rs;
 
   // nested for loops
   // compute first upper bound as B^{1/4}
@@ -772,59 +729,15 @@ void LargePreproduct::cars4_threaded(string cars_file, long thread, long num_thr
         g = gcd(L2, q - 1);
         L3 = L3 / g;
 
-        //cout << "now find r for the preproduct " << p1 << " " << p2 << " " << q << " with L = " << L3 << "\n";
-        
-        vector<long> rs;   
-        bigint Pqinv = inv128(P3, L3);    
- 
-        // if P * lambda(P) > B, we know that there is only one r to check, namely (Pq)^{-1}
-        if(P3 * L3 > B){
-          // compute (Pq)^{-1} mod L
-          if(Pqinv > q && korselt_check(P3, L3, Pqinv)){
-            output << P3 * Pqinv << " ";
-            output << p1 << " " << p2 << " " << q << " " << Pqinv << "\n";
-          }
- 
-        // if 100 * P * lambda(P) > B, we know there are only 100 r's to check
-        }else if(small_sieve_steps * P3 * L3 > B){
-          
-          // now loop with stepsize L
-          for(bigint r = Pqinv; r < B / P3; r += L3){
-            // if it passes korselt, add to rs vector
-            if(r > q && korselt_check(P3, L3, r)){
-              output << P3 * r << " ";
-              output << p1 << " " << p2 << " " << q << " " << r << "\n";
-            }
-          } // end of sieving loop
-        // otherwise, use other techniques to find r
-        }else{
-          // first attempt the two divisor technique.  Works if L large enough
-          twocheck = r_2divisors(P3, q, L3, rs);       
-          if(twocheck){
-            //cout << "Inside two divisor case\n";
-            // increment count
-            twocheck_count++;
-
-            // check Korselt and primality of r.  If passes, write to file.  n, followed by factors
-            for(long i = 0; i < rs.size(); i++){
-              if(korselt_check(P3, L3, rs[i])){
-
-                output << P3 * rs[i] << " ";
-                output << p1 << " " << p2 << " " << q << " " << rs[i] << "\n";
-              }
-            }
-          // otherwise sieve.  If L is too small, this will take a very long time
-          }else{
-            //cout << "inside sieve case\n";
-
-            r_sieving(P3, q, L3, rs);
-            // r_sieving function checks korselt.  Write results to file.  Pq, followed by r
-            for(long i = 0; i < rs.size(); i++){
-              output << P3 * rs[i] << " ";
-              output << p1 << " " << p2 << " " << q << " " << rs[i] << "\n";
-            }    
-          } // end else twocheck
-        } // end else P3 * L3 > B
+        // complicated inner loop work that finds r's that make carmichaels
+        // clears rs vector and refills it
+        inner_loop(P3, q, L3, rs);
+  
+        // write to file
+        for(long i = 0; i < rs.size(); i++){
+          output << P3 * rs[i] << " ";
+          output << p1 << " " << p2 << " " << q << " " << rs[i] << "\n";
+        }
  
         // find next q that makes P2 * q admissable
         do{
