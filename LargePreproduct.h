@@ -52,11 +52,13 @@ class LargePreproduct{
     // threaded version.  Embarrasingly parallel, distributes according to residue class of outer prime index
     void cars4_threaded(string cars_file, long thread, long num_threads);
 
-    // recursive version.
-    void cars4_rec(string cars_file, long level);
 
   public:
 
+    // recursive version. This helper function tracks preproduct so far.  k is the factor count for preproduct, 
+    // while d is the number of factors in the final carmichael number
+    void cars4_rec_helper(long d, bigint preprod, vector<long> &ps, bigint L, string cars_file);
+    
     // helper function.  Given lower bound, find index of the smallest prime larger than the bound
     // Algorithm is binary search.  Return 0 if bound is greater than prime_B (corresponds to prime 2)
     // minimum bound that works is 3, otherwise will go into an infinite loop since no prime < 2
