@@ -53,15 +53,16 @@ int main(int argc, char* argv[]) {
   string output_file = "cars4_" + to_string(thread) + ".txt";
 
   // B is the upper bound on Carmichaels constructed
-  int64 num_thousands_upper = 100000000000;
-  int64 upper = num_thousands_upper * 1000;
+  bigint num_millions = 10000000000000000;
+  bigint upper = num_millions * 1000000;
 
   // X is the crossover point, the lower bound on preproducts constructed
-  double one_third = 1.0 / 3;
-  bigint X = ceil(pow(upper, one_third));
+  //double one_third = 1.0 / 3;
+  //long X = ceil(pow(upper, one_third));
+  long X = 70000000;
 
   cout << "This is child process " << thread << "\n";
-  std::cout << "Tabulating Carmichael numbers with d = 4 up to " << num_thousands_upper << " thousand, ";
+  std::cout << "Tabulating Carmichael numbers with d = 4 up to " << upper << "\n";
   std::cout << "where the small-large crossover point is " << X << "\n";  
   
   
