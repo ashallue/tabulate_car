@@ -30,6 +30,9 @@ using namespace std::chrono;
 int main(int argc, char* argv[]) {
   std::cout << "Hello World!\n";
 
+  int64 num_thousands_upper = 1000000;
+  int64 upper = num_thousands_upper * 1000; 
+
   /*
   // code for merging files
   cout << "merging files\n";
@@ -42,17 +45,17 @@ int main(int argc, char* argv[]) {
   merge(files, "cars_merge.txt");
   */
 
-  cout << "\nTesting cars4\n";
-  LargePreproduct od2 = LargePreproduct(1000000, 300);
-  od2.cars4("large_4_output.txt");
+  //cout << "\nTesting cars4\n";
+  //LargePreproduct od2 = LargePreproduct(1000000, 300);
+  //od2.cars4("large_4_output.txt");
 
   cout << "\nExtracting 4\n";
-  extract("./cars4_small_sorted.txt", "cars4_small.txt", 100000000000000, 4);
-  extract("./cars4_large_sorted.txt", "cars4_large.txt", 100000000000000, 4);
-  extract("./cars4.txt", "cars4_extracted.txt", 100000000000000, 4);
+  extract("./cars4_small_sorted.txt", "cars4_small.txt", upper, 4);
+  extract("./cars4_large_sorted.txt", "cars4_large.txt", upper, 4);
+  extract("./cars4.txt", "cars4_extracted.txt", upper, 4);
 
-  cout << "\nExtracting from Pinch\n";
-  extract("./datafiles_pinch/carmichael-16", "pinch4-100t", 100000000000000, 4);
+  //cout << "\nExtracting from Pinch\n";
+  //extract("./datafiles_pinch/carmichael-16", "pinch4-1q", upper, 4);
 
   /*
   vector<long> rs;

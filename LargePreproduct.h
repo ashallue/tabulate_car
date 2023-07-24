@@ -34,6 +34,12 @@ class LargePreproduct{
     // magical number.  In the inner loop, if at most this many sieve steps do that instead of other work
     long small_sieve_steps = 50;
 
+    // counts for different innner loop cases;
+    long count1 = 0;
+    long count2 = 0;
+    long count3 = 0;
+    long count4 = 0;
+
   public: 
     // default values are B = 100,001 and X = B^{1/3}
     LargePreproduct();

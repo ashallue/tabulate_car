@@ -341,7 +341,13 @@ long LargePreproduct::find_upper(bigint num, bigint den, long root){
 
 // boolean function, checks Korselt condition, applies Baillie-PSW test to r
 bool LargePreproduct::korselt_check(bigint Pq, bigint L, bigint r){
+  // check bound
+  if(Pq * r >= B){
+    return false;
+  }
+
   // check Korselt.  Sufficient to show that Pq * r = 1 mod lcm(L, r-1)
+  // for the cases where r is constructed as (Pq)^{-1} mod L.
   // compute product modulo L and modulo r-1
   bigint modL = (Pq % L) * (r % L) % L;
   bigint modrminus = Pq % (r-1);
@@ -422,7 +428,8 @@ bool LargePreproduct::r_2divisors(bigint preprod, long q, bigint L, vector<long>
 // use sieving to find r such that r = (Pq)^{-1} mod L, the ones that pass Korselt get placed in rs
 // currently no attempt to deal with small L
 void LargePreproduct::r_sieving(bigint preprod, long q, bigint L, vector<long> &rs){
-  long r, r1, r2;
+  /*
+  long r1, r2;
 
   // using trial division up to sqrt(Pq / L), check for r-1 | Pq -1 
   long division_bound = floor(sqrt(preprod / L));
@@ -476,6 +483,15 @@ void LargePreproduct::r_sieving(bigint preprod, long q, bigint L, vector<long> &
       rs.push_back(r);
     }
   } // end of sieving loop
+  */  
+
+  // second try - only sieving
+  bigint Pqinv = inv128(preprod, L);
+  for(bigint r = Pqinv; r < preprod; r+= L){
+    if(r > q && korselt_check(preprod, L, r)){
+      rs.push_back(r);
+    }
+  }
 
 }
 
@@ -484,38 +500,49 @@ void LargePreproduct::r_sieving(bigint preprod, long q, bigint L, vector<long> &
 // then 2) attempt 2 divisors strategy, and if that fails do basic sieving.
 // Void function, fills the given vector with the rs found
 void LargePreproduct::inner_loop_work(bigint preprod, long q, bigint L, vector<long> &rs){ 
+
   // clear the rs vector and compute (Pq)^{-1} mod L
   rs.clear();
   bigint Pqinv = inv128(preprod, L);    
   bool twocheck;
- 
+
+  // r is at most Pq - 1 and r is at most B / (Pq), so the number of sieve steps is bounded 
+  // by the minimum of B / (Pq * L) and (Pq - 1) / L 
+  bigint small_sieve_bound = min( B / (L * preprod), (preprod - 1) / L ); 
+  
   // if P * lambda(P) > B, we know that there is only one r to check, namely (Pq)^{-1}
   if(preprod * L > B){
-    // if it is greater than q and passes korselt check, add to list
-    if(Pqinv > q && korselt_check(preprod, L, Pqinv)){
+    //count1++;
+
+    // if car constructed < B, and (Pq)^{-1} is greater than q and car passes korselt check, add to list
+    if(Pqinv * preprod < B && Pqinv > q && korselt_check(preprod, L, Pqinv)){
       rs.push_back(Pqinv);
     }
  
-  // if c * P * lambda(P) > B, we know there are only c r's to check
-  }else if(small_sieve_steps * preprod * L > B){
-          
+  // if c > count of sieve steps, we know there are only c r's to check
+  }else if(small_sieve_steps > small_sieve_bound){
+    //count2++;     
+
     // now loop with stepsize L
-    for(bigint r = Pqinv; r < B / preprod; r += L){
+    for(bigint r = Pqinv; r < min( B / preprod, preprod - 1 ); r += L){
+
       // if it passes korselt, add to rs vector
       if(r > q && korselt_check(preprod, L, r)){
-        rs.push_back(Pqinv);
+        rs.push_back(r);
       }
     } // end of sieving loop
 
   // otherwise, use other techniques to find r
   // these will apply korselt check, and for rs that pass, they get pushed onto rs vector
   }else{
+    //count3++;
+
     // first attempt the two divisor technique.  Works if L large enough
     twocheck = r_2divisors(preprod, q, L, rs);
 
     // if it failed, do sieving instead       
     if(!twocheck){
-
+      //count4++;
       r_sieving(preprod, q, L, rs);
     }    
   } // end else twocheck
@@ -547,7 +574,7 @@ void LargePreproduct::cars4(string cars_file){
   // nested for loops
   // compute first upper bound as B^{1/4}
   upper1 = find_upper(B, 1, 4);
-  cout << "upper1 = " << upper1 << "\n";
+  //cout << "upper1 = " << upper1 << "\n";
 
   // start p1 at the first prime, which should be 3 
   i1 = 0;
@@ -615,6 +642,7 @@ void LargePreproduct::cars4(string cars_file){
   
         // write to file
         for(long i = 0; i < rs.size(); i++){
+
           output << P3 * rs[i] << " ";
           output << p1 << " " << p2 << " " << q << " " << rs[i] << "\n";
         }
