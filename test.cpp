@@ -30,7 +30,7 @@ using namespace std::chrono;
 int main(int argc, char* argv[]) {
   std::cout << "Hello World!\n";
 
-  int64 num_thousands_upper = 1000000;
+  int64 num_thousands_upper = 1000000000000;
   int64 upper = num_thousands_upper * 1000; 
 
   /*

@@ -428,7 +428,7 @@ bool LargePreproduct::r_2divisors(bigint preprod, long q, bigint L, vector<long>
 // use sieving to find r such that r = (Pq)^{-1} mod L, the ones that pass Korselt get placed in rs
 // currently no attempt to deal with small L
 void LargePreproduct::r_sieving(bigint preprod, long q, bigint L, vector<long> &rs){
-  /*
+  
   long r1, r2;
 
   // using trial division up to sqrt(Pq / L), check for r-1 | Pq -1 
@@ -483,15 +483,18 @@ void LargePreproduct::r_sieving(bigint preprod, long q, bigint L, vector<long> &
       rs.push_back(r);
     }
   } // end of sieving loop
-  */  
+    
 
+  /*
   // second try - only sieving
+  // turns out this is slower than the code above
   bigint Pqinv = inv128(preprod, L);
   for(bigint r = Pqinv; r < preprod; r+= L){
     if(r > q && korselt_check(preprod, L, r)){
       rs.push_back(r);
     }
   }
+  */
 
 }
 
