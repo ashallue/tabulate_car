@@ -28,22 +28,15 @@ void LargePreproduct::cars5_threaded(string cars_file, long thread, long num_thr
   p1 = primes[i1];
   P1 = p1;
   do{
-
     // compute L1
     L1 = p1 - 1;
 
-    // since p1 * p2 * p3 > X, and p3 > p2 > p1, 
-    // if p1 > X^{1/3} then we should take i2 = i1 + 1
-    if(p1 * p1 * p1 > X){
-      lower_index = i1 + 1;
-    }else{
-      lower_index = find_index_lower( pow(X / p1, 1.0 / 2) );
-    }
-    i2 = lower_index;
+    // start off p2 at the next prime
+    i2 = i1 + 1;
 
     // also need to compute the corresponding upper bound: (B/p1)^{1/4}
     upper2 = find_upper(B, p1, 4);
-    //cout << "then lower_index = " << lower_index << " and upper2 = " << upper2 << "\n";
+    cout << "then lower_index = " << lower_index << " and upper2 = " << upper2 << "\n";
 
     // finding the start index for p2
     p2 = primes[i2];
@@ -53,8 +46,12 @@ void LargePreproduct::cars5_threaded(string cars_file, long thread, long num_thr
       p2 = primes[i2];
     }
     P2 = P1 * p2;
+    
+    cout << "first P2 is " << P2 << "\n";
+    if(P2 == 5 * 13) cout << "P2 takes value 5 * 13\n";
 
     do{
+      if(p1 == 5) cout << "p2 = " << p2 << "\n";
 
       //update L2
       L2 = L1 * (p2 - 1);
@@ -107,8 +104,9 @@ void LargePreproduct::cars5_threaded(string cars_file, long thread, long num_thr
           g = gcd(L3, q - 1);
           L4 = L4 / g;
 
-          //cout << "Inner loop with p1 = " << p1 << " p2 = " << p2 << " p3 = " << p3 << " q = " << q << "\n";
-
+          if(p1 * p2 * p3 * q == 44757505){
+          cout << "Inner loop with p1 = " << p1 << " p2 = " << p2 << " p3 = " << p3 << " q = " << q << "\n";
+          }
           // complicated inner loop work that finds r's that make carmichaels
           // clears rs vector and refills it
           inner_loop_work(P4, q, L4, rs);
@@ -190,14 +188,8 @@ void LargePreproduct::cars6_threaded(string cars_file, long thread, long num_thr
     // compute L1
     L1 = p1 - 1;
 
-    // since p1 * p2 * p3 * p4 > X, and p4 > p3 > p2 > p1, 
-    // if p1 > X^{1/4} then we should take i2 = i1 + 1
-    if(p1 * p1 * p1 * p1 > X){
-      lower_index = i1 + 1;
-    }else{
-      lower_index = find_index_lower( pow(X / p1, 1.0 / 3) );
-    }
-    i2 = lower_index;
+    // take p2 to be the next prime after p1, though I need to check admissability
+    i2 = i1 + 1;
 
     // also need to compute the corresponding upper bound: (B/p1)^{1/5}
     upper2 = find_upper(B, p1, 5);
@@ -219,13 +211,8 @@ void LargePreproduct::cars6_threaded(string cars_file, long thread, long num_thr
       g = gcd(L1, p2 - 1);
       L2 = L2 / g;
 
-      // if p1 * p2 * p3 * p4 > X => p1 * p2^3 > X take i3 to be i2 + 1.  Otherwise bound is (X / p1p2)^{1/2}
-      if(P2 * p2 * p2 > X){
-        lower_index = i2 + 1;
-      }else{
-        lower_index = find_index_lower( pow( X / P2, 1.0 / 2 ) );
-      }
-      i3 = lower_index;
+      // take p3 to be the next prime after p2
+      i3 = i2 + 1;
 
       // upper bound is (B/p1p2)^{1/4}
       upper3 = find_upper(B, P2, 4);
@@ -301,7 +288,7 @@ void LargePreproduct::cars6_threaded(string cars_file, long thread, long num_thr
             for(long i = 0; i < rs.size(); i++){
               // note this next line might attempt to print a bigint and faile
               output << P5 * rs[i] << " ";
-              output << p1 << " " << p2 << " " << p3 << " " p4 << " " << q << " " << rs[i] << "\n";
+              output << p1 << " " << p2 << " " << p3 << " " << p4 << " " << q << " " << rs[i] << "\n";
             }
 
             // find next q that makes P2 * q admissable
@@ -383,14 +370,8 @@ void LargePreproduct::cars7_threaded(string cars_file, long thread, long num_thr
     // compute L1
     L1 = p1 - 1;
 
-    // since p1 * p2 * p3 * p4 * p5 > X, and p5 > p4 > p3 > p2 > p1, 
-    // if p1 > X^{1/5} then we should take i2 = i1 + 1
-    if(p1 * p1 * p1 * p1 * p1 > X){
-      lower_index = i1 + 1;
-    }else{
-      lower_index = find_index_lower( pow(X / p1, 1.0 / 4) );
-    }
-    i2 = lower_index;
+    // take p2 to be next prime after p1
+    i2 = i1 + 1;
 
     // also need to compute the corresponding upper bound: (B/p1)^{1/6}
     upper2 = find_upper(B, p1, 6);
@@ -412,13 +393,8 @@ void LargePreproduct::cars7_threaded(string cars_file, long thread, long num_thr
       g = gcd(L1, p2 - 1);
       L2 = L2 / g;
 
-      // if p1 * p2 * p3 * p4 * p5 > X => p1 * p2^4 > X take i3 to be i2 + 1.  Otherwise bound is (X / p1p2)^{1/3}
-      if(P2 * p2 * p2 * p2 > X){
-        lower_index = i2 + 1;
-      }else{
-        lower_index = find_index_lower( pow( X / P2, 1.0 / 3 ) );
-      }
-      i3 = lower_index;
+      // take p3 to be next prime after p2 
+      i3 = i2 + 1;
 
       // upper bound is (B/p1p2)^{1/5}
       upper3 = find_upper(B, P2, 5);
@@ -439,13 +415,8 @@ void LargePreproduct::cars7_threaded(string cars_file, long thread, long num_thr
         g = gcd(L2, p3 - 1);
         L3 = L3 / g;
 
-        // if p1 * p2 * p3^3 > X take i4 = i3 + 1.  Otherwise bound is (X / p1p2p3)^(1/2)
-        if(P3 * p3 * p3 > X){
-          lower_index = i3 + 1;
-        }else{
-          lower_index = find_index_lower( pow( X / P3, 1.0 / 2 ) );
-        }
-        i4 = lower_index;
+        // take p4 to be next prime after p3
+        i4 = i3 + 1;
 
         // upper bound is (B/p1p2p3)^{1/4}
         upper4 = find_upper(B, P3, 4);
@@ -519,7 +490,7 @@ void LargePreproduct::cars7_threaded(string cars_file, long thread, long num_thr
               for(long i = 0; i < rs.size(); i++){
                 // note this next line might attempt to print a bigint and faile
                 output << P6 * rs[i] << " ";
-                output << p1 << " " << p2 << " " << p3 << " " p4 << " " << p5 << " " << q << " " << rs[i] << "\n";
+                output << p1 << " " << p2 << " " << p3 << " " << p4 << " " << p5 << " " << q << " " << rs[i] << "\n";
               }
 
               // find next q that makes P2 * q admissable
