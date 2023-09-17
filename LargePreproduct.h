@@ -61,11 +61,16 @@ class LargePreproduct{
     // recursive version, creates carmichael numbers with d prime factors
     void cars_rec(long d, string cars_file);
 
+    // note that these functions found in a separate file called extra_large_case.cpp
+    void cars5_threaded(string cars_file, long thread, long num_threads);
+    void cars6_threaded(string cars_file, long thread, long num_threads);
+    void cars7_threaded(string cars_file, long thread, long num_threads);
+
   public:
 
     // recursive version. This helper function tracks preproduct so far.  k is the factor count for preproduct, 
     // while d is the number of factors in the final carmichael number
-    void cars_rec_helper(long d, bigint preprod, vector<long> &ps, bigint L, string cars_file);
+    void cars_rec_helper(long d, bigint preprod, vector<long> &ps, bigint L, ofstream& file_object);
     
     // helper function.  Given lower bound, find index of the smallest prime larger than the bound
     // Algorithm is binary search.  Return 0 if bound is greater than prime_B (corresponds to prime 2)

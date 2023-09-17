@@ -10,7 +10,9 @@ LargePreproduct::LargePreproduct(){
   B = 1000001;
   double one_third = 1.0 / 3;
   X = ceil(pow(B, one_third));
-  prime_B = ceil(pow(B, 1.0 / 2));
+
+  // need primes up to sqrt(B/X).  For safeties sake, construct primes up to twice that bound
+  prime_B = 2 * ceil(pow(B / X, 1.0 / 2));
 
   // magical number.  Idea is that if only small number of sieve steps, do that instead of complicated inner loop
   long small_sieve_steps = 50;
@@ -56,11 +58,13 @@ LargePreproduct::LargePreproduct(bigint B_init, long X_init){
   cout << "Constructing LargePreproduct object with B = " << B << " and X = " << X << "\n";
 
   // we have Xqq < Xqr < B, and so q < sqrt(B/X).  This is the upper bound 
-  // at the high end.  At the low end, q could be as large as sqrt(B)
+  // at the high end.  If X is small, q could be as large as sqrt(B)
   // I've tested B / X and it works correctly: bigint / long casts to bigint
   // then storing it in prime_B (type long) is fine as long as sqrt is < 64 bits 
   double one_half = 1.0 / 2;
-  prime_B = ceil(pow(B, one_half));
+  
+  // need primes up to sqrt(B/X).  For safeties sake, construct primes up to twice that bound
+  prime_B = 2 * ceil(pow(B / X, one_half));
 
   cout << "prime_B = " << prime_B << "\n";
  
@@ -479,7 +483,7 @@ void LargePreproduct::r_sieving(bigint preprod, long q, bigint L, vector<long> &
   // now loop with stepsize L
   for(bigint r = k * L + Pqinv; r < sieve_upper; r += L){
     // if it passes korselt, add to rs vector
-    if(korselt_check(preprod, L, r)){
+    if(r > q && korselt_check(preprod, L, r)){
       rs.push_back(r);
     }
   } // end of sieving loop
@@ -760,12 +764,15 @@ void LargePreproduct::cars4_threaded(string cars_file, long thread, long num_thr
         g = gcd(L2, q - 1);
         L3 = L3 / g;
 
+        //cout << "Inner loop with p1 = " << p1 << " p2 = " << p2 << " q = " << q << "\n";
+
         // complicated inner loop work that finds r's that make carmichaels
         // clears rs vector and refills it
         inner_loop_work(P3, q, L3, rs);
   
         // write to file
         for(long i = 0; i < rs.size(); i++){
+          // note this next line might attempt to print a bigint and faile
           output << P3 * rs[i] << " ";
           output << p1 << " " << p2 << " " << q << " " << rs[i] << "\n";
         }
@@ -797,110 +804,129 @@ void LargePreproduct::cars4_threaded(string cars_file, long thread, long num_thr
   output.close();
 }
 
+//////////////////////////////////////////////////////////////////
+// part of LargePreproduct.cpp found in a separate text file to include
+#include "LP_extra.cpp"
+///////////////////////////////////////////////////////////////
+
 // recursive serial version of cars
 void LargePreproduct::cars_rec(long d, string cars_file){
   vector<long> ps;
-  cars_rec_helper(d, 1, ps, 1, cars_file); 
-}
-
-// recursive version. This helper function tracks preproduct so far.  k is the factor count for preproduct, 
-// while d is the number of factors in the final carmichael number
-// Also, the vector of primes is actually a vector of indices that point to the corresponding primes
-void LargePreproduct::cars_rec_helper(long d, bigint preprod, vector<long> &ps, bigint L, string cars_file){
-  // k is the number of factors in the preproduct
-  long k = ps.size();
-
-  bigint new_L;
-  bigint g;
-  vector<long> rs;
 
   //setup file
   ofstream output;
   output.open(cars_file);
 
-  // lower and upper bounds on current prime
-  long lower_bound, upper_bound; 
-  // current_prime is the prime in the primes array corresponding to index
-  long index;
-  long current_prime;
+  // call helper with initial P = 1, ps empty, L = 1
+  cars_rec_helper(d, 1, ps, 1, output);
 
-  cout << "preprod = " << preprod << " L = " << L << " ps = ";
-  for(long i = 0; i < ps.size(); i++){
-    cout << ps.at(i) << " ";
-  }
-  cout << "\n";
+  output.close(); 
+}
 
-  // calculate lower and upper bounds
-  // lower bound is (X / preprod)^( 1 / (d - k - 2) ).  If that is smaller than latest prime, ignore it
-  // if d == k-2, it means q is the current prime and we just use next prime
-  // if preprod is 1, we are at the beginning, so set prime index to 0, which should be 3 
-  if(preprod == 1){
-    index = 0;
-  }else if(d == k-2){
-    long latest_factor_index = ps.at(ps.size() - 1);
-    index = latest_factor_index + 1;
+// recursive version. This helper function tracks preproduct so far.  k is the factor count for preproduct, 
+// while d is the number of factors in the final carmichael number
+// Also, the vector of primes is actually a vector of indices that point to the corresponding primes
+void LargePreproduct::cars_rec_helper(long d, bigint preprod, vector<long> &ps, bigint L, ofstream& output){
+
+  // k is the number of factors in the preproduct
+  long k = ps.size();
+
+  // base case.  If d-1 == k, it means r is the current prime, so do inner loop work
+  if(d - 1 == k){
+    // q is the prime at the end of the ps vector
+    long q = primes[ ps[k-1] ];
+
+    vector<long> rs;
+    inner_loop_work(preprod, q, L, rs);
+
+    // now print those carmichels to the file
+    for(long i = 0; i < rs.size(); ++i){
+      
+      output << preprod * rs[i] << " ";
+      for(long j = 0; j < ps.size(); ++j){
+        output << primes[ ps[j] ] << " ";
+      }
+      output << rs[i];
+      output << "\n";
+    }
+    return;
+
+  // otherwise, calculate bounds and loop over all next primes
   }else{
-    long latest_factor_index = ps.at(ps.size() - 1);
 
-    lower_bound = floor(pow( X / preprod, 1.0 / (d - k - 2) ));
-    if(lower_bound < primes[latest_factor_index]){
+    bigint new_L;
+    bigint g;
+
+    // lower and upper bounds on current prime
+    long lower_bound, upper_bound; 
+    // current_prime is the prime in the primes array corresponding to index
+    long index;
+    long current_prime;
+
+    /*
+    cout << "preprod = " << preprod << " L = " << L << " ps = ";
+    for(long i = 0; i < ps.size(); i++){
+      cout << ps.at(i) << " ";
+    }
+    cout << "\n";
+    */
+
+    // calculate lower and upper bounds
+    // lower bound is (X / preprod)^( 1 / (d - k - 2) ).  If that is smaller than latest prime, ignore it
+    // if d-2 == k, it means q is the current prime and we just use next prime
+    // if preprod is 1, we are at the beginning, so set prime index to 0, which should be 3 
+    if(preprod == 1){
+      index = 0;
+    }else if(d - 2 == k){
+      long latest_factor_index = ps.at(ps.size() - 1);
       index = latest_factor_index + 1;
     }else{
-      index = find_index_lower(lower_bound);
-    }
-  }
-  // starting prime is then the prime at that index
-  current_prime = primes[index];
+      long latest_factor_index = ps.at(ps.size() - 1);
 
-  // upper bound is (B / preprod)^( 1 / (d - k) )
-  upper_bound = ceil( pow ( B / preprod, 1.0 / (d - k) ) );
-  
-  cout << "Upper bound = " << upper_bound << " and lower_bound = " << lower_bound << "\n";
- 
-  // check admissability, bump ahead until found
-  while( gcd( current_prime - 1, L) != 1){
-    index++;
-    current_prime = primes[index];
-  }
-  
-  // now loop.  Continue doing work until upper bound reached
-  do{
-    // compute new L based on the current prime   
-    new_L = L * (current_prime - 1);
-    g = gcd(L, current_prime - 1);
-    new_L = new_L / g;
-
-    // base case.  If d == k-2, it means q is the current prime, so do inner loop work
-    if(d == k - 2){
-      inner_loop_work(preprod * current_prime, current_prime, new_L, rs);
-  
-      // now print those carmichels to the file
-      for(long i = 0; i < rs.size(); ++i){
-        output << preprod * current_prime * rs[i] << " ";
-        for(long j = 0; j < ps.size(); ++j){
-          output << primes[ ps[j] ] << " ";
-        }
-        output << "\n";
+      lower_bound = floor(pow( X / preprod, 1.0 / (d - k - 2) ));
+      if(lower_bound < primes[latest_factor_index]){
+        index = latest_factor_index + 1;
+      }else{
+        index = find_index_lower(lower_bound);
       }
+    }
 
-    }else{
+    // starting prime is then the prime at that index
+    current_prime = primes[index];
+
+    // upper bound is (B / preprod)^( 1 / (d - k) )
+    upper_bound = ceil( pow ( B / preprod, 1.0 / (d - k) ) );
+  
+    //cout << "Upper bound = " << upper_bound << " and lower_bound = " << lower_bound << " and index = " << index << "\n";
+ 
+    // check admissability, bump ahead until found
+    while( gcd( current_prime - 1, preprod) != 1){
+      index++;
+      current_prime = primes[index];
+    }
+  
+    // now loop.  Continue doing work until upper bound reached
+    do{
+      // compute new L based on the current prime   
+      new_L = L * (current_prime - 1);
+      g = gcd(L, current_prime - 1);
+      new_L = new_L / g;
 
       // recursive call.  First add prime to the primes vector and update L
       ps.push_back(index);
 
-      cars_rec_helper(d, preprod * current_prime, ps, new_L, cars_file);
+      cars_rec_helper(d, preprod * current_prime, ps, new_L, output);
 
       // once the recursive call is finished, we pop the prime off in preparation for next one
       ps.pop_back();
-    }
-    // move prime ahead until next admissable found
-    do{
-      index++;
-      current_prime = primes[index];
-    }while( gcd( current_prime - 1, L ) != 1 );    
+    
+      // move prime ahead until next admissable found
+      do{
+        index++;
+        current_prime = primes[index];
+      }while( gcd( current_prime - 1, preprod ) != 1 );    
 
-  // this is the while part of the main do-while loop
-  }while(current_prime < upper_bound);
-
-  output.close();
+    // this is the while part of the main do-while loop
+    }while(current_prime < upper_bound);
+  }
 }
