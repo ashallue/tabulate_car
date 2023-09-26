@@ -21,7 +21,7 @@ void LargePreproduct::cars5_threaded(string cars_file, long thread, long num_thr
   // nested for loops
   // compute first upper bound as B^{1/5}
   upper1 = find_upper(B, 1, 5);
-  cout << "upper1 = " << upper1 << "\n";
+  //cout << "upper1 = " << upper1 << "\n";
 
   // start p1 at the prime corresponding to thread number
   i1 = thread;
@@ -36,7 +36,6 @@ void LargePreproduct::cars5_threaded(string cars_file, long thread, long num_thr
 
     // also need to compute the corresponding upper bound: (B/p1)^{1/4}
     upper2 = find_upper(B, p1, 4);
-    cout << "then lower_index = " << lower_index << " and upper2 = " << upper2 << "\n";
 
     // finding the start index for p2
     p2 = primes[i2];
@@ -47,11 +46,7 @@ void LargePreproduct::cars5_threaded(string cars_file, long thread, long num_thr
     }
     P2 = P1 * p2;
     
-    cout << "first P2 is " << P2 << "\n";
-    if(P2 == 5 * 13) cout << "P2 takes value 5 * 13\n";
-
     do{
-      if(p1 == 5) cout << "p2 = " << p2 << "\n";
 
       //update L2
       L2 = L1 * (p2 - 1);
@@ -104,9 +99,6 @@ void LargePreproduct::cars5_threaded(string cars_file, long thread, long num_thr
           g = gcd(L3, q - 1);
           L4 = L4 / g;
 
-          if(p1 * p2 * p3 * q == 44757505){
-          cout << "Inner loop with p1 = " << p1 << " p2 = " << p2 << " p3 = " << p3 << " q = " << q << "\n";
-          }
           // complicated inner loop work that finds r's that make carmichaels
           // clears rs vector and refills it
           inner_loop_work(P4, q, L4, rs);
@@ -177,7 +169,7 @@ void LargePreproduct::cars6_threaded(string cars_file, long thread, long num_thr
   // nested for loops
   // compute first upper bound as B^{1/6}
   upper1 = find_upper(B, 1, 6);
-  cout << "upper1 = " << upper1 << "\n";
+  //cout << "upper1 = " << upper1 << "\n";
 
   // start p1 at the prime corresponding to thread number
   i1 = thread;
@@ -278,7 +270,8 @@ void LargePreproduct::cars6_threaded(string cars_file, long thread, long num_thr
             g = gcd(L4, q - 1);
             L5 = L5 / g;
 
-            //cout << "Inner loop with p1 = " << p1 << " p2 = " << p2 << " p3 = " << p3 << " p4 = " << p4 << " q = " << q << "\n";
+             
+            //if(P5 == 112781131) cout << "Inner loop with p1 = " << p1 << " p2 = " << p2 << " p3 = " << p3 << " p4 = " << p4 << " q = " << q << "\n";
 
             // complicated inner loop work that finds r's that make carmichaels
             // clears rs vector and refills it
@@ -359,7 +352,7 @@ void LargePreproduct::cars7_threaded(string cars_file, long thread, long num_thr
   // nested for loops
   // compute first upper bound as B^{1/7}
   upper1 = find_upper(B, 1, 7);
-  cout << "upper1 = " << upper1 << "\n";
+  //cout << "upper1 = " << upper1 << "\n";
 
   // start p1 at the prime corresponding to thread number
   i1 = thread;

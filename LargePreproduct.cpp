@@ -414,6 +414,7 @@ bool LargePreproduct::r_2divisors(bigint preprod, long q, bigint L, vector<long>
      
       // include rs greater than q and passes korselt check
       if(fst_r > q && korselt_check(preprod, L, fst_r)){
+
         rs.push_back(fst_r);
       }
     }
@@ -421,6 +422,7 @@ bool LargePreproduct::r_2divisors(bigint preprod, long q, bigint L, vector<long>
     if(scriptP % r2 == 0){
       snd_r = g * (scriptP / r2) + 1;
       if(snd_r > q && snd_r != fst_r && korselt_check(preprod, L, snd_r)){
+        
         rs.push_back(snd_r);
       }
     }

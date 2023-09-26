@@ -49,13 +49,12 @@ int main(int argc, char* argv[]) {
   //LargePreproduct od2 = LargePreproduct(1000000, 300);
   //od2.cars4("large_4_output.txt");
 
-  cout << "\nExtracting 4\n";
-  extract("./cars4_small_sorted.txt", "cars4_small.txt", upper, 4);
-  extract("./cars4_large_sorted.txt", "cars4_large.txt", upper, 4);
-  extract("./cars4.txt", "cars4_extracted.txt", upper, 4);
+  cout << "\nExtracting 6\n";
+  extract("./cars6_small_sorted.txt", "cars6_small.txt", upper, 6);
+  extract("./cars6_large_sorted.txt", "cars6_large.txt", upper, 6);
 
-  //cout << "\nExtracting from Pinch\n";
-  //extract("./datafiles_pinch/carmichael-16", "pinch4-1q", upper, 4);
+  cout << "\nExtracting from Pinch\n";
+  extract("./datafiles_pinch/carmichael-16", "pinch6-15", upper, 6);
 
   /*
   vector<long> rs;
