@@ -69,7 +69,7 @@ int main(int argc, char* argv[]) {
   long X = ceil(pow(upper, one_third));
   */
   cout << "This is child process " << thread << "\n";
-  std::cout << "Tabulating Carmichael numbers with d = 5 up to " << upper << "\n";
+  std::cout << "Tabulating Carmichael numbers with d = 6 up to " << upper << "\n";
   std::cout << "where the small-large crossover point is " << X << "\n";  
   
   
@@ -77,7 +77,7 @@ int main(int argc, char* argv[]) {
   LargePreproduct C = LargePreproduct(upper, X);
 
   auto start_large = high_resolution_clock::now();
-  C.cars5_threaded(output_file, thread, num_threads);
+  C.cars6_threaded(output_file, thread, num_threads);
   auto end_large = high_resolution_clock::now();
 
   auto duration_large = duration_cast<seconds>(end_large - start_large);
