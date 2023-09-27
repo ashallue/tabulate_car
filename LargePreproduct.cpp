@@ -449,6 +449,8 @@ void LargePreproduct::r_sieving(bigint preprod, long q, bigint L, vector<long> &
 
       // check korselt and primality of r, if it passes add to rs vector
       if(r1 > q && korselt_check(preprod, L, r1)){
+
+      if(preprod == 619114301) cout << "division_bound = " << division_bound << "\n";
         rs.push_back(r1);
       }
       if(r2 > q && korselt_check(preprod, L, r2)){
@@ -469,10 +471,14 @@ void LargePreproduct::r_sieving(bigint preprod, long q, bigint L, vector<long> &
   
   // for starting point, want smallest int = (Pq)^{-1} greater than sieve_lower and greater than q
   // If we take the generic x = k * n + a > B, solution is k = floor( (B-a)/n ) + 1 
+  
+  // if sieve_lower = Pqinv - 1, it means that r = Pqinv found in division step, so start sieving step larger
   bigint k1 = 0;
-  if( Pqinv <= sieve_lower ){
+  if( Pqinv <= sieve_lower + 1 ){
+
     k1 = (sieve_lower - Pqinv) / L + 1;  
   }
+
   // calculat the k value that makes starting point greater than q
   bigint k2 = 0;
   if( Pqinv <= q ){
@@ -486,6 +492,7 @@ void LargePreproduct::r_sieving(bigint preprod, long q, bigint L, vector<long> &
   for(bigint r = k * L + Pqinv; r < sieve_upper; r += L){
     // if it passes korselt, add to rs vector
     if(r > q && korselt_check(preprod, L, r)){
+      if(preprod == 619114301) cout << "(k, L, Pqinv) = " << k << " " << L << " " << Pqinv << "\n";
       rs.push_back(r);
     }
   } // end of sieving loop
