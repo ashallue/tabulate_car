@@ -470,7 +470,7 @@ void LargePreproduct::r_sieving(bigint preprod, long q, bigint L, vector<long> &
   // for starting point, want smallest int = (Pq)^{-1} greater than sieve_lower and greater than q
   // If we take the generic x = k * n + a > B, solution is k = floor( (B-a)/n ) + 1 
   bigint k1 = 0;
-  if( Pqinv < sieve_lower ){
+  if( Pqinv <= sieve_lower ){
     k1 = (sieve_lower - Pqinv) / L + 1;  
   }
   // calculat the k value that makes starting point greater than q
