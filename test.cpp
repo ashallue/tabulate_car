@@ -30,7 +30,7 @@ using namespace std::chrono;
 int main(int argc, char* argv[]) {
   std::cout << "Hello World!\n";
 
-  int64 num_thousands_upper = 100000000000000;
+  int64 num_thousands_upper = 1000000000000;
   int64 upper = num_thousands_upper * 1000; 
 
   /*
@@ -51,7 +51,7 @@ int main(int argc, char* argv[]) {
 
   cout << "\nExtracting 6\n";
   extract("./cars6_small_sorted.txt", "cars6_small.txt", upper, 6);
-  extract("./cars6_large_sorted.txt", "cars6_large.txt", upper, 6);
+  //extract("./cars6_large_sorted.txt", "cars6_large.txt", upper, 6);
 
   //cout << "\nExtracting from Pinch\n";
   //extract("./datafiles_pinch/carmichael-16", "pinch6-17", upper, 6);

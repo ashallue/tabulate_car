@@ -13,7 +13,7 @@
 ##$ -l h_rt=00:01:00
 
 # creation of MPI parallel environment
-#$ -pe mpi 48
+#$ -pe mpi 4
 
 # change directory
 cd ~ashallue/tabulate_car

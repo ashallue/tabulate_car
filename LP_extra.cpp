@@ -166,13 +166,16 @@ void LargePreproduct::cars6_threaded(string cars_file, long thread, long num_thr
 
   vector<long> rs;
 
+  // threading based on the number of admissable pre-products
+  long num_admissable = 0;
+
   // nested for loops
   // compute first upper bound as B^{1/6}
   upper1 = find_upper(B, 1, 6);
   //cout << "upper1 = " << upper1 << "\n";
 
-  // start p1 at the prime corresponding to thread number
-  i1 = thread;
+  // start p1 at 3
+  i1 = 0;
   p1 = primes[i1];
   P1 = p1;
   do{
@@ -197,6 +200,10 @@ void LargePreproduct::cars6_threaded(string cars_file, long thread, long num_thr
     P2 = P1 * p2;
 
     do{
+      // check threading
+      // only do the p3 work if correct thread
+      if(num_admissable % num_threads == thread){
+      //cout << "correct thread with num_admissable = " << num_admissable << "\n";
 
       //update L2
       L2 = L1 * (p2 - 1);
@@ -244,6 +251,8 @@ void LargePreproduct::cars6_threaded(string cars_file, long thread, long num_thr
           p4 = primes[i4];
         }
         P4 = P3 * p4;
+
+        if(P4 == 1148581) cout << "\n1148581 found in thread " << thread << "\n\n";
 
         do{
           // update L4
@@ -310,7 +319,7 @@ void LargePreproduct::cars6_threaded(string cars_file, long thread, long num_thr
         P3 = P2 * p3;
  
       }while(p3 < upper3);  // end of do p3
-
+      } // end if correct thread.  If yes, work above done.  If not, find next admissable p2
       // find next p2 that makes p1*p2 admissable
       do{
         i2++;
@@ -318,10 +327,13 @@ void LargePreproduct::cars6_threaded(string cars_file, long thread, long num_thr
       }while( gcd( p2 - 1, P1 ) != 1 );
       P2 = P1 * p2;
 
+      // increment num_admissable counter
+      num_admissable++;
+
     }while(p2 < upper2);  // end of do p2
 
     // next prime p1
-    i1 += num_threads;
+    i1 ++;
     p1 = primes[i1];
     P1 = p1;
   }while(p1 < upper1);  // end of do p1
