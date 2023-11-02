@@ -24,10 +24,14 @@ void LargePreproduct::cars5_threaded(string cars_file, long thread, long num_thr
   //cout << "upper1 = " << upper1 << "\n";
 
   // start p1 at the prime corresponding to thread number
-  i1 = thread;
+  // update: all threads start at 0, use num_admissable to determine if inner loop work performed or not
+  int num_admissable = 0;
+  
+  i1 = 0;
   p1 = primes[i1];
   P1 = p1;
   do{
+
     // compute L1
     L1 = p1 - 1;
 
@@ -47,6 +51,9 @@ void LargePreproduct::cars5_threaded(string cars_file, long thread, long num_thr
     P2 = P1 * p2;
     
     do{
+      // check threading
+      // only do the p3 work if correct thread
+      if(num_admissable % num_threads == thread){
 
       //update L2
       L2 = L1 * (p2 - 1);
@@ -72,6 +79,8 @@ void LargePreproduct::cars5_threaded(string cars_file, long thread, long num_thr
         p3 = primes[i3];
       }
       P3 = P2 * p3;
+
+      //cout << "past num_admissable check, p1 = " << p1 << " p2 = " << p2 << " p3 = " << p3 << "\n";
 
       do{
 
@@ -127,6 +136,7 @@ void LargePreproduct::cars5_threaded(string cars_file, long thread, long num_thr
         P3 = P2 * p3;
 
       }while(p3 < upper3);  // end of do p3
+      } // end if threading correct
 
       // find next p2 that makes p1*p2 admissable
       do{
@@ -134,6 +144,8 @@ void LargePreproduct::cars5_threaded(string cars_file, long thread, long num_thr
         p2 = primes[i2];
       }while( gcd( p2 - 1, P1 ) != 1 );
       P2 = P1 * p2;
+
+      num_admissable++;
 
     }while(p2 < upper2);  // end of do p2
 
@@ -252,7 +264,7 @@ void LargePreproduct::cars6_threaded(string cars_file, long thread, long num_thr
         }
         P4 = P3 * p4;
 
-        if(P4 == 1148581) cout << "\n1148581 found in thread " << thread << "\n\n";
+        //if(P4 == 1148581) cout << "\n1148581 found in thread " << thread << "\n\n";
 
         do{
           // update L4
@@ -367,7 +379,11 @@ void LargePreproduct::cars7_threaded(string cars_file, long thread, long num_thr
   //cout << "upper1 = " << upper1 << "\n";
 
   // start p1 at the prime corresponding to thread number
-  i1 = thread;
+  // Update: new threading.  All threads consider same primes, but only enter inner loop
+  // if num_admissable is in a certain class
+  long num_admissable = 0;  
+
+  i1 = 0;
   p1 = primes[i1];
   P1 = p1;
   do{
@@ -436,6 +452,11 @@ void LargePreproduct::cars7_threaded(string cars_file, long thread, long num_thr
         P4 = P3 * p4;
 
         do{
+
+          // check threading
+          // only do the p5 work if correct thread
+          if(num_admissable % num_threads == thread){
+
           // update L4
           L4 = L3 * (p4 - 1);
           g = gcd(L3, p4 - 1);
@@ -480,7 +501,7 @@ void LargePreproduct::cars7_threaded(string cars_file, long thread, long num_thr
             P6 = P5 * q;
 
             do{
-              // update L5
+              // update L6
               L6 = L5 * (q - 1);
               g = gcd(L5, q - 1);
               L6 = L6 / g;
@@ -515,14 +536,17 @@ void LargePreproduct::cars7_threaded(string cars_file, long thread, long num_thr
             P5 = P4 * p5;
 
           }while(p5 < upper5); // end of do p5
-          
+          } // end if admissalbe in a certain thread
+ 
           // find next p4
           do{
             i4++;
             p4 = primes[i4];
           }while( gcd( p4 - 1, P3 ) != 1);
           P4 = P3 * p4;
-
+        
+          num_admissable++;
+ 
         }while(p4 < upper4); // end of do p4
 
         // find next p3 that makes p1*p2*p3 admissable

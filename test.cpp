@@ -44,17 +44,17 @@ int main(int argc, char* argv[]) {
   } 
   merge(files, "cars_merge.txt");
   */
+  /*
+  cout << "\nTesting cars4\n";
+  LargePreproduct od2 = LargePreproduct(1000000, 300);
+  od2.cars4("large_4_output.txt");
+  */
+  cout << "\nExtracting 7\n";
+  extract("./cars7_small_sorted.txt", "cars7_small.txt", upper, 7);
+  extract("./cars7_large_sorted.txt", "cars7_large.txt", upper, 7);
 
-  //cout << "\nTesting cars4\n";
-  //LargePreproduct od2 = LargePreproduct(1000000, 300);
-  //od2.cars4("large_4_output.txt");
-
-  cout << "\nExtracting 6\n";
-  extract("./cars6_small_sorted.txt", "cars6_small.txt", upper, 6);
-  //extract("./cars6_large_sorted.txt", "cars6_large.txt", upper, 6);
-
-  //cout << "\nExtracting from Pinch\n";
-  //extract("./datafiles_pinch/carmichael-16", "pinch6-17", upper, 6);
+  cout << "\nExtracting from Pinch\n";
+  extract("./datafiles_pinch/carmichael-16", "pinch7-15", upper, 7);
 
   /*
   vector<long> rs;
