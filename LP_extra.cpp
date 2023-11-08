@@ -150,7 +150,7 @@ void LargePreproduct::cars5_threaded(string cars_file, long thread, long num_thr
     }while(p2 < upper2);  // end of do p2
 
     // next prime p1
-    i1 += num_threads;
+    i1 += 1;
     p1 = primes[i1];
     P1 = p1;
   }while(p1 < upper1);  // end of do p1
@@ -568,7 +568,7 @@ void LargePreproduct::cars7_threaded(string cars_file, long thread, long num_thr
     }while(p2 < upper2);  // end of do p2
 
     // next prime p1
-    i1 += num_threads;
+    i1 += 1;
     p1 = primes[i1];
     P1 = p1;
   }while(p1 < upper1);  // end of do p1
