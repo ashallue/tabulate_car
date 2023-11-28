@@ -449,8 +449,6 @@ void LargePreproduct::r_sieving(bigint preprod, long q, bigint L, vector<long> &
 
       // check korselt and primality of r, if it passes add to rs vector
       if(r1 > q && korselt_check(preprod, L, r1)){
-
-      if(preprod == 619114301) cout << "division_bound = " << division_bound << "\n";
         rs.push_back(r1);
       }
       if(r2 > q && korselt_check(preprod, L, r2)){
