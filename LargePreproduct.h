@@ -91,12 +91,12 @@ class LargePreproduct{
     // i.e. find divisors of (Pq - 1) congruent to (Pq)^{-1} - 1 mod L.  Requires gcd 1, 
     // so division by a gcd is performed.  At most 2 divisors found, placed into rs vector.
     // Returns boolean value, false if L too small for technique, true if L * L > = Pq - 1
-    // Update: now passing in scriptP = (preprod - 1)/g and L1 = L/g, were g = gcd(Pqinv - 1, L)
-    bool r_2divisors(bigint preprod, long q, bigint L, bigint L1, bigint scriptP, vector<long> &rs);
+    // Update: now passing in scriptP = (preprod - 1)/g and L1 = L/g, where g = gcd(Pqinv - 1, L)
+    bool r_2divisors(bigint &preprod, long &q, bigint &L, bigint &L1, bigint &scriptP, bigint &g, bigint &Pqinv, vector<long> &rs);
 
     // use sieving to find r such that r = (Pq)^{-1} mod L, call korselt_check, those that pass go in rs
     // currently no attempt to deal with small L
-    void r_sieving(bigint preprod, long q, bigint L, bigint L1, bigint scriptP, vector<long> &rs);
+    void r_sieving(bigint &preprod, long &q, bigint &L, bigint &L1, bigint &scriptP, bigint &g, bigint &Pqinv, vector<long> &rs);
 
     // Function which does all the inner loop work.  For given preproduct P of length d-1, finds r.
     // Current strategy: 1) check if only one potential r, check if at most small number of sieve steps,

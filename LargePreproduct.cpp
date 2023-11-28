@@ -382,14 +382,14 @@ bool LargePreproduct::korselt_check(bigint Pq, bigint L, bigint r){
 // i.e. find divisors of (Pq - 1) congruent to (Pq)^{-1} - 1 mod L.  Requires gcd 1, 
 // so division by a gcd is performed.  At most 2 divisors found, placed into rs vector.
 // Returns boolean value, false if L too small for technique, true if L * L > = Pq - 1
-bool LargePreproduct::r_2divisors(bigint preprod, long q, bigint L, bigint L1, bigint scriptP, vector<long> &rs){
+bool LargePreproduct::r_2divisors(bigint &preprod, long &q, bigint &L, bigint &L1, bigint &scriptP, bigint &g, bigint &Pqinv, vector<long> &rs){
 
   // variables for the two rs constructed
   bigint fst_r, snd_r;  
 
-  // calculate Pqinv = (Pq)^{-1} mod L, then g = gcd(inv - 1, L)
-  bigint Pqinv = inv128(preprod, L);
-  bigint g = gcd128(Pqinv - 1, L);
+  // calculate Pqinv = (Pq)^{-1} mod L, then g = gcd(inv - 1, L).  Never mind, now parameters
+  //bigint Pqinv = inv128(preprod, L);
+  //bigint g = gcd128(Pqinv - 1, L);
   //cout << "(Pq)^-1 = " << Pqinv << "\n";
 
   // if L1^2 < scriptP, return empty rs
@@ -427,7 +427,7 @@ bool LargePreproduct::r_2divisors(bigint preprod, long q, bigint L, bigint L1, b
 
 // use sieving to find r such that r = (Pq)^{-1} mod L, the ones that pass Korselt get placed in rs
 // currently no attempt to deal with small L
-void LargePreproduct::r_sieving(bigint preprod, long q, bigint L, bigint L1, bigint scriptP, vector<long> &rs){
+void LargePreproduct::r_sieving(bigint &preprod, long &q, bigint &L, bigint &L1, bigint &scriptP, bigint &g, bigint &Pqinv, vector<long> &rs){
   
   bigint r1, r2;
 
@@ -459,8 +459,8 @@ void LargePreproduct::r_sieving(bigint preprod, long q, bigint L, bigint L1, big
   bigint sieve_upper = (preprod - 1) / division_bound;
   if(B / preprod < sieve_upper) sieve_upper = B / preprod;
  
-  // compute (Pq)^{-1} mod L
-  bigint Pqinv = inv128(preprod, L);
+  // compute (Pq)^{-1} mod L.  Never mind, passed in as parameter now
+  //bigint Pqinv = inv128(preprod, L);
   
   // for starting point, want smallest int = (Pq)^{-1} greater than sieve_lower and greater than q
   // If we take the generic x = k * n + a > B, solution is k = floor( (B-a)/n ) + 1 
@@ -552,12 +552,12 @@ void LargePreproduct::inner_loop_work(bigint preprod, long q, bigint L, vector<l
     //count3++;
 
     // first attempt the two divisor technique.  Works if L large enough
-    twocheck = r_2divisors(preprod, q, L, L1, scriptP, rs);
+    twocheck = r_2divisors(preprod, q, L, L1, scriptP, g, Pqinv, rs);
 
     // if it failed, do sieving instead       
     if(!twocheck){
       //count4++;
-      r_sieving(preprod, q, L, L1, scriptP, rs);
+      r_sieving(preprod, q, L, L1, scriptP, g, Pqinv, rs);
     }    
   } // end else twocheck
   
