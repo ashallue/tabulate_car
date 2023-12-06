@@ -77,7 +77,7 @@ int main(int argc, char* argv[]) {
   LargePreproduct C = LargePreproduct(upper, X);
 
   auto start_large = high_resolution_clock::now();
-  C.cars5_threaded(output_file, thread, num_threads);
+  C.cars7_threaded(output_file, thread, num_threads);
   auto end_large = high_resolution_clock::now();
 
   auto duration_large = duration_cast<seconds>(end_large - start_large);

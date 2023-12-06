@@ -425,6 +425,54 @@ bool LargePreproduct::r_2divisors(bigint &preprod, long &q, bigint &L, bigint &L
   }
 }
 
+// Jonathan's r_sieving function
+void LargePreproduct::r_sieving(bigint &preprod, long &q, bigint &L, bigint &L1, bigint &scriptP, bigint &g, bigint &Pqinv, vector<long> &rs)
+{
+  // this divisor is of the form Pqinv + k*L
+  // r1 + k*L1 < sqrt( scriptP )
+  int k1 = sqrt( scriptP )/L1;
+  // Pqinv + k*L < B/(Pq)
+  int k2 = B/( preprod * L );
+  int k = min( k1, k2);
+  bigint d = Pqinv;
+  for( int i = 0; i <= k; i++ )
+  {
+    if(d > q && korselt_check(preprod, L, d))
+    {
+      rs.push_back(d);
+    }
+    d+= L;
+  }
+  // this divisor is of the form (Pq - 1)/( r2 + k*L1 ) + 1
+  // where r2 + k*L1 is small
+  if( k1 < k2 )
+  {
+    // find r2
+    bigint r1 = ( Pqinv - 1 ) / g;
+    bigint r2 = ( inv128( r1, L1) * scriptP ) % L1;
+    // r2 + k*L1 < sqrt( scriptP )
+    int k3 = k1;
+    // (Pq-1)/( r2 + k*L1) < B/(Pq)
+    int k4 = ( (preprod - 1)*preprod ) / ( (B - preprod ) * L1 )  - 1 ;
+    // initialize d to be of the correct size
+    d = r2 + k4*L1;
+
+    for( int i = k4; i <= k3; i ++)
+    {
+      if( (preprod - 1) % d == 0)
+      {
+        r1 = (preprod - 1) / d + 1;
+        if(r1 > q && korselt_check(preprod, L, r1))
+        {
+          rs.push_back(r1);
+        }
+      }
+      d+= L1;
+    }
+  }
+}
+
+/*
 // use sieving to find r such that r = (Pq)^{-1} mod L, the ones that pass Korselt get placed in rs
 // currently no attempt to deal with small L
 void LargePreproduct::r_sieving(bigint &preprod, long &q, bigint &L, bigint &L1, bigint &scriptP, bigint &g, bigint &Pqinv, vector<long> &rs){
@@ -446,9 +494,9 @@ void LargePreproduct::r_sieving(bigint &preprod, long &q, bigint &L, bigint &L1,
       if(r1 > q && korselt_check(preprod, L, r1)){
         rs.push_back(r1);
       }
-      if(r2 > q && korselt_check(preprod, L, r2)){
-        rs.push_back(r2);
-      }
+      //if(r2 > q && korselt_check(preprod, L, r2)){
+      //  rs.push_back(r2);
+      //}
     }
   } // end for d
 
@@ -490,18 +538,17 @@ void LargePreproduct::r_sieving(bigint &preprod, long &q, bigint &L, bigint &L1,
   } // end of sieving loop
     
 
-  /*
+  
   // second try - only sieving
   // turns out this is slower than the code above
-  bigint Pqinv = inv128(preprod, L);
-  for(bigint r = Pqinv; r < preprod; r+= L){
-    if(r > q && korselt_check(preprod, L, r)){
-      rs.push_back(r);
-    }
-  }
-  */
-
+  //bigint Pqinv = inv128(preprod, L);
+  //for(bigint r = Pqinv; r < preprod; r+= L){
+  //  if(r > q && korselt_check(preprod, L, r)){
+  //    rs.push_back(r);
+  //  }
+  //}
 }
+*/
 
 // Function which does all the inner loop work.  For given preproduct P of length d-1, finds r.
 // Current strategy: 1) check if only one potential r, check if at most small number of sieve steps,
@@ -513,12 +560,6 @@ void LargePreproduct::inner_loop_work(bigint preprod, long q, bigint L, vector<l
   rs.clear();
   bigint Pqinv = inv128(preprod, L);    
   bool twocheck;
-
-  // compute g = gcd(Pqinv - 1, L), L1 = L / g, scriptP = (preprod - 1)/g.  These will be passed 
-  // to the r2_divisors and r_sieving functions
-  bigint g = gcd128(Pqinv - 1, L);
-  bigint L1 = L / g;
-  bigint scriptP = (preprod - 1) / g;
 
   // r is at most Pq - 1 and r is at most B / (Pq), so the number of sieve steps is bounded 
   // by the minimum of B / (Pq * L) and (Pq - 1) / L 
@@ -551,6 +592,12 @@ void LargePreproduct::inner_loop_work(bigint preprod, long q, bigint L, vector<l
   }else{
     //count3++;
 
+    // compute g = gcd(Pqinv - 1, L), L1 = L / g, scriptP = (preprod - 1)/g.  These will be passed 
+    // to the r2_divisors and r_sieving functions
+    bigint g = gcd128(Pqinv - 1, L);
+    bigint L1 = L / g;
+    bigint scriptP = (preprod - 1) / g;
+    
     // first attempt the two divisor technique.  Works if L large enough
     twocheck = r_2divisors(preprod, q, L, L1, scriptP, g, Pqinv, rs);
 

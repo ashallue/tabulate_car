@@ -53,8 +53,8 @@ int main(int argc, char* argv[]) {
   extract("./cars7_small_sorted.txt", "cars7_small.txt", upper, 7);
   extract("./cars7_large_sorted.txt", "cars7_large.txt", upper, 7);
 
-  cout << "\nExtracting from Pinch\n";
-  extract("./datafiles_pinch/carmichael-16", "pinch7-15", upper, 7);
+  //cout << "\nExtracting from Pinch\n";
+  //extract("./datafiles_pinch/carmichael-16", "pinch7-15", upper, 7);
 
   /*
   vector<long> rs;
