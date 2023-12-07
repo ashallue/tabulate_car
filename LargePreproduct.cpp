@@ -456,26 +456,26 @@ void LargePreproduct::r_sieving(bigint &preprod, long &q, bigint &L, bigint &L1,
     if(r1 == 0){
       r2 = 0;
     }else{
-      bigint r2 = ( inv128( r1, L1) * scriptP ) % L1;
-      // r2 + k*L1 < sqrt( scriptP )
-      int k3 = k1;
-      // (Pq-1)/( r2 + k*L1) < B/(Pq)
-      int k4 = ( (preprod - 1)*preprod ) / ( (B - preprod ) * L1 )  - 1 ;
-      // initialize d to be of the correct size
-      d = r2 + k4*L1;
+      r2 = ( inv128( r1, L1) * scriptP ) % L1;
+    }
+    // r2 + k*L1 < sqrt( scriptP )
+    int k3 = k1;
+    // (Pq-1)/( r2 + k*L1) < B/(Pq)
+    int k4 = ( (preprod - 1)*preprod ) / ( (B - preprod ) * L1 )  - 1 ;
+    // initialize d to be of the correct size
+    d = r2 + k4*L1;
 
-      for( int i = k4; i <= k3; i ++)
+    for( int i = k4; i <= k3; i ++)
+    {
+      if( (preprod - 1) % d == 0)
       {
-        if( (preprod - 1) % d == 0)
+        r1 = (preprod - 1) / d + 1;
+        if(r1 > q && korselt_check(preprod, L, r1))
         {
-          r1 = (preprod - 1) / d + 1;
-          if(r1 > q && korselt_check(preprod, L, r1))
-          {
-            rs.push_back(r1);
-          }
+          rs.push_back(r1);
         }
-        d+= L1;
       }
+      d+= L1;
     }
   }
 }
