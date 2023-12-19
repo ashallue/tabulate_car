@@ -465,6 +465,9 @@ void LargePreproduct::r_sieving(bigint &preprod, long &q, bigint &L, bigint &L1,
     // initialize d to be of the correct size
     d = r2 + k4*L1;
 
+    // In the rare case where r2 = 0 and k4 < 0, simply set divisor to be 1
+    if(d <= 0) d = 1;
+
     for( int i = k4; i <= k3; i ++)
     {
       if( (preprod - 1) % d == 0)
