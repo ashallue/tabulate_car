@@ -749,7 +749,7 @@ void LargePreproduct::cars8_threaded(string cars_file, long thread, long num_thr
                 g = gcd(L6, q - 1);
                 L7 = L7 / g;
 
-                //cout << "Inner loop with p1 = " << p1 << " p2 = " << p2 << " p3 = " << p3 << " p4 = " << p4 << " p5 = " << p5 << " q = " << q << "\n";
+                if(P7 == 5140718765) cout << "Inner loop with p1 = " << p1 << " p2 = " << p2 << " p3 = " << p3 << " p4 = " << p4 << " p5 = " << p5 << " q = " << q << "\n";
 
                 // complicated inner loop work that finds r's that make carmichaels
                 // clears rs vector and refills it

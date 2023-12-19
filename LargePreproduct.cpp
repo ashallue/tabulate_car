@@ -425,9 +425,75 @@ bool LargePreproduct::r_2divisors(bigint &preprod, long &q, bigint &L, bigint &L
   }
 }
 
+// version 2 of Jonathan's r_sieving function
+void LargePreproduct::r_sieving(bigint &preprod, long &q, bigint &L, bigint &L1, bigint &scriptP, bigint &g, bigint &Pqinv, vector<long> &rs)
+{
+  // this divisor is of the form Pqinv + k*L
+  // r1 + k*L1 < sqrt( scriptP ) implies
+  // g(r1 + k*L1) + 1 < g*sqrt( scriptP ) + 1
+  double ub1 = g*sqrt(scriptP) + 1;
+  // Pqinv + kL < B/(Pq)
+  double ub2 = B/preprod;
+  double ub = min( ub1, ub2 );
+  bigint d = Pqinv;
+
+  while( d < ub )
+  {
+    if(d > q && korselt_check(preprod, L, d))
+    {
+      rs.push_back(d);
+    }
+    d+= L;
+  }
+
+  // there is a divisor greater than sqrt( sriptP )
+  // we find this "large" divisor by finding
+  // a "small" factor f of Pq -1
+  // then the divisor is d = (Pq-1)/f + 1
+  if( ub1 < ub2 )
+  {
+    // find r2
+    bigint r1 = ( Pqinv - 1 ) / g;
+    bigint r2;
+
+    // check if r1 is 0.  If 0, set r2 to be 1 as the co-divisor
+    if(r1 == 0){
+      r2 = 1;
+    }else{
+      r2 = ( inv128( r1, L1) * scriptP ) % L1;
+    }
+
+    // find the bound
+    // r2 + k*L1 < sqrt( scriptP )
+    double ub3 = sqrt( scriptP );
+    // the bound (Pq-1)/( r2 + k*L1) < B/(Pq)
+    // tells us the initialization place
+    int k = ( (preprod - 1)*preprod ) / ( (B - preprod ) * L1 )  - 1 ;
+    k = max(0, k);
+    // initialize d to be of the correct size
+    bigint f = r2 + k*L1;
+    while( f < ub3 )
+    {
+      if( (preprod - 1) % f == 0)
+      {
+        d = (preprod - 1) / f + 1;
+        if(d > q && korselt_check(preprod, L, d))
+        {
+          rs.push_back(d);
+        }
+      }
+      f+= L1;
+    }
+  }
+}
+
+/*
 // Jonathan's r_sieving function
 void LargePreproduct::r_sieving(bigint &preprod, long &q, bigint &L, bigint &L1, bigint &scriptP, bigint &g, bigint &Pqinv, vector<long> &rs)
 {
+  
+  if(preprod == 5140718765) cout << "inside r_sieving\n";
+
   // this divisor is of the form Pqinv + k*L
   // r1 + k*L1 < sqrt( scriptP )
   int k1 = sqrt( scriptP )/L1;
@@ -482,7 +548,7 @@ void LargePreproduct::r_sieving(bigint &preprod, long &q, bigint &L, bigint &L1,
     }
   }
 }
-
+*/
 /*
 // use sieving to find r such that r = (Pq)^{-1} mod L, the ones that pass Korselt get placed in rs
 // currently no attempt to deal with small L
