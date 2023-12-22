@@ -20,3 +20,5 @@ cd ~ashallue/tabulate_car
 
 # run command
 mpiexec ./tab_parallel
+
+

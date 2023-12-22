@@ -35,7 +35,7 @@ int main(int argc, char* argv[]) {
     num_threads = atoi(argv[2]);
   
     // create file names for carmichaels, and admissable pre-products w/o carmichaels
-    cars_file = "cars" + to_string(thread) + ".txt";
+    cars_file = "cars18_small_" + to_string(thread) + ".txt";
     none_file = "cars_none" + to_string(thread) + ".txt";
     
     cout << "This is thread " << thread << " of " << num_threads << "total\n";
