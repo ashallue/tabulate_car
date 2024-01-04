@@ -900,15 +900,23 @@ void LargePreproduct::cars_rec(long d, string cars_file){
 // recursive version. This helper function tracks preproduct so far.  k is the factor count for preproduct, 
 // while d is the number of factors in the final carmichael number
 // Also, the vector of primes is actually a vector of indices that point to the corresponding primes
-void LargePreproduct::cars_rec_helper(long d, bigint preprod, vector<long> &ps, bigint L, ofstream& output){
+void LargePreproduct::cars_rec_helper(long d, bigint preprod, vector<long> &pis, bigint L, ofstream& output){
 
   // k is the number of factors in the preproduct
-  long k = ps.size();
+  long k = pis.size();
+  long largest_index;
+  bigint largest_prime;
+
+  // pull out the largest prime and largest index, if k >= 1
+  if(k >= 1){
+    largest_index = pis[k-1];
+    largest_prime = primes[largest_index];
+  }
 
   // base case.  If d-1 == k, it means r is the current prime, so do inner loop work
   if(d - 1 == k){
     // q is the prime at the end of the ps vector
-    long q = primes[ ps[k-1] ];
+    long q = largest_prime;
 
     vector<long> rs;
     inner_loop_work(preprod, q, L, rs);
@@ -917,8 +925,8 @@ void LargePreproduct::cars_rec_helper(long d, bigint preprod, vector<long> &ps, 
     for(long i = 0; i < rs.size(); ++i){
       
       output << preprod * rs[i] << " ";
-      for(long j = 0; j < ps.size(); ++j){
-        output << primes[ ps[j] ] << " ";
+      for(long j = 0; j < pis.size(); ++j){
+        output << primes[ pis[j] ] << " ";
       }
       output << rs[i];
       output << "\n";
@@ -937,32 +945,23 @@ void LargePreproduct::cars_rec_helper(long d, bigint preprod, vector<long> &ps, 
     long index;
     long current_prime;
 
-    /*
-    cout << "preprod = " << preprod << " L = " << L << " ps = ";
-    for(long i = 0; i < ps.size(); i++){
-      cout << ps.at(i) << " ";
-    }
-    cout << "\n";
-    */
-
     // calculate lower and upper bounds
-    // lower bound is (X / preprod)^( 1 / (d - k - 2) ).  If that is smaller than latest prime, ignore it
+    // Usually we just use the next prime on the lower end, so no lower bound.  Note can't have d-1 == k
+    // if d-3 == k, P > X means lower bound is X/P, unless we know for sure P * next prime > X already
     // if d-2 == k, it means q is the current prime and we just use next prime
     // if preprod is 1, we are at the beginning, so set prime index to 0, which should be 3 
     if(preprod == 1){
       index = 0;
     }else if(d - 2 == k){
-      long latest_factor_index = ps.at(ps.size() - 1);
-      index = latest_factor_index + 1;
-    }else{
-      long latest_factor_index = ps.at(ps.size() - 1);
-
-      lower_bound = floor(pow( X / preprod, 1.0 / (d - k - 2) ));
-      if(lower_bound < primes[latest_factor_index]){
-        index = latest_factor_index + 1;
+      index = largest_index + 1;
+    }else if(d - 3 == k){
+      if(preprod * largest_prime <= X){
+        index = find_index_lower(X / preprod);
       }else{
-        index = find_index_lower(lower_bound);
+        index = largest_index + 1;
       }
+    }else{
+      index = largest_index + 1;
     }
 
     // starting prime is then the prime at that index
@@ -987,12 +986,12 @@ void LargePreproduct::cars_rec_helper(long d, bigint preprod, vector<long> &ps, 
       new_L = new_L / g;
 
       // recursive call.  First add prime to the primes vector and update L
-      ps.push_back(index);
+      pis.push_back(index);
 
-      cars_rec_helper(d, preprod * current_prime, ps, new_L, output);
+      cars_rec_helper(d, preprod * current_prime, pis, new_L, output);
 
       // once the recursive call is finished, we pop the prime off in preparation for next one
-      ps.pop_back();
+      pis.pop_back();
     
       // move prime ahead until next admissable found
       do{

@@ -72,8 +72,9 @@ class LargePreproduct{
   public:
 
     // recursive version. This helper function tracks preproduct so far.  k is the factor count for preproduct, 
-    // while d is the number of factors in the final carmichael number
-    void cars_rec_helper(long d, bigint preprod, vector<long> &ps, bigint L, ofstream& file_object);
+    // while d is the number of factors in the final carmichael number.
+    // The pis vector stores indices of the primes making up the preproduct
+    void cars_rec_helper(long d, bigint preprod, vector<long> &pis, bigint L, ofstream& file_object);
     
     // helper function.  Given lower bound, find index of the smallest prime larger than the bound
     // Algorithm is binary search.  Return 0 if bound is greater than prime_B (corresponds to prime 2)
