@@ -30,7 +30,7 @@ using namespace std::chrono;
 int main(int argc, char* argv[]) {
   std::cout << "Hello World!\n";
 
-  int64 num_thousands_upper = 1000000000000000;
+  int64 num_thousands_upper = 1000000000000;
   int64 upper = num_thousands_upper * 1000; 
 
   /*
@@ -50,14 +50,14 @@ int main(int argc, char* argv[]) {
   od2.cars4("large_4_output.txt");
   */
   cout << "\nExtracting 9\n";
-  extract("./cars18_small_sorted.txt", "cars18-9_small.txt", upper, 9);
+  extract("./cars15_small_sorted.txt", "cars15-6_small.txt", upper, 6);
   //extract("./cars7_small_sorted.txt", "cars8_small.txt", upper, 8);
   //extract("./cars8_large_sorted.txt", "cars8_large.txt", upper, 8);
 
-  cout << "\nExtracting from Pinch\n";
-  extract("./datafiles_pinch/carmichael-16", "pinch9-18-1", upper, 9);
-  extract("./datafiles_pinch/carmichael17", "pinch9-18-2", upper, 9);
-  extract("./datafiles_pinch/carmichael18", "pinch9-18-3", upper, 9);
+  //cout << "\nExtracting from Pinch\n";
+  //extract("./datafiles_pinch/carmichael-16", "pinch9-18-1", upper, 9);
+  //extract("./datafiles_pinch/carmichael17", "pinch9-18-2", upper, 9);
+  //extract("./datafiles_pinch/carmichael18", "pinch9-18-3", upper, 9);
 
   /*
   vector<long> rs;

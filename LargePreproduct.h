@@ -61,6 +61,10 @@ class LargePreproduct{
     // recursive version, creates carmichael numbers with d prime factors
     void cars_rec(long d, string cars_file);
 
+    // threaded recursive version.  Has initial 3 nested loops, then calls cars_rec_helper
+    // requires d >= 6
+    void cars_rec_threaded(long d, string cars_file, long thread, long num_threads);
+
     // note that these functions found in a separate file called extra_large_case.cpp
     void cars5_threaded(string cars_file, long thread, long num_threads);
     void cars6_threaded(string cars_file, long thread, long num_threads);

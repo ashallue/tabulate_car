@@ -50,7 +50,7 @@ int main(int argc, char* argv[]) {
    
   cout << "This is thread " << thread << " of " << num_threads << " total\n";
 
-  string output_file = "cars9_" + to_string(thread) + ".txt";
+  string output_file = "cars6_" + to_string(thread) + ".txt";
 
   // The following are the bounds for full production up to 10^22
   // B is the upper bound on Carmichaels constructed, X is the crossover point
@@ -76,13 +76,23 @@ int main(int argc, char* argv[]) {
   // code for large case
   LargePreproduct C = LargePreproduct(upper, X);
 
+  // use this when doing recursive strategy
+  auto start_large = high_resolution_clock::now();
+  C.cars_rec_threaded(9, output_file, thread, num_threads);
+  auto end_large = high_resolution_clock::now();
+
+  auto duration_large = duration_cast<seconds>(end_large - start_large);
+  cout << "timing for large preproduct case: " << duration_large.count() << "\n\n";
+
+  // use this when doing nested for loops
+  /*
   auto start_large = high_resolution_clock::now();
   C.cars9_threaded(output_file, thread, num_threads);
   auto end_large = high_resolution_clock::now();
 
   auto duration_large = duration_cast<seconds>(end_large - start_large);
   cout << "Timing for large preproduct case: " << duration_large.count() << "\n\n";
-  
+  */
 
   // code for small case
   //SmallP_Carmichael C = SmallP_Carmichael(3, upper, X, true);
