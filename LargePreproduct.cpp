@@ -384,8 +384,6 @@ bool LargePreproduct::korselt_check(bigint Pq, bigint L, bigint r){
 // Returns boolean value, false if L too small for technique, true if L * L > = Pq - 1
 bool LargePreproduct::r_2divisors(bigint &preprod, long &q, bigint &L, bigint &L1, bigint &scriptP, bigint &g, bigint &Pqinv, vector<long> &rs){
 
-  if(preprod == 2560104001) cout << preprod << " found in r_2divisors\n";
-
   // variables for the two rs constructed
   bigint fst_r, snd_r;  
 
@@ -431,8 +429,6 @@ bool LargePreproduct::r_2divisors(bigint &preprod, long &q, bigint &L, bigint &L
 void LargePreproduct::r_sieving(bigint &preprod, long &q, bigint &L, bigint &L1, bigint &scriptP, bigint &g, bigint &Pqinv, vector<long> &rs)
 {
 
-  if(preprod == 2560104001) cout << preprod << " found in r_sieving, scriptP = " << scriptP << " Pqinv = " << Pqinv << "\n";
-
   // this divisor is of the form Pqinv + k*L
   // r1 + k*L1 < sqrt( scriptP ) implies
   // g(r1 + k*L1) + 1 < g*sqrt( scriptP ) + 1
@@ -442,7 +438,7 @@ void LargePreproduct::r_sieving(bigint &preprod, long &q, bigint &L, bigint &L1,
   double ub = min( ub1, ub2 );
   bigint d = Pqinv;
 
-  while( d < ub )
+  while( d <= ub )
   {
     if(d > q && korselt_check(preprod, L, d))
     {
