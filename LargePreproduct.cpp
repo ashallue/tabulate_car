@@ -488,10 +488,11 @@ void LargePreproduct::r_sieving(bigint &preprod, long &q, bigint &L, bigint &L1,
   }
 }
 
-/*
+
 // use sieving to find r such that r = (Pq)^{-1} mod L, the ones that pass Korselt get placed in rs
 // currently no attempt to deal with small L
-void LargePreproduct::r_sieving(bigint &preprod, long &q, bigint &L, bigint &L1, bigint &scriptP, bigint &g, bigint &Pqinv, vector<long> &rs){
+// This is pinch's description: for large p we look for divisors of Pq-1, for small p we sieve stepsize L
+void LargePreproduct::pinch_r_sieving(bigint &preprod, long &q, bigint &L, bigint &L1, bigint &scriptP, bigint &g, bigint &Pqinv, vector<long> &rs){
   
   bigint r1, r2;
 
@@ -564,7 +565,7 @@ void LargePreproduct::r_sieving(bigint &preprod, long &q, bigint &L, bigint &L1,
   //  }
   //}
 }
-*/
+
 
 // Function which does all the inner loop work.  For given preproduct P of length d-1, finds r.
 // Current strategy: 1) check if only one potential r, check if at most small number of sieve steps,

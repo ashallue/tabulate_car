@@ -106,6 +106,9 @@ class LargePreproduct{
     // currently no attempt to deal with small L
     void r_sieving(bigint &preprod, long &q, bigint &L, bigint &L1, bigint &scriptP, bigint &g, bigint &Pqinv, vector<long> &rs);
 
+    // Pinch's description of the r_sieving function.  Trial division, then sieving with stepsize L
+    void pinch_r_sieving(bigint &preprod, long &q, bigint &L, bigint &L1, bigint &scriptP, bigint &g, bigint &Pqinv, vector<long> &rs);
+
     // Function which does all the inner loop work.  For given preproduct P of length d-1, finds r.
     // Current strategy: 1) check if only one potential r, check if at most small number of sieve steps,
     // then 2) attempt 2 divisors strategy, and if that fails do basic sieving.
