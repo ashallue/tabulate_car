@@ -537,7 +537,7 @@ bool SmallP_Carmichael::completion_check(Preproduct& P, int64 Delta, int64 D, li
 
   // compute r, check it is integral.  Recall r = (P-1)(P+C)/Delta + 1
   bigint r_quo, r_rem; 
-  r = (P_val - 1) * (P_val + C);          // note r initialized by constructor
+  r = (bigint)(P_val - 1) * (bigint)(P_val + C);          // note r initialized by constructor
   r_quo = r / Delta;
   r_rem = r % Delta;
 
@@ -594,6 +594,13 @@ bool SmallP_Carmichael::completion_check(Preproduct& P, int64 Delta, int64 D, li
   output.first = q;   output.second = r;
   // write to the vector qrs
   qrs.push_back(output);
+
+  if(C_param == 0){
+    cout << "completed DDelta, car found with q = " << q << " and r = " << r << " C = " << C << " D = " << D << "\n";
+  }else{
+    cout << "completed CD, car found with q = " << q << " and r = " << r << " C = " << C << " D = " << D << "\n";
+  }
+
   return true;
 }
 
@@ -903,16 +910,9 @@ void SmallP_Carmichael::preproduct_crossover(Preproduct& P){
   int64* PplusD;
   long PplusD_len;
 
-  /*
-  // testing 
-  cout << "P_product: " << P_product << "\n";
-  cout << "P_minus: ";
-  for(long i = 0; i < Pminus_len; ++i){
-    cout << Pminus[i] << " ";
-  }
-  cout << "\n";
-  */
-
+  // testing
+  cout << "Running preproduct_crossover with P = " << P.Prod << "\n";
+  
   // For the dynamic version we need L_p, defined by 
   // P^2 + L_p = P^2 (p_{d-2} + 3)/(p_{d-2} + 1), where p_{d-2} is largest prime in P
   // So L_p = P^2 ( (p_{d-2} + 3)/(p_{d-2} + 1) - 1)
@@ -980,7 +980,10 @@ void SmallP_Carmichael::preproduct_crossover(Preproduct& P){
       DDelta(P, D, fast_D);
       
       // testing
-      //if(qrs.size() > 0) cout << "DDelta method for D = " << D << " found Carmichaels\n";
+      if(qrs.size() > 0) cout << "DDelta method for D = " << D << " found Carmichaels: ";
+      for(long i = 0; i < qrs.size(); i++){
+        cout << "q = " << qrs.at(i).first << " r = " << qrs.at(i).second << "\n";
+      }
       //count_DDelta++;
 
     } // end if D small
@@ -991,7 +994,10 @@ void SmallP_Carmichael::preproduct_crossover(Preproduct& P){
       CD(P, D, fast_D);
 
       //testing
-      //if(qrs.size() > 0) cout << "CD method for D = " << D << " found Carmichaels\n";
+      if(qrs.size() > 0) cout << "CD method for D = " << D << " found Carmichaels: "; 
+      for(long i = 0; i < qrs.size(); i++){
+        cout << "q = " << qrs.at(i).first << " r = " << qrs.at(i).second << "\n";
+      }
 
     } // end if D large i.e. end of else
 
