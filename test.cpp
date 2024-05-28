@@ -33,6 +33,33 @@ int main(int argc, char* argv[]) {
   int64 num_thousands_upper = 1000000000000;
   int64 upper = num_thousands_upper * 1000; 
 
+  // testing bounded_factor
+  // setup factor sieve
+  long bound = 700;
+  long* sieved_nums = new long[bound];
+  for(long i = 0; i < bound; i++){
+    sieved_nums[i] = i;
+  }
+ 
+  factor_sieve(sieved_nums, bound);
+
+  bigint n = 340840599;
+  vector<long> ps;
+  bool fully_factored = bounded_factor(n, sieved_nums, bound, ps);
+  
+  if(fully_factored){
+    cout << n << " fully factored: ";
+  }else{
+    cout << n << " not fully factored: ";
+  }
+  
+  for(long i = 0; i < ps.size(); i++){
+    cout << ps.at(i) << " ";
+  }
+  cout << "\n";
+  
+  //delete[] sieved_nums;
+
   /*
   // code for merging files
   cout << "merging files\n";
@@ -49,8 +76,8 @@ int main(int argc, char* argv[]) {
   LargePreproduct od2 = LargePreproduct(1000000, 300);
   od2.cars4("large_4_output.txt");
   */
-  cout << "\nExtracting 9\n";
-  extract("./cars15_small_sorted.txt", "cars15-6_small.txt", upper, 6);
+  //cout << "\nExtracting 9\n";
+  //extract("./cars15_small_sorted.txt", "cars15-6_small.txt", upper, 6);
   //extract("./cars7_small_sorted.txt", "cars8_small.txt", upper, 8);
   //extract("./cars8_large_sorted.txt", "cars8_large.txt", upper, 8);
 

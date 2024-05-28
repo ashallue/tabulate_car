@@ -63,7 +63,7 @@ vector<long> unique_prime_divs(long n, long* sieved_nums, long B);
 */
 vector<long> divisors(long n, long* sieved_nums, long B);
 
-/* From a factor sieve, find unique prime divisors < B
+/* From a factor sieve, find unique prime divisors < B (does not search for prime powers)
  * Store them in the divisors parameter.  Return True if the cofactor is prime, False if not
  */
 bool bounded_factor(bigint n, long* sieved_nums, long B, vector<long>& prime_divs);
