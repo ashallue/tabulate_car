@@ -227,19 +227,12 @@ vector<long> divisors(long n, long* sieved_nums, long B){
  * Store them in the divisors parameter.  Return True if the cofactor is prime, False if not
  */
 bool bounded_factor(bigint n, long* sieved_nums, long B, vector<long>& prime_divs){
-  cout << "beginning of bounded_factor\n";
 
   prime_divs.clear();
 
   // find primes up to B
   long* primes = new long[B];
   long num_primes = primes_array_fromfs(sieved_nums, B, primes);
-
-  cout << "primes found: ";
-  for(long i = 0; i < num_primes; ++i){
-    cout << primes[i] << " ";
-  }
-  cout << "\n";
 
   bigint cofactor = n;
   long p;
@@ -257,7 +250,6 @@ bool bounded_factor(bigint n, long* sieved_nums, long B, vector<long>& prime_div
 
       // if it divides, add to prime_divs, update cofactor, update bool, break
       if(cofactor % p == 0){
-        cout << "factor found: " << p << "\n";
 
         prime_divs.push_back(p);
         cofactor = cofactor / p;
