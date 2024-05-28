@@ -225,8 +225,9 @@ vector<long> divisors(long n, long* sieved_nums, long B){
 
 /* From a factor sieve, find unique prime divisors < B
  * Store them in the divisors parameter.  Return True if the cofactor is prime, False if not
+ * Update: I'm realizing now that I should be passing the prime array, not the factor sieve.
  */
-bool bounded_factor(bigint n, long* sieved_nums, long B, vector<long>& prime_divs){
+bool bounded_factor(bigint n, long* sieved_nums, long B, vector<bigint>& prime_divs){
 
   prime_divs.clear();
 
@@ -272,8 +273,10 @@ bool bounded_factor(bigint n, long* sieved_nums, long B, vector<long>& prime_div
     // test remaining cofactor for primality using gmp
     // just in case, I'll treat it as if it is 128 bits, so I'll use Dual rep
     mpz_t co_mpz;
+    mpz_init(co_mpz);
     Dual_rep d;
     d.double_word = cofactor;
+
     // set high bits, multipy by 2**64, then add low bits
     mpz_set_si(co_mpz, d.two_words[1]);
     mpz_mul_2exp(co_mpz, co_mpz, 64);
