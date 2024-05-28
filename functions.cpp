@@ -223,6 +223,63 @@ vector<long> divisors(long n, long* sieved_nums, long B){
   return divs;
 }
 
+/* From a factor sieve, find unique prime divisors < B
+ * Store them in the divisors parameter.  Return True if the cofactor is prime, False if not
+ */
+bool bounded_factor(bigint n, long* sieved_nums, long B, vector<long>& prime_divs){
+  prime_divs.clear();
+
+  // find primes up to B
+  long* primes = new long[B];
+  long num_primes = primes_array_fromfs(sieved_nums, B, primes);
+
+  bigint cofactor = n;
+  long p;
+  bool p_found;
+
+  // now do trial division until cofactor has no primes less than B
+  bool done = false;
+  while(!done){
+
+    p_found = false;
+
+    // find a prime that divides the cofactor
+    for(long i = 0; i < num_primes; ++i){
+      p = primes[i];
+
+      // if it divides, add to prime_divs, update cofactor, update bool, break
+      if(cofactor % p == 0){
+        prime_divs.push_back(p);
+        cofactor = cofactor / p;
+        p_found = true;
+        break;
+      }
+    }
+   
+    // if a prime was not found, or if cofactor is 1, we are done
+    if(!p_found || cofactor == 1) done = true;
+  } // end while
+
+  // test remaining cofactor for primality using gmp
+  // just in case, I'll treat it as if it is 128 bits, so I'll use Dual rep
+  mpz_t co_mpz;
+  Dual_rep d;
+  d.double_word = cofactor;
+  // set high bits, multipy by 2**64, then add low bits
+  mpz_set_si(co_mpz, d.two_words[1]);
+  mpz_mul_2exp(co_mpz, co_mpz, 64);
+  mpz_add_ui(co_mpz, co_mpz, d.two_words[0]);
+
+  // if cofactor not prime, return false to signify incomplete factorization
+  if(mpz_probab_prime_p(co_mpz, 0) == 0){
+    mpz_clear(co_mpz);
+    return false;
+  }else{
+    mpz_clear(co_mpz);
+    return true;
+  }
+}
+
 /* From a factor sieve, compute the product of primes up to X, where X < B
  */
 bigint prime_product(long X, long* sieved_nums, long B){
