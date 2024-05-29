@@ -303,7 +303,40 @@ void car_smallp_file_check(string filename, int64 B){
  * Make sure to check Pseudosquares bound before running this function.
  */
 void check_cars_factors(string infilename, string carsfilenames, string mistakesfilename){
+  // open the three files
+  ifstream infile = open(infilename);
+  ifstream carsfile = open(carsfilename, "w");
+  ifstream mistakes = open(mistakesfilename, "w");
 
+  // variables
+  string line;
+  vector<bigint> linenums; 
+  bigint num;
+
+  // get the first line, then loop over input file
+  getline(infile, line);
+  while(line){
+  
+    // use an istringstream to get the numbers in a line
+    linenums.clear();
+    istringstream numbers_stream(line);
+    
+    while(numbers_stream){ 
+      // access nums, put them in the linenums vector
+      numbers_stream >> num;
+      linenums.push_back(num);
+    }
+ 
+    // testing
+    cout << "line read was " << line << "\n";
+    cout << "this parsed as ";
+    for(long i = 0; i < linenums.size(); i++){
+      cout << linenums.at(i) << " "; 
+    }       
+    cout << "\n";
+
+    getline(infile, line);
+  } // end while line
 }
 
 /* Given a filename with Carmichaels of the form n <factorization>, where the primes separated by spaces,
