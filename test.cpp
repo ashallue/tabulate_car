@@ -33,32 +33,75 @@ int main(int argc, char* argv[]) {
   int64 num_thousands_upper = 1000000000000;
   int64 upper = num_thousands_upper * 1000; 
 
-  // testing bounded_factor
+  // Code for factoring missing Carmichael numbers
   // setup factor sieve
-  long bound = 700;
+  long bound = 10000000;
+  long X = 70000000;
   long* sieved_nums = new long[bound];
   for(long i = 0; i < bound; i++){
     sieved_nums[i] = i;
   }
  
   factor_sieve(sieved_nums, bound);
+  cout << "after factor_sieve\n";
 
-  bigint n = 340840599;
-  vector<long> ps;
-  bool fully_factored = bounded_factor(n, sieved_nums, bound, ps);
+  vector<bigint> ps;
+
+  //read file
+  ifstream input_cars("./datafiles_22/pinch_diff.txt");
+  string line;
+  getline(input_cars, line);
+  int smallP_count = 0;
+  int largeP_count = 0;
+
+  string first_char, rest;
+  bigint car, P;
+ 
+  bigint test2 = 45302792896513153;
+  bool test1 = bounded_factor(test2, sieved_nums, bound, ps);
+  cout << test2 << "factored? " << test1 << "\n";
   
-  if(fully_factored){
-    cout << n << " fully factored: ";
-  }else{
-    cout << n << " not fully factored: ";
-  }
-  
-  for(long i = 0; i < ps.size(); i++){
-    cout << ps.at(i) << " ";
-  }
-  cout << "\n";
-  
-  //delete[] sieved_nums;
+ 
+  while(line != ""){
+    // parse line
+    first_char = line.substr(0, 1);
+    rest = line.substr(2);
+
+    // if first_char is > then rest is a missing Carmichael number
+    if(first_char == ">"){
+      // read carmichael into a bigint
+      car = string_to_bigint(rest);
+      // factor carmichael
+      bool fully_factored = bounded_factor(car, sieved_nums, bound, ps);
+
+      // if fully_factored, compute P, count whether it is large or small
+      if(fully_factored){
+        // multiply all but last 2 to calculate P
+        P = 1;
+        for(long i = 0; i < ps.size() - 2; i++){
+          P = P * ps.at(i);
+        }
+ 
+        //cout << "processed " << rest << " with P = " << P << "\n";
+
+        if(P < X){
+          smallP_count++;
+        }else{
+          largeP_count++;
+        }
+      }else{
+        cout << rest << " not fully factored\n";
+      }
+
+    } // end if first_char
+
+    // get next line
+    getline(input_cars, line);
+
+  } // end while
+
+  cout << "count of missing cars with small P is " << smallP_count << " and large is " << largeP_count << "\n"; 
+  delete[] sieved_nums;
 
   /*
   // code for merging files

@@ -40,6 +40,12 @@ class LargePreproduct{
     long count3 = 0;
     long count4 = 0;
 
+    // counts for histogram comparison of L1 to scriptP
+    long hist1 = 0;
+    long hist2 = 0;
+    long hist3 = 0;
+    long hist4 = 0;
+
   public: 
     // default values are B = 100,001 and X = B^{1/3}
     LargePreproduct();
@@ -107,7 +113,12 @@ class LargePreproduct{
     void r_sieving(bigint &preprod, long &q, bigint &L, bigint &L1, bigint &scriptP, bigint &g, bigint &Pqinv, vector<long> &rs);
 
     // Pinch's description of the r_sieving function.  Trial division, then sieving with stepsize L
+    // This function used for timings, not for production.
     void pinch_r_sieving(bigint &preprod, long &q, bigint &L, bigint &L1, bigint &scriptP, bigint &g, bigint &Pqinv, vector<long> &rs);
+
+    // we did a run where the while loops had < rather than <= and missed some Carmichaels
+    // This function deals with just the cases where we have equality
+    void equal_r_sieving(bigint &preprod, long &q, bigint &L, bigint &L1, bigint &scriptP, bigint &g, bigint &Pqinv, vector<long> &rs);
 
     // Function which does all the inner loop work.  For given preproduct P of length d-1, finds r.
     // Current strategy: 1) check if only one potential r, check if at most small number of sieve steps,
@@ -115,6 +126,9 @@ class LargePreproduct{
     // Void function, fills the given vector with the rs found
     void inner_loop_work(bigint preprod, long q, bigint L, vector<long> &rs); 
 
+    // version that seeks to implement pinch's strategy
+    // Check if at most small number of sieve steps, then call pinch_r_sieving
+    void pinch_inner_loop_work(bigint preprod, long q, bigint L, vector<long> &rs); 
 };
 
 #endif

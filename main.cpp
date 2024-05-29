@@ -35,7 +35,7 @@ int main(int argc, char* argv[]) {
     num_threads = atoi(argv[2]);
   
     // create file names for carmichaels, and admissable pre-products w/o carmichaels
-    cars_file = "cars18_small_" + to_string(thread) + ".txt";
+    cars_file = "cars_million_threads" + to_string(thread) + ".txt";
     none_file = "cars_none" + to_string(thread) + ".txt";
     
     cout << "This is thread " << thread << " of " << num_threads << "total\n";
@@ -43,15 +43,19 @@ int main(int argc, char* argv[]) {
 
   // timing code from geeksforgeeks.org
   
-  // we want all pre-products up to 10^8, which is 10^5 thousands
-  int64 num_thousands = 1000000000000000;
-  int64 bound = num_thousands * 1000;
+  // we want all pre-products up to 10^22, which is 10^16 millions
+  bigint num_millions = 10000000000000000;
+  bigint bound = num_millions * 1000000;
   cout << "Timings for tabulation of Carmichaels with pre-product up to " << bound << "\n";
 
+  /*
   double one_third = 1.0 / 3;
   long X = ceil(pow(bound, one_third));
+  */
 
-  SmallP_Carmichael C = SmallP_Carmichael(3, X, bound, true);
+  long X = 70000000;
+  // constructor has lower and upper preproduct bounds, then carmichael bound, then bounded boolean
+  SmallP_Carmichael C = SmallP_Carmichael(3, X, bound, false);
   //Construct_car C = Construct_car();
 
   auto start_new = high_resolution_clock::now();

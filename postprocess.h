@@ -48,4 +48,10 @@ void car_smallp_file_check(string filename, int64 B);
  */
 void extract(string in_file, string out_file, int64 B, long k);
 
+/* Solving the inverse problem: given (P q r) with P*q*r Carmichael,
+ * print C, D, Delta
+ * Recall: q - 1 = (P-1)(P+D)/Delta, r-1 = (P-1)(P+C)/Delta
+ */
+void inverse_problem(bigint P, bigint q, bigint r);
+
 #endif

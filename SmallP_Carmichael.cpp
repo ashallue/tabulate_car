@@ -595,12 +595,6 @@ bool SmallP_Carmichael::completion_check(Preproduct& P, int64 Delta, int64 D, li
   // write to the vector qrs
   qrs.push_back(output);
 
-  if(C_param == 0){
-    cout << "completed DDelta, car found with q = " << q << " and r = " << r << " C = " << C << " D = " << D << "\n";
-  }else{
-    cout << "completed CD, car found with q = " << q << " and r = " << r << " C = " << C << " D = " << D << "\n";
-  }
-
   return true;
 }
 
@@ -681,7 +675,10 @@ void SmallP_Carmichael::tabulate_car(long processor, long num_threads, string ca
     }else{
       // if admissable, construct Carmichaels
       if(P_ob.admissable){
-     
+    
+        // testing
+        cout << "admissable preproduct considered: " << P_ob.Prod << "\n";
+ 
         // Construct all Carmichael numbers with pre-product P.  First clear the qrs member variable
         qrs.clear();
 
@@ -911,7 +908,7 @@ void SmallP_Carmichael::preproduct_crossover(Preproduct& P){
   long PplusD_len;
 
   // testing
-  cout << "Running preproduct_crossover with P = " << P.Prod << "\n";
+  //cout << "Running preproduct_crossover with P = " << P.Prod << "\n";
   
   // For the dynamic version we need L_p, defined by 
   // P^2 + L_p = P^2 (p_{d-2} + 3)/(p_{d-2} + 1), where p_{d-2} is largest prime in P
@@ -980,10 +977,7 @@ void SmallP_Carmichael::preproduct_crossover(Preproduct& P){
       DDelta(P, D, fast_D);
       
       // testing
-      if(qrs.size() > 0) cout << "DDelta method for D = " << D << " found Carmichaels: ";
-      for(long i = 0; i < qrs.size(); i++){
-        cout << "q = " << qrs.at(i).first << " r = " << qrs.at(i).second << "\n";
-      }
+      //if(qrs.size() > 0) cout << "DDelta method for D = " << D << " found Carmichaels: ";
       //count_DDelta++;
 
     } // end if D small
@@ -994,10 +988,7 @@ void SmallP_Carmichael::preproduct_crossover(Preproduct& P){
       CD(P, D, fast_D);
 
       //testing
-      if(qrs.size() > 0) cout << "CD method for D = " << D << " found Carmichaels: "; 
-      for(long i = 0; i < qrs.size(); i++){
-        cout << "q = " << qrs.at(i).first << " r = " << qrs.at(i).second << "\n";
-      }
+      //if(qrs.size() > 0) cout << "CD method for D = " << D << " found Carmichaels: "; 
 
     } // end if D large i.e. end of else
 

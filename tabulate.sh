@@ -21,6 +21,8 @@ cd ~ashallue/tabulate_car
 # run command
 #LD_LIBRARY_PATH=/share/apps/lib64 ./tabulate ${SGE_TASK_ID} 12
 
-LD_LIBRARY_PATH=/share/apps/lib64 ./tab_serial
+#LD_LIBRARY_PATH=/share/apps/lib64 ./tab_serial
 
-#LD_LIBRARY_PATH=/share/apps/lib64 ./tabulate ${SGE_TASK_ID} 48
+LD_LIBRARY_PATH=/share/apps/lib64 ./tabulate 0 1000000
+
+#LD_LIBRARY_PATH=/share/apps/lib64 ./test

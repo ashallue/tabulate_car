@@ -29,13 +29,14 @@ using namespace std;
 
 
 class SmallP_Carmichael{
-  private:
+  public:
     // Object for the incremental sieve
     Factgen2 F;
 
     // Object for the P+D sieve
     Factgen FD;
 
+    // Unfortunately B and X are reversed in the paper.  Mistake I made early in development.
     // preproduct upper_bound and lower bound.  Initialization value for F.
     int64 B_upper;
     int64 B_lower;

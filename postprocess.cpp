@@ -341,3 +341,34 @@ void extract(string in_file, string out_file, int64 B, long k){
   input_nums.close();
   output_nums.close();
 }
+
+/* Solving the inverse problem: given (P q r) with P*q*r Carmichael,
+ * print C, D, Delta
+ * Recall: q - 1 = (P-1)(P+D)/Delta, r-1 = (P-1)(P+C)/Delta
+ */
+void inverse_problem(bigint P, bigint q, bigint r){
+  cout << "Given P = " << P << ", q = " << q << ", r = " << r << "\n";
+  bigint C, D, Delta;
+  
+
+  // dumbest version: we will simply search linearly through D values
+  for(D = 1; D < P * P; ++D){
+    // check if q-1 is a divisor.  If so retrieve Delta
+    if( ((P-1) * (P+D)) % (q-1) == 0 ){
+      Delta = ((P-1) * (P+D)) / (q-1);
+
+      // since Delta = CD - P^2, C = (Delta + P^2) / D
+      if( (Delta + P * P) % D == 0 ){
+        C = (Delta + P * P) / D;
+
+        // now check that r matches.  If it does, print and return
+        if( ((P-1) * (P+C)) % Delta == 0 && r - 1 == ((P-1) * (P + C)) / Delta ){
+          cout << "C = " << C << ", D = " << D << ", Delta = " << Delta << "\n";
+          return;
+        }
+      }
+    }
+  }
+  cout << "Solution failed\n";
+  return;
+}

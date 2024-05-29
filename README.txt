@@ -43,6 +43,15 @@ primetest.h  - a variety of primality and compositeness tests
 
 class Stack - implementation of a stack by Jonathan Sorenson.  Optimized version, based on an array of 20 words.
 
+*********************** Testing **************
+
+The code is not set up for testing individual preproducts; rather it is designed as a tabulation.  However, it can be useful to consider single preproducts, and if so do these steps:
+
+* Build arrays with the unique prime factors of P and the unique prime factors of P-1.
+* Use those arrays to build a Preproduct object
+* set <SmallP_Carmichael object>.res_P_index  This will be P modulo the total_residue
+* Now call the preproduct_crossover function on the preproduct object
+* Carmichaels constructed are stored as <q, r> pairs in the qrs vector. 
 
 ******  Things to Do ************
 

@@ -50,26 +50,26 @@ int main(int argc, char* argv[]) {
    
   cout << "This is thread " << thread << " of " << num_threads << " total\n";
 
-  string output_file = "cars11_" + to_string(thread) + ".txt";
+  string output_file = "cars7_" + to_string(thread) + ".txt";
 
   // The following are the bounds for full production up to 10^22
   // B is the upper bound on Carmichaels constructed, X is the crossover point
   
-    
+  /*  
   bigint num_millions = 10000000000000000;
   bigint upper = num_millions * 1000000;
 
   long X = 70000000;
-  
-  /* 
-  bigint num_millions = 100000000000000;
+  */
+   
+  bigint num_millions = 1000000000000;
   bigint upper = num_millions * 1000000;
 
   double one_third = 1.0 / 3;
   long X = ceil(pow(upper, one_third));
-  */
+  
   cout << "This is child process " << thread << "\n";
-  std::cout << "Tabulating Carmichael numbers with d = 11 up to " << upper << "\n";
+  std::cout << "Tabulating Carmichael numbers with d = 6 up to " << upper << "\n";
   std::cout << "where the small-large crossover point is " << X << "\n";  
   
    
@@ -78,7 +78,7 @@ int main(int argc, char* argv[]) {
 
   // use this when doing recursive strategy
   auto start_large = high_resolution_clock::now();
-  C.cars_rec_threaded(11, output_file, thread, num_threads);
+  C.cars_rec_threaded(6, output_file, thread, num_threads);
   auto end_large = high_resolution_clock::now();
 
   auto duration_large = duration_cast<seconds>(end_large - start_large);

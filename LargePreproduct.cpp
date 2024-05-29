@@ -488,6 +488,71 @@ void LargePreproduct::r_sieving(bigint &preprod, long &q, bigint &L, bigint &L1,
   }
 }
 
+// we did a run where the while loops had < rather than <= and missed some Carmichaels
+// This function deals with just the cases where we have equality
+void LargePreproduct::equal_r_sieving(bigint &preprod, long &q, bigint &L, bigint &L1, bigint &scriptP, bigint &g, bigint &Pqinv, vector<long> &rs)
+{
+
+  // this divisor is of the form Pqinv + k*L
+  // r1 + k*L1 < sqrt( scriptP ) implies
+  // g(r1 + k*L1) + 1 < g*sqrt( scriptP ) + 1
+  double ub1 = g*sqrt(scriptP) + 1;
+  // Pqinv + kL < B/(Pq)
+  double ub2 = B/preprod;
+  double ub = min( ub1, ub2 );
+  bigint d = Pqinv;
+
+  // jump to end of the loop
+  d = ub;
+
+  if( d > q && korselt_check(preprod, L, d) ){
+    rs.push_back(d);
+  }
+
+
+  // there is a divisor greater than sqrt( sriptP )
+  // we find this "large" divisor by finding
+  // a "small" factor f of Pq -1
+  // then the divisor is d = (Pq-1)/f + 1
+  if( ub1 < ub2 )
+  {
+    // find r2
+    bigint r1 = ( Pqinv - 1 ) / g;
+    bigint r2;
+
+    // check if r1 is 0.  If 0, set r2 to be 1 as the co-divisor
+    if(r1 == 0){
+      r2 = 1;
+    }else{
+      r2 = ( inv128( r1, L1) * scriptP ) % L1;
+    }
+
+    // find the bound
+    // r2 + k*L1 < sqrt( scriptP )
+    double ub3 = sqrt( scriptP );
+    // the bound (Pq-1)/( r2 + k*L1) < B/(Pq)
+    // tells us the initialization place
+    int k = ( (preprod - 1)*preprod ) / ( (B - preprod ) * L1 )  - 1 ;
+    k = max(0, k);
+    // initialize d to be of the correct size
+    bigint f = r2 + k*L1;
+
+    // jump to end of the loop
+    f = ub3;
+
+    if( (preprod - 1) % f == 0)
+    {
+      d = (preprod - 1) / f + 1;
+      if(d > q && korselt_check(preprod, L, d))
+      {
+        rs.push_back(d);
+      }
+    }
+      
+  }
+}
+
+
 
 // use sieving to find r such that r = (Pq)^{-1} mod L, the ones that pass Korselt get placed in rs
 // currently no attempt to deal with small L
@@ -497,9 +562,9 @@ void LargePreproduct::pinch_r_sieving(bigint &preprod, long &q, bigint &L, bigin
   bigint r1, r2;
 
   // using trial division up to sqrt(Pq / L), check for r-1 | Pq -1
-  // stepsize is L1 
+  // stepsize is 1.  Note an innovation of S-W is to use stepsize L1 instead
   long division_bound = floor(sqrt(preprod / L));
-  for(long d = 2; d <= division_bound; d += L1){
+  for(long d = 2; d <= division_bound; d++){
     if( (preprod - 1) % d == 0){
 
       // this gives two divisors, the other being scriptP * r1^-1 mod L1
@@ -578,6 +643,25 @@ void LargePreproduct::inner_loop_work(bigint preprod, long q, bigint L, vector<l
   bigint Pqinv = inv128(preprod, L);    
   bool twocheck;
 
+  // compute g = gcd(Pqinv - 1, L), L1 = L / g, scriptP = (preprod - 1)/g.  These will be passed 
+  // to the r2_divisors and r_sieving functions
+  //bigint g = gcd128(Pqinv - 1, L);
+  //bigint L1 = L / g;
+  //bigint scriptP = (preprod - 1) / g;
+  
+  /* 
+  // histogram calculation on scriptP vs L1
+  if(L1 * L1 * L1 * L1 < scriptP){
+    hist1++;
+  }else if(L1 * L1 * L1 < scriptP){
+    hist2++;
+  }else if(L1 * L1 < scriptP){
+    hist3++;
+  }else{
+    hist4++;
+  }
+  */
+
   // r is at most Pq - 1 and r is at most B / (Pq), so the number of sieve steps is bounded 
   // by the minimum of B / (Pq * L) and (Pq - 1) / L 
   bigint small_sieve_bound = min( B / (L * preprod), (preprod - 1) / L ); 
@@ -611,13 +695,32 @@ void LargePreproduct::inner_loop_work(bigint preprod, long q, bigint L, vector<l
 
     // compute g = gcd(Pqinv - 1, L), L1 = L / g, scriptP = (preprod - 1)/g.  These will be passed 
     // to the r2_divisors and r_sieving functions
+    // I call these above, right, so these can be deleted? or other way around, delete the onese above?
     bigint g = gcd128(Pqinv - 1, L);
     bigint L1 = L / g;
     bigint scriptP = (preprod - 1) / g;
-    
+
+    /*   
+    // histogram calculation on scriptP vs L1
+    if(L1 * L1 * L1 * L1 < scriptP){
+      hist1++;
+    }else if(L1 * L1 * L1 < scriptP){
+      hist2++;
+    }else if(L1 * L1 < scriptP){
+      hist3++;
+    }else{
+      hist4++;
+    }
+   */
     // first attempt the two divisor technique.  Works if L large enough
     twocheck = r_2divisors(preprod, q, L, L1, scriptP, g, Pqinv, rs);
 
+    /*
+    if(twocheck && preprod > 100000000000000){
+       cout << "r_2divisors passed check with preprod = " << preprod << " q = " << q << "\n";
+       count3++;
+    }
+    */
     // if it failed, do sieving instead       
     if(!twocheck){
       //count4++;
@@ -626,6 +729,61 @@ void LargePreproduct::inner_loop_work(bigint preprod, long q, bigint L, vector<l
   } // end else twocheck
   
 }
+
+
+// version that seeks to implement pinch's strategy
+// Check if at most small number of sieve steps, then call pinch_r_sieving
+void LargePreproduct::pinch_inner_loop_work(bigint preprod, long q, bigint L, vector<long> &rs){
+
+  // clear the rs vector and compute (Pq)^{-1} mod L
+  rs.clear();
+  bigint Pqinv = inv128(preprod, L);    
+  bool twocheck;
+
+
+  
+  // r is at most Pq - 1 and r is at most B / (Pq), so the number of sieve steps is bounded 
+  // by the minimum of B / (Pq * L) and (Pq - 1) / L 
+  bigint small_sieve_bound = min( B / (L * preprod), (preprod - 1) / L ); 
+  
+  // if P * lambda(P) > B, we know that there is only one r to check, namely (Pq)^{-1}
+  if(preprod * L > B){
+    count1++;
+
+     //if car constructed < B, and (Pq)^{-1} is greater than q and car passes korselt check, add to list
+     if(Pqinv * preprod < B && Pqinv > q && korselt_check(preprod, L, Pqinv)){
+      rs.push_back(Pqinv);
+     }
+ 
+  
+  // if c > count of sieve steps, we know there are only c r's to check
+  }else if(small_sieve_steps > small_sieve_bound){
+    //count2++;     
+
+    // now loop with stepsize L
+    for(bigint r = Pqinv; r < min( B / preprod, preprod - 1 ); r += L){
+
+      // if it passes korselt, add to rs vector
+      if(r > q && korselt_check(preprod, L, r)){
+        rs.push_back(r);
+      }
+    } // end of sieving loop
+  
+  }else{
+    //count3++;
+  
+    // compute g = gcd(Pqinv - 1, L), L1 = L / g, scriptP = (preprod - 1)/g.  These will be passed 
+    // r_sieving functions
+    bigint g = gcd128(Pqinv - 1, L);
+    bigint L1 = L / g;
+    bigint scriptP = (preprod - 1) / g;
+
+    // call pinch_r_sieving to do trial division and larger sieve if needed
+    //pinch_r_sieving(preprod, q, L, L1, scriptP, g, Pqinv, rs);
+  
+    pinch_r_sieving(preprod, q, L, L1, scriptP, g, Pqinv, rs);
+  }
+} 
 
 // this one constructs Carmichaels with d = 4 and writes to file
 void LargePreproduct::cars4(string cars_file){
@@ -1004,6 +1162,11 @@ void LargePreproduct::cars_rec_threaded(long d, string cars_file, long thread, l
   }while(p1 < upper1); // end do p1
 
   output.close();
+
+  // output counts from pinch_inner_loop_work
+  cout << "count1 = " << count1 << " count2 = " << count2 << " count3 = " << count3 << " count 4 = " << count4 << "\n";
+
+  cout << "hist1 = " << hist1 << " hist2 = " << hist2 << " hist3 = " << hist3 << " hist4 = " << hist4 << "\n";
 }
 
 // recursive version. This helper function tracks preproduct so far.  k is the factor count for preproduct, 
