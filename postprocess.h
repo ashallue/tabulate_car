@@ -42,9 +42,17 @@ void merge_two(string filename1, string filename2, string outputfilename);
  */
 void car_smallp_file_check(string filename, int64 B);
 
+/* Given filename with lines of the form n p1 p2 ... pd (pis prime factors of n), check if Carmichael.
+ * Uses Pseudosquares class to do Pseudosquare primality proving on the pis, then checks Korselt.
+ * Input stream is infile, carmichaels found written to carsfile, non-carmichaels written to mistakesfile.
+ * Make sure to check Pseudosquares bound before running this function.
+ */
+void check_cars_factors(string infilename, string carsfilenames, string mistakesfilename);
+
 /* Given a filename with Carmichaels of the form n <factorization>, where the primes separated by spaces,
  * extract those which are less than the bound and have k prime factors.
  * Assumes the file is sorted by n.
+ * Update: be careful with this function.  I think B should be bigint rather than int64
  */
 void extract(string in_file, string out_file, int64 B, long k);
 

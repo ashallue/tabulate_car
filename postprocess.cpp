@@ -200,6 +200,7 @@ void merge(vector<string> filenames, string outputfilename){
 /* Given a filename full of Carmichael numbers of the form P q r, confirm that it is indeed Carmichael.
  * Involves completely factoring P, checking q and r are prime with the Pseudosquares test, checking Korselt.
    Any not carmichael are sent to standard out.  We assume preproducts P are bounded above by B
+   Note that using B here is bad notation.  Would have been better to use X, as X is our usual preproduct bound.
  */
 void car_smallp_file_check(string filename, int64 B){
 
@@ -296,6 +297,14 @@ void car_smallp_file_check(string filename, int64 B){
   return;
 }
 
+/* Given filename with lines of the form n p1 p2 ... pd (pis prime factors of n), check if Carmichael.
+ * Uses Pseudosquares class to do Pseudosquare primality proving on the pis, then checks Korselt.
+ * Input stream is infile, carmichaels found written to carsfile, non-carmichaels written to mistakesfile.
+ * Make sure to check Pseudosquares bound before running this function.
+ */
+void check_cars_factors(string infilename, string carsfilenames, string mistakesfilename){
+
+}
 
 /* Given a filename with Carmichaels of the form n <factorization>, where the primes separated by spaces,
  * extract those which are less than the bound and have k prime factors.
