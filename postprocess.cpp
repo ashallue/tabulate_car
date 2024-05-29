@@ -302,11 +302,12 @@ void car_smallp_file_check(string filename, int64 B){
  * Input stream is infile, carmichaels found written to carsfile, non-carmichaels written to mistakesfile.
  * Make sure to check Pseudosquares bound before running this function.
  */
-void check_cars_factors(string infilename, string carsfilenames, string mistakesfilename){
+void check_cars_factors(string infilename, string carsfilename, string mistakesfilename){
   // open the three files
-  ifstream infile = open(infilename);
-  ifstream carsfile = open(carsfilename, "w");
-  ifstream mistakes = open(mistakesfilename, "w");
+  // confusing that ofstream requires c++11 or c_strings.  I need to research that more
+  ifstream infile;    infile.open(infilename);
+  ofstream carsfile;  carsfile.open(carsfilename.c_str());
+  ofstream mistakes;  mistakes.open(mistakesfilename.c_str());
 
   // variables
   string line;
@@ -315,15 +316,15 @@ void check_cars_factors(string infilename, string carsfilenames, string mistakes
 
   // get the first line, then loop over input file
   getline(infile, line);
-  while(line){
+  while(line != ""){
   
     // use an istringstream to get the numbers in a line
     linenums.clear();
     istringstream numbers_stream(line);
-    
-    while(numbers_stream){ 
+ 
+    // needed help from stack overflow on this one (splitting-a-string-into-integers-using-istringstream-in-c) 
+    while(numbers_stream >> num){ 
       // access nums, put them in the linenums vector
-      numbers_stream >> num;
       linenums.push_back(num);
     }
  
@@ -337,6 +338,9 @@ void check_cars_factors(string infilename, string carsfilenames, string mistakes
 
     getline(infile, line);
   } // end while line
+
+  // close files
+  infile.close();  carsfile.close();  mistakes.close();
 }
 
 /* Given a filename with Carmichaels of the form n <factorization>, where the primes separated by spaces,

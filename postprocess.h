@@ -47,7 +47,7 @@ void car_smallp_file_check(string filename, int64 B);
  * Input stream is infile, carmichaels found written to carsfile, non-carmichaels written to mistakesfile.
  * Make sure to check Pseudosquares bound before running this function.
  */
-void check_cars_factors(string infilename, string carsfilenames, string mistakesfilename);
+void check_cars_factors(string infilename, string carsfilename, string mistakesfilename);
 
 /* Given a filename with Carmichaels of the form n <factorization>, where the primes separated by spaces,
  * extract those which are less than the bound and have k prime factors.
