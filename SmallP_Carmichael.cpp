@@ -701,7 +701,7 @@ void SmallP_Carmichael::tabulate_car(long processor, long num_threads, string ca
           n *= qrs.at(j).second;
           
           // if bounded, only print if n < X.  Also print if not bounded.
-          if(bounded_cars && n < X || !bounded_cars){
+          if(n < X || !bounded_cars){
 
             // output depends on the input bool verbose_output.  If true, give n followed by factors
             if(verbose_output){
