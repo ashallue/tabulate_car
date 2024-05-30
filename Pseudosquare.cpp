@@ -138,8 +138,9 @@ void Pseudosquare::check_pseudosquares(){
  * Then N is a prime or a power of a prime.
  */ 
 bool Pseudosquare::is_prime_pssquare(bigint n){
-  // 0, 1 not prime
+  // 0, 1 not prime and 2,3 are prime
   if(n == 0 || n == 1) return false;
+  if(n == 2 || n == 3) return true;
 
   bool output = false;
 
