@@ -126,15 +126,19 @@ int main(int argc, char* argv[]) {
 
   bigint X = 70000000;
   LargePreproduct C3 = LargePreproduct(upper, X);
- 
+  /* 
   bigint P = 691072624586401;
   long q = 3061;
   bigint L = 69743520;
-  /*
+  
   bigint P = 1026853825537;
   long q = 3061;
   bigint L = 17435880;
   */
+  bigint P = 800518548903151;
+  long q = 9631;
+  bigint L = 1520095500;
+
   vector<long> rs;
 
   C3.inner_loop_work(P, q, L, rs);

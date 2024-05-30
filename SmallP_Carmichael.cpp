@@ -677,7 +677,7 @@ void SmallP_Carmichael::tabulate_car(long processor, long num_threads, string ca
       if(P_ob.admissable){
     
         // testing
-        cout << "admissable preproduct considered: " << P_ob.Prod << "\n";
+        //cout << "admissable preproduct considered: " << P_ob.Prod << "\n";
  
         // Construct all Carmichael numbers with pre-product P.  First clear the qrs member variable
         qrs.clear();
@@ -700,8 +700,8 @@ void SmallP_Carmichael::tabulate_car(long processor, long num_threads, string ca
           n *= qrs.at(j).first;
           n *= qrs.at(j).second;
           
-          // if bounded, only print if n < X
-          if(bounded_cars && n < X){
+          // if bounded, only print if n < X.  Also print if not bounded.
+          if(bounded_cars && n < X || !bounded_cars){
 
             // output depends on the input bool verbose_output.  If true, give n followed by factors
             if(verbose_output){

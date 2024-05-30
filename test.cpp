@@ -33,6 +33,13 @@ int main(int argc, char* argv[]) {
   int64 num_thousands_upper = 1000000000000;
   int64 upper = num_thousands_upper * 1000; 
 
+  string infile = "./datafiles_pinch/carmichael-16";
+  string out1 = "test_cars.txt";
+  string out2 = "test_mistakes.txt";
+
+  check_cars_factors(infile, out1, out2);
+
+  /*
   // Code for factoring missing Carmichael numbers
   // setup factor sieve
   long bound = 10000000;
@@ -102,7 +109,7 @@ int main(int argc, char* argv[]) {
 
   cout << "count of missing cars with small P is " << smallP_count << " and large is " << largeP_count << "\n"; 
   delete[] sieved_nums;
-
+  */
   /*
   // code for merging files
   cout << "merging files\n";
