@@ -4,7 +4,7 @@
   Fall 2021
 
   This algorithm is not set up to handle tabulations beyond 
-  64 bits.
+  64 bits.  In particular, it is a strong unenforced assumption that preproduct is at most 31 bits
 */
 #include "functions.h"
 #include "Factgen.h"

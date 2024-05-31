@@ -452,11 +452,15 @@ void SmallP_Carmichael::DDelta(Preproduct& P, bigint D, libdivide::divider<int64
 }
 
 // CD method (Pinch algorithm).  Given Preproduct and D, compute Carmichael completions
+// Something to note about multipilcation: P.Prod should be only 32 bits, so multiplication in 64 bits
 void SmallP_Carmichael::CD(Preproduct& P, bigint D, libdivide::divider<int64>& fastD){ 
 
   // for CD method we generate all C in an interval.  These are the bounds.
-  bigint C_lower = 1 + (P.Prod * P.Prod) / D;
-  bigint C_upper = (P.Prod * P.Prod * (P.largest_prime() + 3)) / (D * (P.largest_prime() + 1));
+  // lower bound is P^2/D and we want C > P^2/D, so we start at 1 + P^2/D
+  int64 C_lower = 1 + (P.Prod * P.Prod) / D;
+  // upper bound is (P^2 * (p_{d-2} + 3))/(D * (p_{d-2} + 1)).  Break this into +2 and +1
+  int64 Cu_temp = (P.Prod * P.Prod) / D;
+  int64 C_upper = Cu_temp + 2 * Cu_temp / (P.largest_prime() + 1) + 2;
 
   //if(D == 18) cout << "(P, D) = " << P.Prod << ", " << D << ": Bounds in CD method are " << C_lower << " and " << C_upper << "\n";
 
@@ -472,6 +476,7 @@ void SmallP_Carmichael::CD(Preproduct& P, bigint D, libdivide::divider<int64>& f
   // loop over C
   for(int64 C = C_lower; C <= C_upper; ++C){
     // compute Delta and q_D
+    // C*D is bounded by 2P^2, so multipication fits into 64 bits
     Delta = C * D - P.Prod * P.Prod;
     q_D = (P.Prod - 1) * (P.Prod + D);  
 
@@ -548,9 +553,11 @@ bool SmallP_Carmichael::completion_check(Preproduct& P, int64 Delta, int64 D, li
   // check that Pqr satisfies Korselt criterion, i.e. Pqr = 1 mod lcm(L, q-1, r-1)
   // first compute product modulo L.  We work with reduced quantities since L is smaller than q, r
   bigint modL = ( (bigint)(q % LCM) * (r % (bigint)LCM) % (bigint)LCM ) * (bigint)(P_val % LCM) % (bigint)LCM;
+  if(modL != 1) return false;
   bigint modqminus = (r % (bigint)(q-1)) * (bigint)(P_val % (q-1)) % (bigint)(q-1);
+  if(modqminus != 1) return false;
   bigint modrminus = ((bigint)q * (bigint)P_val) % (r-1);
-  if(modL != 1 || modqminus != 1 || modrminus != 1) return false;
+  if(modrminus != 1) return false;
  
   // primality testing on q, r.  Will use a gmp func, so requires conversion to mpz
   //mpz_t q_big;
@@ -934,8 +941,8 @@ void SmallP_Carmichael::preproduct_crossover(Preproduct& P){
   // For the dynamic version we need L_p, defined by 
   // P^2 + L_p = P^2 (p_{d-2} + 3)/(p_{d-2} + 1), where p_{d-2} is largest prime in P
   // So L_p = P^2 ( (p_{d-2} + 3)/(p_{d-2} + 1) - 1)
-  double term = (double) (P.largest_prime() + 3) / (P.largest_prime() + 1);
-  int64 L_p = floor(P.Prod * P.Prod * ( term  - 1) ); 
+  // But we will use the simpler estimation of 2 * P^2 / p_{d-2}
+  int64 L_p = 2 * P.Prod * P.Prod / P.largest_prime();
 
   // We need a Factgen object for factorizations of P+D
   // Initialize to match D in [2 .. P-1]

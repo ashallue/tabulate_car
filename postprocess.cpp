@@ -313,6 +313,11 @@ void check_cars_factors(string infilename, string carsfilename, string mistakesf
   string line;
   vector<bigint> linenums; 
   bigint num;
+  bigint car, p, num_check;
+  bool all_prime, korselt, squarefree;
+
+  // Pseudosquare class to do primality testing
+  Pseudosquare ps = Pseudosquare();
 
   // get the first line, then loop over input file
   getline(infile, line);
@@ -323,19 +328,39 @@ void check_cars_factors(string infilename, string carsfilename, string mistakesf
     istringstream numbers_stream(line);
  
     // needed help from stack overflow on this one (splitting-a-string-into-integers-using-istringstream-in-c) 
+    // the loop will stop when the >> operation fails, i.e. when there are no more nums to read
     while(numbers_stream >> num){ 
       // access nums, put them in the linenums vector
       linenums.push_back(num);
     }
  
-    // testing
-    cout << "line read was " << line << "\n";
-    cout << "this parsed as ";
-    for(long i = 0; i < linenums.size(); i++){
-      cout << linenums.at(i) << " "; 
-    }       
-    cout << "\n";
+    // reset booleans
+    all_prime = true;   korselt = true;  squarefree = true;
+    num_check = 1; 
 
+    // the first num is the car 
+    car = linenums.at(0);
+    // for each prime, check that it is prime and that n-1 % p-1 is 0
+    for(long i = 1; i < linenums.size(); i++){
+      p = linenums.at(i);
+      num_check = num_check * p;
+
+      if(!ps.is_prime_pssquare(p)) all_prime = false;
+      if( (car - 1) % (p - 1) != 0 ) korselt = false; 
+    }
+    // the product of the primes should multiply to n.  If not, n is not squarefree 
+    if(num_check != car) squarefree = false;
+
+    if(car == 561) cout << "all_prime = " << all_prime << " korselt = " << korselt << " squarefree = " << squarefree << "\n";
+
+    // if it passed all three, put the line in carsfile, otherwise mistakes file
+    if(all_prime && korselt && squarefree){
+      carsfile << line << "\n";
+    }else{
+      mistakes << line << "\n";
+    } 
+
+    // next line
     getline(infile, line);
   } // end while line
 

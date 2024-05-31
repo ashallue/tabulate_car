@@ -33,6 +33,17 @@ int main(int argc, char* argv[]) {
   int64 num_thousands_upper = 1000000000000;
   int64 upper = num_thousands_upper * 1000; 
 
+  /*
+  Pseudosquare ps = Pseudosquare();
+  for(long i = 0; i < 20; i++){
+    if(ps.is_prime_pssquare(i)){
+      cout << i << " is prime\n";
+    }else{
+      cout << i << " is not prime\n";
+    }
+  }
+  */
+
   string infile = "./datafiles_pinch/carmichael-16";
   string out1 = "test_cars.txt";
   string out2 = "test_mistakes.txt";
