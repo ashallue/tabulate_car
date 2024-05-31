@@ -13,6 +13,7 @@
 #include "bigint.h"
 #include "libdivide.h"
 #include "gmp.h"
+#include "gmpprint.h"
 #include "Odometer.h"
 #include <vector>
 #include <string>

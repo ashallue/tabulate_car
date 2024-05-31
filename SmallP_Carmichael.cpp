@@ -728,11 +728,11 @@ void SmallP_Carmichael::tabulate_car(long processor, long num_threads, string ca
             if(verbose_output){
 
               // now print n followed by its factors, space separated.  First convert n to a string
-              char* n_cstr = NULL;
-              mpz_get_str(n_cstr, 10, n);
-              string n_str = string(n_cstr);
+              //char* n_cstr = NULL;
+              //mpz_get_str(n_cstr, 10, n);
+              //string n_str = string(n_cstr);
 
-              output << n_str << " ";
+              output << n << " ";
               for(long k = 0; k < P_ob.Pprimes_len; k++){
                 output << P_ob.Pprimes[k] << " ";
               } 

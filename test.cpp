@@ -33,6 +33,13 @@ int main(int argc, char* argv[]) {
   int64 num_thousands_upper = 1000000000000;
   int64 upper = num_thousands_upper * 1000; 
 
+  mpz_t B;
+  mpz_init(B);
+  mpz_set_si(B, upper);
+
+  cout << "num version is " << upper << "\n";
+  cout << "string version is " << B << "\n";
+
   /*
   Pseudosquare ps = Pseudosquare();
   for(long i = 0; i < 20; i++){
@@ -43,13 +50,13 @@ int main(int argc, char* argv[]) {
     }
   }
   */
-
+  /*
   string infile = "./datafiles_pinch/carmichael-16";
   string out1 = "test_cars.txt";
   string out2 = "test_mistakes.txt";
 
   check_cars_factors(infile, out1, out2);
-
+  */
   /*
   // Code for factoring missing Carmichael numbers
   // setup factor sieve
