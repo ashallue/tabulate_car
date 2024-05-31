@@ -516,6 +516,7 @@ bool SmallP_Carmichael::completion_check(Preproduct& P, int64 Delta, int64 D, li
     intermediate = P_val * P_val + Delta;
     C = intermediate / D_div;
     // update: using libdivide, so need to write intermediate % D = intermediate - q * D
+    // Note that this shouldn't require bigint.  Inter_rem should be okay with int64
     bigint inter_rem = intermediate - C * D;
 
     // if rem is not 0, C not integral, return false
@@ -546,9 +547,9 @@ bool SmallP_Carmichael::completion_check(Preproduct& P, int64 Delta, int64 D, li
 
   // check that Pqr satisfies Korselt criterion, i.e. Pqr = 1 mod lcm(L, q-1, r-1)
   // first compute product modulo L.  We work with reduced quantities since L is smaller than q, r
-  bigint modL = ( (q % LCM) * (r % LCM) % LCM ) * (P_val % LCM) % LCM;
-  bigint modqminus = (r % (q-1)) * (P_val % (q-1)) % (q-1);
-  bigint modrminus = (q * P_val) % (r-1);
+  bigint modL = ( (bigint)(q % LCM) * (r % (bigint)LCM) % (bigint)LCM ) * (bigint)(P_val % LCM) % (bigint)LCM;
+  bigint modqminus = (r % (bigint)(q-1)) * (bigint)(P_val % (q-1)) % (bigint)(q-1);
+  bigint modrminus = ((bigint)q * (bigint)P_val) % (r-1);
   if(modL != 1 || modqminus != 1 || modrminus != 1) return false;
  
   // primality testing on q, r.  Will use a gmp func, so requires conversion to mpz
@@ -605,7 +606,10 @@ void SmallP_Carmichael::tabulate_car(long processor, long num_threads, string ca
   long   P_factors_len;
   int64* Pminus_factors;
   long   Pminus_factors_len;
-  bigint n;
+  
+  // n is big enough in an unbounded computation to require mpz type
+  mpz_t n;
+  mpz_init(n);
 
   // let's also calculate the average value of L/P
   //double avg_ratio = 0;
@@ -613,6 +617,10 @@ void SmallP_Carmichael::tabulate_car(long processor, long num_threads, string ca
   // file stream object
   ofstream output;
   output.open(cars_file);
+  
+  // Issue: writing mpz_t to a file.
+  // Looking at stack overflow, write-quickly-gmp-variables-in-files, going to try FILE type
+  //FILE* output;
 
   // set start value to the first odd number greater or equal to B_lower
   int64 start_P = B_lower;
@@ -660,6 +668,7 @@ void SmallP_Carmichael::tabulate_car(long processor, long num_threads, string ca
     if(!bounded_cars){
       bounded_pass = true;
     }else{
+      // this next line needs to be fixed. X is bigint, multiplication probably int64
       bounded_pass = P * P_factors[P_factors_len - 1] * P_factors[P_factors_len - 1] < X;
     }
 
@@ -692,32 +701,43 @@ void SmallP_Carmichael::tabulate_car(long processor, long num_threads, string ca
         //output << "Carmichaels for P = " << P << " number of Cars is " << qrs.size() << "\n";
         for(long j = 0; j < qrs.size(); ++j){
 
-          // compute n
-          n = 1;
-          for(long i = 0; i < P_ob.Pprimes_len; i++){
-            n = n * P_ob.Pprimes[i];
-          }
-          n *= qrs.at(j).first;
-          n *= qrs.at(j).second;
-          
+          // compute n.  Set it to r using dualrep, then multiply by q and by P
+          Dual_rep d;
+          d.double_word = qrs.at(j).second;
+          // set high bits, multiply by 2**64, add low bits
+          mpz_set_si(n, d.two_words[1]);
+          mpz_mul_2exp(n, n, 64);
+          mpz_add_ui(n, n, d.two_words[0]);
+
+          // multiply by P and by q
+          mpz_mul_si(n, n, P_ob.Prod);
+          mpz_mul_si(n, n, qrs.at(j).first);          
+
           // if bounded, only print if n < X.  Also print if not bounded.
-          if(n < X || !bounded_cars){
+          // this line is not the correct approach to boundedness
+          //if(n < X || !bounded_cars){
 
             // output depends on the input bool verbose_output.  If true, give n followed by factors
             if(verbose_output){
 
-              // now print n followed by its factors, space separated
-              output << n << " ";
+              // now print n followed by its factors, space separated.  First convert n to a string
+              char* n_cstr = NULL;
+              mpz_get_str(n_cstr, 10, n);
+              string n_str = string(n_cstr);
+
+              output << n_str << " ";
               for(long k = 0; k < P_ob.Pprimes_len; k++){
                 output << P_ob.Pprimes[k] << " ";
               } 
               output << qrs.at(j).first << " " << qrs.at(j).second << "\n";
 
+              //delete[] n_cstr;
+
             }else{
               // otherwise, output preproduct P, followed by q then r
               output << P << " " << qrs.at(j).first << " " << qrs.at(j).second << "\n";
             }
-          }
+          //}
         } // end for
       } // end if admissable
       // move the factorization window to next odd number
@@ -734,6 +754,7 @@ void SmallP_Carmichael::tabulate_car(long processor, long num_threads, string ca
   // close file and clear the qrs
   output.close();
   qrs.clear();
+  mpz_clear(n);
 
   // to stdout print avg ratio
   //cout << "average ratio of L/P is " << avg_ratio / num_admissable << "\n";
