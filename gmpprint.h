@@ -2,28 +2,19 @@
  * Code due to Jonathan Sorenson.
  */
 
-#ifndef _GMPPRINT
-#define _GMPPRINT
+#ifndef GMPPRINT
+#define GMPPRINT
 
+#include <fstream>
 #include <iostream>
 #include "gmp.h"
 
+using namespace std;
+
 // overload the << operator to deal with mpz_t
 
-// allocate memory for a c-string that can fit 1000 digits
-const int gmpprintstrlen = 1002;
-char gmpprintstr[gmpprintstrlen];
 
-ostream & operator<<(ostream & os, const mpz_t x){
-  if(mpz_sizeinbase(x, 10) + 2 <= gmpprintstrlen){
-    mpz_get_str(gmpprintstr, 10, x);
-    os << gmpprintstr;
-  }else{
-    os << mpz_get_d(x);
-  }
-
-  return os;
-}
+ostream & operator<<(ostream & os, const mpz_t x);
 
 #endif
 
