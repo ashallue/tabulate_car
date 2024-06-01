@@ -13,16 +13,16 @@
 # Not implemented here, I don't have a good idea for the big run
 
 # creation of job array, variable is SGE_TASK_ID
-##$ -t 1-12
+#$ -t 1-32
 
 # change directory
 cd ~ashallue/tabulate_car
 
 # run command
-#LD_LIBRARY_PATH=/share/apps/lib64 ./tabulate ${SGE_TASK_ID} 1000000
+LD_LIBRARY_PATH=/share/apps/lib64 ./tabulate ${SGE_TASK_ID} 1000000
 
 #LD_LIBRARY_PATH=/share/apps/lib64 ./tab_serial
 
-LD_LIBRARY_PATH=/share/apps/lib64 ./tabulate 0 1000000
+#LD_LIBRARY_PATH=/share/apps/lib64 ./tabulate 4 1000000
 
 #LD_LIBRARY_PATH=/share/apps/lib64 ./test

@@ -5,6 +5,8 @@
 
   This algorithm is not set up to handle tabulations beyond 
   64 bits.  In particular, it is a strong unenforced assumption that preproduct is at most 31 bits
+  Think of P q r this way: q < P^2 and r < P^3.  So as long as P < 2^32, then q < 2^64, but 
+  r is bigger than 64 bits, as is P * q or P * r.
 */
 #include "functions.h"
 #include "Factgen.h"

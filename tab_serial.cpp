@@ -77,10 +77,11 @@ int main(int argc, char* argv[]) {
   //std::cout << "Tabulating Carmichael numbers with d = 6 up to " << num_thousands_upper << " thousand, ";
   //std::cout << "where the small-large crossover point is " << X4 << "\n";  
  
-  /* 
+   
   // code for small case
   SmallP_Carmichael C2 = SmallP_Carmichael(3, 70000000, upper, false);
   
+  /*
   // run on a single preproduct.  Need factorizations of P and P-1
   int64 P = 68800501;
   long Pfac_len = 6;
@@ -90,14 +91,14 @@ int main(int argc, char* argv[]) {
   Preproduct Pprod = Preproduct(P, Pfac, Pfac_len, PMfac, PMfac_len);
   // set residue index
   C2.res_P_index = P % C2.total_residue; 
-  
+  */
 
   // Another small case
-  int64 P = 335463517;
-  long Pfac_len = 3;
-  int64 Pfac[Pfac_len] = {5, 673, 20399};
-  long PMfac_len = 4;
-  int64 PMfac[PMfac_len] = {2, 3, 17, 672967};
+  int64 P = 11;
+  long Pfac_len = 1;
+  int64 Pfac[Pfac_len] = {11};
+  long PMfac_len = 2;
+  int64 PMfac[PMfac_len] = {2, 5};
   Preproduct Pprod = Preproduct(P, Pfac, Pfac_len, PMfac, PMfac_len);
   C2.res_P_index = P % C2.total_residue;
 
@@ -106,7 +107,7 @@ int main(int argc, char* argv[]) {
   for(long i = 0; i < C2.qrs.size(); i++){
     cout << P << " " << C2.qrs.at(i).first << " " << C2.qrs.at(i).second << "\n";
   }  
-  */
+  
   /*
   auto start_small = high_resolution_clock::now();
 
@@ -120,13 +121,13 @@ int main(int argc, char* argv[]) {
   cout << "Timing for d = 7, small preproduct case: " << duration_small.count() << "\n\n";
   */
  
-    
+  /*    
   // code for large case
   std::cout << "Starting large preproduct case, limited to Carmichaels with 6 prime factors\n";
 
   bigint X = 70000000;
   LargePreproduct C3 = LargePreproduct(upper, X);
-  /* 
+   
   bigint P = 691072624586401;
   long q = 3061;
   bigint L = 69743520;
@@ -134,7 +135,7 @@ int main(int argc, char* argv[]) {
   bigint P = 1026853825537;
   long q = 3061;
   bigint L = 17435880;
-  */
+  
   bigint P = 800518548903151;
   long q = 9631;
   bigint L = 1520095500;
@@ -148,7 +149,7 @@ int main(int argc, char* argv[]) {
   for(int i = 0; i < rs.size(); i++){
     cout << P << " " << rs.at(i) << "\n";
   }
-
+  */
   /*
   // large case tabulation
   cout << "starting tabulation\n";
