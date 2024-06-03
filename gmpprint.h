@@ -16,5 +16,7 @@ using namespace std;
 
 ostream & operator<<(ostream & os, const mpz_t x);
 
+istream & operator>>(istream & is, mpz_t &x);
+
 #endif
 

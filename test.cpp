@@ -15,6 +15,7 @@
 #include <chrono>
 #include "postprocess.h"
 #include "gmp.h"
+#include "gmpprint.h"
 #include "Pseudosquare.h"
 #include <string>
 #include "LargePreproduct.h"
@@ -33,13 +34,6 @@ int main(int argc, char* argv[]) {
   int64 num_thousands_upper = 1000000000000;
   int64 upper = num_thousands_upper * 1000; 
 
-  mpz_t B;
-  mpz_init(B);
-  mpz_set_si(B, upper);
-
-  cout << "num version is " << upper << "\n";
-  cout << "string version is " << B << "\n";
-
   /*
   Pseudosquare ps = Pseudosquare();
   for(long i = 0; i < 20; i++){
@@ -50,13 +44,47 @@ int main(int argc, char* argv[]) {
     }
   }
   */
-  /*
-  string infile = "./datafiles_pinch/carmichael-16";
-  string out1 = "test_cars.txt";
-  string out2 = "test_mistakes.txt";
+  
+  string infile = "./datafiles_22/carnew-1000000.txt";
+  string out1 = "drew_good.txt";
+  string out2 = "drew_bad.txt";
 
-  check_cars_factors(infile, out1, out2);
+  // read a line and parse it
+  ifstream cars;  cars.open(infile);
+  string line;
+  getline(cars, line);
+  cout << line << "\n";
+
+  vector<mpz_t> nums;
+  const char* cline = line.c_str();
+
+  /*
+  int index = 0;
+  char c = cline[index];
+  while(c != ' ' && c != '\0'){
+    index++;
+    c = 
+  }
   */
+  cline = "123";
+  mpz_t num;
+  mpz_init(num);
+  mpz_set_str(num, cline, 10);
+  //gmp_sscanf(cline, "%F", num);
+
+  cout << num << "\n";
+
+  /*
+  while(cline){
+    mpz_t num;
+    mpz_init(num);
+    gmp_sscanf(cline, "%F ", num);
+    nums.push_back(num);
+  }
+  */
+
+  //check_cars_factors(infile, out1, out2);
+  
   /*
   // Code for factoring missing Carmichael numbers
   // setup factor sieve

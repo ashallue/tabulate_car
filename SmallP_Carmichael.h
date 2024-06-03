@@ -56,7 +56,7 @@ class SmallP_Carmichael{
 
     // Data structures for an integrality optimization:
     // C = (P^2 + Delta)/D has to be an integer.  So if p | D, there are mod p restrictions on P, Delta
-    // Currently only implemented for the primes 2, 3.  So a length 6 array of length 2 bit arrays.
+    // Currently only implemented for the primes 2, 3, 5, 7.  
     long total_residue;  // will be 210 for now, 2 * 3 * 5 * 7
     long num_residues;   // will be 4 for now
     long residues_P[210][4];
