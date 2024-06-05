@@ -11,6 +11,7 @@
 #include <algorithm>
 #include "functions.h"
 #include "Pseudosquare.h"
+#include "gmpprint.h"
 
 using namespace std;
 

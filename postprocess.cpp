@@ -313,8 +313,13 @@ void check_cars_factors(string infilename, string carsfilename, string mistakesf
   string line;
   vector<bigint> linenums; 
   bigint num;
-  bigint car, p, num_check;
+  bigint p, num_check;
   bool all_prime, korselt, squarefree;
+
+  // the car is potentially very large, so use mpz_t type
+  mpz_t car, prod, carm1;
+  mpz_init(car);  mpz_init(prod); mpz_init(carm1);
+  mpz_t prime;   mpz_init(prime);
 
   // Pseudosquare class to do primality testing
   Pseudosquare ps = Pseudosquare();
@@ -322,41 +327,49 @@ void check_cars_factors(string infilename, string carsfilename, string mistakesf
   // get the first line, then loop over input file
   getline(infile, line);
   while(line != ""){
-  
-    // use an istringstream to get the numbers in a line
-    linenums.clear();
-    istringstream numbers_stream(line);
  
-    // needed help from stack overflow on this one (splitting-a-string-into-integers-using-istringstream-in-c) 
-    // the loop will stop when the >> operation fails, i.e. when there are no more nums to read
-    while(numbers_stream >> num){ 
-      // access nums, put them in the linenums vector
-      linenums.push_back(num);
-    }
+    // use parse_mpz helper function, also set carm1 to be car - 1
+    linenums.clear();
+    parse_mpz(line, car, linenums);
+    mpz_sub_ui(carm1, car, 1);
  
     // reset booleans
     all_prime = true;   korselt = true;  squarefree = true;
-    num_check = 1; 
 
-    // the first num is the car 
-    car = linenums.at(0);
     // for each prime, check that it is prime and that n-1 % p-1 is 0
-    for(long i = 1; i < linenums.size(); i++){
+    // also check that they product to car, which confirms squarefree
+    mpz_set_ui(prod, 1);
+    for(long i = 0; i < linenums.size(); i++){
       p = linenums.at(i);
-      num_check = num_check * p;
-
       if(!ps.is_prime_pssquare(p)) all_prime = false;
-      if( (car - 1) % (p - 1) != 0 ) korselt = false; 
-    }
-    // the product of the primes should multiply to n.  If not, n is not squarefree 
-    if(num_check != car) squarefree = false;
 
-    if(car == 561) cout << "all_prime = " << all_prime << " korselt = " << korselt << " squarefree = " << squarefree << "\n";
+      // convert p to mpz to multiply
+      Dual_rep d;
+      d.double_word = p;
+      // set high bits, multiply by 2**64, add low bits
+      mpz_set_si(prime, d.two_words[1]);
+      mpz_mul_2exp(prime, prime, 64);
+      mpz_add_ui(prime, prime, d.two_words[0]);
+
+      // now multiply
+      mpz_mul(prod, prod, prime);
+
+      // subtract 1 from p
+      mpz_sub_ui(prime, prime, 1);
+
+      // exactly divisible corresponds to a non-zero return, not divisible would mean returning 0
+      if( mpz_divisible_p(carm1, prime) == 0 ) korselt = false; 
+    }
+    // the product of the primes should multiply to n.  If not, n is not squarefree
+    // if the comparison is not 0, that means they aren't equal, so not squarefree 
+    if(mpz_cmp(car, prod) != 0) squarefree = false;
 
     // if it passed all three, put the line in carsfile, otherwise mistakes file
     if(all_prime && korselt && squarefree){
       carsfile << line << "\n";
     }else{
+      //cout << "bad line is " << line << "\n";
+      //cout << "all_prime = " << all_prime << " korselt = " << korselt << "squarefree = " << squarefree << "\n";
       mistakes << line << "\n";
     } 
 
@@ -364,8 +377,11 @@ void check_cars_factors(string infilename, string carsfilename, string mistakesf
     getline(infile, line);
   } // end while line
 
-  // close files
+  // close files and clear mpz
   infile.close();  carsfile.close();  mistakes.close();
+
+  // currently mpz_clears is causing a seg fault.  I have no idea why
+  //mpz_clears(car, prod, carm1, prime);
 }
 
 /* Given a filename with Carmichaels of the form n <factorization>, where the primes separated by spaces,
