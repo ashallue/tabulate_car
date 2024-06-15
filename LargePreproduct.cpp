@@ -670,6 +670,8 @@ void LargePreproduct::inner_loop_work(bigint preprod, long q, bigint L, vector<l
   if(preprod * L > B){
     //count1++;
 
+    cout << "Large L case\n";
+
     // if car constructed < B, and (Pq)^{-1} is greater than q and car passes korselt check, add to list
     if(Pqinv * preprod < B && Pqinv > q && korselt_check(preprod, L, Pqinv)){
       rs.push_back(Pqinv);
@@ -679,8 +681,13 @@ void LargePreproduct::inner_loop_work(bigint preprod, long q, bigint L, vector<l
   }else if(small_sieve_steps > small_sieve_bound){
     //count2++;     
 
+    cout << "Small steps case\n";
+
     // now loop with stepsize L
-    for(bigint r = Pqinv; r < min( B / preprod, preprod - 1 ); r += L){
+    // for the upper bound, note that r = B / preprod allowed because / is integer division
+    for(bigint r = Pqinv; r <= min( B / preprod, preprod - 1 ); r += L){
+
+      cout << "considering r = " << r << "\n";
 
       // if it passes korselt, add to rs vector
       if(r > q && korselt_check(preprod, L, r)){
@@ -692,6 +699,8 @@ void LargePreproduct::inner_loop_work(bigint preprod, long q, bigint L, vector<l
   // these will apply korselt check, and for rs that pass, they get pushed onto rs vector
   }else{
     //count3++;
+
+    cout << "sieving case\n";
 
     // compute g = gcd(Pqinv - 1, L), L1 = L / g, scriptP = (preprod - 1)/g.  These will be passed 
     // to the r2_divisors and r_sieving functions
