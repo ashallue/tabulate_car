@@ -20,6 +20,10 @@ using namespace std;
  * max_d is the largest possible value for d, given B, i.e. product of primes up to n
  */
 
+/* Important assumptions:  the arithmetic assumes L at most 64 bits, even though it is stored in bigint
+ * If L ever exceeds 64 bits, overflow errors are likely
+ */
+
 class LargePreproduct{
   public:
     bigint B;  // bound on Carmichaels constructted
@@ -63,6 +67,10 @@ class LargePreproduct{
 
     // threaded version.  Embarrasingly parallel, distributes according to residue class of outer prime index
     void cars4_threaded(string cars_file, long thread, long num_threads);
+
+    // two versions with alternate ways of generating preproducts
+    void cars6_threaded_modified(string cars_file, long thread, long num_threads);
+    void cars6_threaded_modified_v2(string cars_file, long thread, long num_threads);
 
     // recursive version, creates carmichael numbers with d prime factors
     void cars_rec(long d, string cars_file);

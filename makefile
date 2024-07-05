@@ -1,5 +1,5 @@
 paths = -I/usr/local/include -L/usr/local/lib
-tags = -lntl -lm -lgmp -O3
+tags = -lntl -lm -lgmp -O3 
 #-ggdb 
 debugtags = -lntl -lm -lgmp 
 objects = gmpprint.o bigint.o Preproduct.o Pseudosquare.o Pinch.o Construct_car.o SmallP_Carmichael.o LargePreproduct.o Factgen.o functions.o int.o Odometer.o primetest.o postprocess.o 

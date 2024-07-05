@@ -39,7 +39,7 @@ int main(int argc, char* argv[]) {
   string cars_recursive = "cars6_recursive.txt";
 
   // B is the upper bound on Carmichaels constructed
-  bigint num_millions_upper = 10000000000000000;
+  bigint num_millions_upper = 1000000000;
   bigint upper = num_millions_upper * 1000000;
 
   // for d = 3, I'll take preproduct upper bound to be B^{1/3}, then all are "small"
@@ -79,7 +79,7 @@ int main(int argc, char* argv[]) {
  
    
   // code for small case
-  SmallP_Carmichael C2 = SmallP_Carmichael(3, 70000000, upper, false);
+  //SmallP_Carmichael C2 = SmallP_Carmichael(3, 70000000, upper, false);
   
   /*
   // run on a single preproduct.  Need factorizations of P and P-1
@@ -93,6 +93,7 @@ int main(int argc, char* argv[]) {
   C2.res_P_index = P % C2.total_residue; 
   */
 
+  /*
   // Another small case
   int64 P = 11;
   long Pfac_len = 1;
@@ -107,7 +108,7 @@ int main(int argc, char* argv[]) {
   for(long i = 0; i < C2.qrs.size(); i++){
     cout << P << " " << C2.qrs.at(i).first << " " << C2.qrs.at(i).second << "\n";
   }  
-  
+  */
   /*
   auto start_small = high_resolution_clock::now();
 
@@ -202,33 +203,44 @@ int main(int argc, char* argv[]) {
   cout << "\n\n";
   */
 
-   /*
+   
   // code for large 6 case
   std::cout << "Starting large preproduct case, limited to Carmichaels with 6 prime factors\n";
 
   LargePreproduct C4 = LargePreproduct(upper, X4);
 
   cout << "starting tabulation\n";
-  start_large = high_resolution_clock::now();
+  auto start_large = high_resolution_clock::now();
   C4.cars6_threaded(cars6_large, 0, 1);
-  end_large = high_resolution_clock::now();
+  auto end_large = high_resolution_clock::now();
 
-  duration_large = duration_cast<milliseconds>(end_large - start_large);
+  auto duration_large = duration_cast<milliseconds>(end_large - start_large);
   cout << "Timing for large 6 preproduct case: " << duration_large.count() << "\n\n";
   
-  // code for large 7 case
-  std::cout << "Starting large preproduct case, limited to Carmichaels with 7 prime factors\n";
+  // testing against two other ways of doing the large 6 case
+  std::cout << "Starting large d = 6, with the modified function\n";
 
   LargePreproduct C5 = LargePreproduct(upper, X4);
 
   cout << "starting tabulation\n";
   start_large = high_resolution_clock::now();
-  C5.cars7_threaded(cars7_large, 0, 1);
+  C5.cars6_threaded_modified("cars6_modifiedv1.txt", 0, 1);
   end_large = high_resolution_clock::now();
 
   duration_large = duration_cast<milliseconds>(end_large - start_large);
-  cout << "Timing for large 7 preproduct case: " << duration_large.count() << "\n\n";
-  */
+  cout << "Timing for large 6 modified: " << duration_large.count() << "\n\n";
+ 
+  std::cout << "Starting large d = 6, with modified v2\n";
+
+  LargePreproduct C6 = LargePreproduct(upper, X4);
+
+  cout << "starting tabulation\n";
+  start_large = high_resolution_clock::now();
+  C6.cars6_threaded_modified_v2("cars6_modifiedv2.txt", 0, 1);
+  end_large = high_resolution_clock::now();
+
+  duration_large = duration_cast<milliseconds>(end_large - start_large);
+  cout << "Timing for large 6 modified v2: " << duration_large.count() << "\n\n";
   /* 
   ////////////////////////////////////////
   // code for recursive version

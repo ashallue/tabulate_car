@@ -1,5 +1,6 @@
 #include <iostream>
 #include <fstream>
+#include <sstream>
 #include <vector>
 #include "math.h"
 #include "functions.h"
@@ -31,8 +32,48 @@ using namespace std::chrono;
 int main(int argc, char* argv[]) {
   std::cout << "Hello World!\n";
 
+  /*
   int64 num_thousands_upper = 1000000000000;
   int64 upper = num_thousands_upper * 1000; 
+  */
+ 
+  /*
+  bigint num_millions = 100000000000000000;
+  bigint bound = num_millions * 1000000;
+  long X = 70000000;
+  */
+  bigint num_billions = 10000000000000000;
+  bigint bound = num_billions * 1000000000;
+  long X = ceil(pow(bound, 1.0/3));
+
+  // testing why we are missing a couple of large preproduct carmichaels
+  //bigint Pq = 343195080512636833;
+  //bigint L = 15120;
+  //bigint r = 29137;
+
+  bigint Pq = 52047109126209997;
+  bigint L = 184800;
+  bigint r = 192133;
+
+  LargePreproduct C = LargePreproduct(bound, X);
+  cout << "LargePreproduct object constructed\n";
+  bool check = C.korselt_check(Pq, L, r);
+  cout << "result of check is " << check << "\n";
+
+  vector<long> rs;
+  C.inner_loop_work(Pq, 7561, L, rs);
+  cout << "found: ";
+  for(long i = 0; i < rs.size(); i++){
+    cout << rs.at(i) << " ";
+  }
+  cout << "\n";
+
+  long result = C.find_upper(bound, 1, 3);
+  cout << "result = " << result << "\n"; 
+  result = C.find_upper(bound, 3, 4);
+  cout << "result = " << result << "\n";
+  cout << "size: " << sizeof(bigint) << "\n";
+
 
   /*
   Pseudosquare ps = Pseudosquare();
@@ -44,47 +85,19 @@ int main(int argc, char* argv[]) {
     }
   }
   */
-  
-  string infile = "./datafiles_22/carnew-1000000.txt";
-  string out1 = "drew_good.txt";
-  string out2 = "drew_bad.txt";
-
-  // read a line and parse it
-  ifstream cars;  cars.open(infile);
-  string line;
-  getline(cars, line);
-  cout << line << "\n";
-
-  vector<mpz_t> nums;
-  const char* cline = line.c_str();
 
   /*
-  int index = 0;
-  char c = cline[index];
-  while(c != ' ' && c != '\0'){
-    index++;
-    c = 
-  }
-  */
-  cline = "123";
-  mpz_t num;
-  mpz_init(num);
-  mpz_set_str(num, cline, 10);
-  //gmp_sscanf(cline, "%F", num);
-
-  cout << num << "\n";
-
-  /*
-  while(cline){
-    mpz_t num;
-    mpz_init(num);
-    gmp_sscanf(cline, "%F ", num);
-    nums.push_back(num);
-  }
-  */
-
-  //check_cars_factors(infile, out1, out2);
+  // code that double-checks everything is carmichael
   
+  string infile = "./datafiles_sutherland/cars-million-drew.txt";
+  //string infile = "test.txt";
+  string out1 = "allsmall_good.txt";
+  string out2 = "allsmall_bad.txt";
+
+
+  check_cars_factors(infile, out1, out2);
+  */
+
   /*
   // Code for factoring missing Carmichael numbers
   // setup factor sieve

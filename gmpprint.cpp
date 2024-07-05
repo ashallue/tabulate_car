@@ -33,7 +33,6 @@ void parse_mpz(string char_nums, mpz_t &n, vector<bigint> &factors){
   while(index < char_nums.length()){
     // find the space
     space_pos = char_nums.find(' ', index);
-    cout << "in while loop, index = " << index << " and space_pos = " << space_pos << "\n";
 
     // substring args are start position, length of substring
     // if space_pos = -1, it means no space found, so go until the end of the string

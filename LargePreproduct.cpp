@@ -328,13 +328,17 @@ long LargePreproduct::find_index_upper(bigint num, bigint den, long root){
 }
 
 // Helper function that returns (num / den)^(1/root) as an integer
-// Note that a double should be enough precision: 128 / 3 < 43, 
-// and a double is 64 bits total.
+// I am using long double type, which has 64-bit mantissa and is written in scientific notation.
+// Since 128/3 < 64, this should be fine.  However, I can only get it to print 23 bit mantissa.
+// Not sure if it is a print issue or if I have a precision issue.
 long LargePreproduct::find_upper(bigint num, bigint den, long root){
   // exponent is 1 / root
   double exp = 1.0 / root;
   // base is num / den
-  long double base = num * 1.0 / den;
+  // long double is in scientific notation, so result can be greater than 64 bits
+  // I've tested that assignment will convert num from bigint to long double
+  long double base = num;
+  base = base / den;  
 
   // then use pow function to calculate result
   long double pow_result = pow(base, exp);
@@ -353,6 +357,7 @@ bool LargePreproduct::korselt_check(bigint Pq, bigint L, bigint r){
   // check Korselt.  Sufficient to show that Pq * r = 1 mod lcm(L, r-1)
   // for the cases where r is constructed as (Pq)^{-1} mod L.
   // compute product modulo L and modulo r-1
+  // Mult check: Pq, r, L all bigint, so ops are bigint.  Fits as long as L at most 64 bits.
   bigint modL = (Pq % L) * (r % L) % L;
   bigint modrminus = Pq % (r-1);
   if(modL != 1 || modrminus != 1) return false;
@@ -400,6 +405,8 @@ bool LargePreproduct::r_2divisors(bigint &preprod, long &q, bigint &L, bigint &L
     // have r1 * r2 = scriptP mod L1, so r2 = scriptP * r1^{-1} mod L1
     bigint r1 = (Pqinv - 1) / g;
     r1 = r1 % L1;
+    // op check: scriptP, inv128 both bigint, so mult is bigint.
+    // overflow check: could be a problem if L1 more than 64 bits.
     bigint r2 = (scriptP * inv128(r1, L1)) % L1;
    
     // the other divisor is then scriptP / r2.  We lift both via:  r = g * div + 1
@@ -432,12 +439,14 @@ void LargePreproduct::r_sieving(bigint &preprod, long &q, bigint &L, bigint &L1,
   // this divisor is of the form Pqinv + k*L
   // r1 + k*L1 < sqrt( scriptP ) implies
   // g(r1 + k*L1) + 1 < g*sqrt( scriptP ) + 1
-  double ub1 = g*sqrt(scriptP) + 1;
+  double ub1 = g * sqrt(scriptP) + 1;
   // Pqinv + kL < B/(Pq)
-  double ub2 = B/preprod;
+  double ub2 = B / preprod;
   double ub = min( ub1, ub2 );
   bigint d = Pqinv;
 
+  // Andrew note: <= is correct, accounts for integer div above.  Comparing bigint to double is weird.
+  // the mantissa of a double is 53 bits
   while( d <= ub )
   {
     if(d > q && korselt_check(preprod, L, d))
@@ -473,6 +482,8 @@ void LargePreproduct::r_sieving(bigint &preprod, long &q, bigint &L, bigint &L1,
     k = max(0, k);
     // initialize d to be of the correct size
     bigint f = r2 + k*L1;
+
+    // Andrew note: another comparison of a bigint to a double
     while( f <= ub3 )
     {
       if( (preprod - 1) % f == 0)
@@ -663,14 +674,13 @@ void LargePreproduct::inner_loop_work(bigint preprod, long q, bigint L, vector<l
   */
 
   // r is at most Pq - 1 and r is at most B / (Pq), so the number of sieve steps is bounded 
-  // by the minimum of B / (Pq * L) and (Pq - 1) / L 
+  // by the minimum of B / (Pq * L) and (Pq - 1) / L
+  // Op check: all entities are bigint, so all ops are bigint 
   bigint small_sieve_bound = min( B / (L * preprod), (preprod - 1) / L ); 
   
   // if P * lambda(P) > B, we know that there is only one r to check, namely (Pq)^{-1}
   if(preprod * L > B){
     //count1++;
-
-    cout << "Large L case\n";
 
     // if car constructed < B, and (Pq)^{-1} is greater than q and car passes korselt check, add to list
     if(Pqinv * preprod < B && Pqinv > q && korselt_check(preprod, L, Pqinv)){
@@ -681,13 +691,9 @@ void LargePreproduct::inner_loop_work(bigint preprod, long q, bigint L, vector<l
   }else if(small_sieve_steps > small_sieve_bound){
     //count2++;     
 
-    cout << "Small steps case\n";
-
     // now loop with stepsize L
     // for the upper bound, note that r = B / preprod allowed because / is integer division
     for(bigint r = Pqinv; r <= min( B / preprod, preprod - 1 ); r += L){
-
-      cout << "considering r = " << r << "\n";
 
       // if it passes korselt, add to rs vector
       if(r > q && korselt_check(preprod, L, r)){
@@ -699,8 +705,6 @@ void LargePreproduct::inner_loop_work(bigint preprod, long q, bigint L, vector<l
   // these will apply korselt check, and for rs that pass, they get pushed onto rs vector
   }else{
     //count3++;
-
-    cout << "sieving case\n";
 
     // compute g = gcd(Pqinv - 1, L), L1 = L / g, scriptP = (preprod - 1)/g.  These will be passed 
     // to the r2_divisors and r_sieving functions
@@ -832,6 +836,7 @@ void LargePreproduct::cars4(string cars_file){
 
     // since p1 * p2 > X, and p2 > p1, we need to find i2 that makes both of these true
     // this is equivalent to saying that p1 > sqrt(X) if and only if i2 = i1 + 1
+    // Op check: X is long, p1 is long, so mult is long *
     if(p1 * p1 > X){
       lower_index = i1 + 1;
     }else{
@@ -1041,6 +1046,203 @@ void LargePreproduct::cars4_threaded(string cars_file, long thread, long num_thr
 
   output.close();
 }
+
+// what follows is two different versions of cars6.  
+void LargePreproduct::cars6_threaded_modified(string cars_file, long thread, long num_threads){
+  ofstream output;
+  output.open(cars_file);
+
+  long p1, p2, p3, p4, q;
+  long i1, i2, i3, i4, i5;
+
+  long lower_index;
+  long upper1, upper2, upper3, upper4, upper5;
+
+  // keep running computation of P and lcm_p|P p-1
+  bigint P1, P2, P3, P4, P5;
+  bigint L1, L2, L3, L4, L5;
+  long g;
+  vector<long> rs;
+
+  long num_admissable = 0;
+
+  upper1 = find_upper(B, 1, 6);
+
+
+  i1 = 0;
+  p1 = primes[i1];
+  P1 = p1;
+  do{
+    L1 = p1 - 1;
+    i2 = i1 + 1;
+    upper2 = find_upper(B, p1, 5);
+    p2 = primes[i2];
+    while( p2 % p1 == 1 ) { p2 = primes[ ++i2 ]; }
+    P2 = P1 * p2;
+    do{    
+      if(num_admissable % num_threads == thread){
+        L2 = L1 * ( ( p2 - 1 ) / gcd( L1, p2 - 1 ) );
+        i3 = i2 + 1;
+        upper3 = find_upper(B, P2, 4);
+        p3 = primes[i3];
+        while( p3 % p1 == 1 || p3 % p2 == 1 ){ p3 = primes[ ++i3 ]; }
+        P3 = P2 * p3;
+        do{
+          L3 = L2  * ( (p3 - 1) / gcd(L2, p3 - 1) );
+          i4 = ( P3 * p3 > X ) ? i3 + 1 : find_index_lower( X / P3 ) ;
+          upper4 = find_upper(B, P3, 3);
+          p4 = primes[i4];
+          while( p4 % p1 == 1 || p4 % p2 == 1 || p4 % p3 == 1 ) { p4 = primes[ ++i4 ]; }
+          P4 = P3 * p4;
+          do{
+            L4 = L3 * ( ( p4 - 1 ) / gcd( L3, p4 - 1 ) );
+            upper5 = find_upper(B, P4, 2);
+            i5 = i4 + 1;
+            q = primes[i5];
+            while( q % p1 == 1 || q % p2 == 1 || q % p3 == 1 || q % p4 == 1 ){ q = primes[ ++i5 ]; }
+            P5 = P4 * q;
+            do{
+              L5 = L4 * ( (q - 1) / gcd(L4, q - 1) );
+              inner_loop_work(P5, q, L5, rs);
+              for(long i = 0; i < rs.size(); i++){
+                output << P5 * rs[i] << " ";
+                output << p1 << " " << p2 << " " << p3 << " " << p4 << " " << q << " " << rs[i] << "\n";
+              }
+              do{ q = primes[ ++i5 ]; } while( q % p1 == 1 || q % p2 == 1 || q % p3 == 1 || q % p4 == 1);
+              P5 = P4 * q;
+            } while(q < upper5); // end of do q
+
+            do{ p4 = primes[ ++i4 ]; } while( p4 % p1 == 1 || p4 % p2 == 1 || p4 % p3 == 1 );
+            P4 = P3 * p4;
+
+          }while(p4 < upper4);  // end of do p4
+
+          do{ p3 = primes[ ++i3 ]; } while(  p3 % p1 == 1 || p3 % p2 == 1 );
+          P3 = P2 * p3;
+   
+        }while(p3 < upper3);  // end of do p3
+      } //end of parallelization control block
+      
+      do{ p2 = primes[ ++i2 ]; } while( p2 % p1 == 1 );
+      P2 = P1 * p2;
+      num_admissable++;
+
+    }while(p2 < upper2);  // end of do p2
+
+    p1 = primes[ ++i1 ];
+    P1 = p1;
+  }while(p1 < upper1);  // end of do p1
+
+  output.close();
+}
+
+void LargePreproduct::cars6_threaded_modified_v2(string cars_file, long thread, long num_threads){
+  ofstream output;
+  output.open(cars_file);
+
+  long p1, p2, p3, p4, q;
+  long i1, i2, i3, i4, i5;
+
+  long lower_index;
+  long upper1, upper2, upper3, upper4, upper5;
+
+  bigint P1, P2, P3, P4, P5;
+  bigint L1, L2, L3, L4, L5;
+  long g;
+  vector<long> rs;
+
+  long num_admissable = 0;
+
+  upper1 = find_upper(B, 1, 6);
+
+
+  i1 = 0;
+  p1 = primes[i1];
+  P1 = p1;
+  do{
+    L1 = p1 - 1;
+    i2 = i1 + 1;
+    upper2 = find_upper(B, p1, 5);
+    p2 = primes[i2];
+    while( p2 % p1 == 1 ) { p2 = primes[ ++i2 ]; }
+    P2 = P1 * p2;
+    L2 = L1 * ( ( p2 - 1 ) / gcd( L1, p2 - 1 ) );
+    do{    
+      if( num_admissable % num_threads == thread ){
+        i3 = i2 + 1;
+        upper3 = find_upper(B, P2, 4);
+        p3 = primes[i3];
+        while( p3 % p1 == 1 || p3 % p2 == 1 ){ p3 = primes[ ++i3 ]; }
+        P3 = P2 * p3;
+        L3 = L2  * ( (p3 - 1) / gcd(L2, p3 - 1) );
+        do{
+          i4 = ( P3 * p3 > X ) ? i3 + 1 : find_index_lower( X / P3 ) ;
+          upper4 = find_upper(B, P3, 3);
+          p4 = primes[i4];
+          while( p4 % p1 == 1 || p4 % p2 == 1 || p4 % p3 == 1 ) { p4 = primes[ ++i4 ]; }
+          P4 = P3 * p4;
+          L4 = L3 * ( ( p4 - 1 ) / gcd( L3, p4 - 1 ) );
+          do{
+            if( P4*L4*50 > B )
+            {
+              // Compute R1 = (P4)^{-1}  mod L4
+              // Construct R = R1 + k*L4 
+              // start at k = 0 go while PR < B
+              // we need P*R to be CN
+              // we need R to have exactly two prime factors
+              // use Fermat property to detect and factors
+              // That is, Fermat pseudoprimes are easy to factor 
+              // once you detect that they are *not* strong pseudoprimes
+            }
+            else
+            {    
+              upper5 = find_upper(B, P4, 2);
+              i5 = i4 + 1;
+              q = primes[i5];
+              while( q % p1 == 1 || q % p2 == 1 || q % p3 == 1 || q % p4 == 1 ){ q = primes[ ++i5 ]; }
+              P5 = P4 * q;
+              L5 = L4 * ( (q - 1) / gcd(L4, q - 1) );
+              do{
+
+                inner_loop_work(P5, q, L5, rs);
+                for(long i = 0; i < rs.size(); i++){
+                  output << P5 * rs[i] << " ";
+                  output << p1 << " " << p2 << " " << p3 << " " << p4 << " " << q << " " << rs[i] << "\n";
+                }
+                do{ q = primes[ ++i5 ]; } while( q % p1 == 1 || q % p2 == 1 || q % p3 == 1 || q % p4 == 1);
+                P5 = P4 * q;
+                L5 = L4 * ( (q - 1) / gcd(L4, q - 1) );
+                
+              } while(q < upper5); // end of do q  
+            }          
+
+            do{ p4 = primes[ ++i4 ]; } while( p4 % p1 == 1 || p4 % p2 == 1 || p4 % p3 == 1 );
+            P4 = P3 * p4;
+            L4 = L3 * ( ( p4 - 1 ) / gcd( L3, p4 - 1 ) );   
+            
+          }while(p4 < upper4);  // end of do p4
+
+          do{ p3 = primes[ ++i3 ]; } while(  p3 % p1 == 1 || p3 % p2 == 1 );
+          P3 = P2 * p3;
+          L3 = L2  * ( (p3 - 1) / gcd(L2, p3 - 1) );
+   
+        }while(p3 < upper3);  // end of do p3
+      } //end of parallelization control block
+      
+      do{ p2 = primes[ ++i2 ]; } while( p2 % p1 == 1 );
+      P2 = P1 * p2;
+      L2 = L1 * ( ( p2 - 1 ) / gcd( L1, p2 - 1 ) );
+      num_admissable++;
+
+    }while(p2 < upper2);  // end of do p2
+
+    p1 = primes[ ++i1 ];
+    P1 = p1;
+  }while(p1 < upper1);  // end of do p1
+
+  output.close();
+}
+
 
 //////////////////////////////////////////////////////////////////
 // part of LargePreproduct.cpp found in a separate text file to include
@@ -1271,6 +1473,7 @@ void LargePreproduct::cars_rec_helper(long d, bigint preprod, vector<long> &pis,
       // recursive call.  First add prime to the primes vector and update L
       pis.push_back(index);
 
+      // Op check: preprod is bigint, current_prime is long, so what * is this?
       cars_rec_helper(d, preprod * current_prime, pis, new_L, output);
 
       // once the recursive call is finished, we pop the prime off in preparation for next one

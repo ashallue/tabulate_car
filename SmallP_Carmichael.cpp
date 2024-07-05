@@ -424,7 +424,7 @@ void SmallP_Carmichael::DDelta(Preproduct& P, bigint D, libdivide::divider<int64
     
     // Throw out the divisor if it is too big.  It needs to be small enough so q is bigger than p_{d-2}.
     // The appropriate bound is Delta < (P-1)(P+D)/(p_{d-2}-1)
-    // So we add 1 to the quotient, since integer division rounds down.
+    // Mult size check: P.Prod is at most 32 bits, so mult will fit in 64 bits, and 64-bit * okay
     Delta_bound = (P.Prod - 1) * (P.Prod + D);
     Delta_bound = Delta_bound / (P.largest_prime() - 1);
     
@@ -458,7 +458,8 @@ void SmallP_Carmichael::CD(Preproduct& P, bigint D, libdivide::divider<int64>& f
   // for CD method we generate all C in an interval.  These are the bounds.
   // lower bound is P^2/D and we want C > P^2/D, so we start at 1 + P^2/D
   int64 C_lower = 1 + (P.Prod * P.Prod) / D;
-  // upper bound is (P^2 * (p_{d-2} + 3))/(D * (p_{d-2} + 1)).  Break this into +2 and +1
+  // upper bound is (P^2 * (p_{d-2} + 3))/(D * (p_{d-2} + 1)); computation broken into two steps
+  // +2 added at end to allow for rounding that happens with integer division
   int64 Cu_temp = (P.Prod * P.Prod) / D;
   int64 C_upper = Cu_temp + 2 * Cu_temp / (P.largest_prime() + 1) + 2;
 
@@ -550,8 +551,10 @@ bool SmallP_Carmichael::completion_check(Preproduct& P, int64 Delta, int64 D, li
   if(r_rem != 0) return false;
   r = r_quo + 1;
 
-  // check that Pqr satisfies Korselt criterion, i.e. Pqr = 1 mod lcm(L, q-1, r-1)
+  // Check that Pqr satisfies Korselt criterion, i.e. Pqr = 1 mod lcm(L, q-1, r-1)
   // first compute product modulo L.  We work with reduced quantities since L is smaller than q, r
+  // Cast quantities into bigints so that the multiplication will be bigint-*.  Lack of casting was 
+  // a bit oversight in an earlier version.
   bigint modL = ( (bigint)(q % LCM) * (r % (bigint)LCM) % (bigint)LCM ) * (bigint)(P_val % LCM) % (bigint)LCM;
   if(modL != 1) return false;
   bigint modqminus = (r % (bigint)(q-1)) * (bigint)(P_val % (q-1)) % (bigint)(q-1);
