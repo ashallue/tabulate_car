@@ -518,3 +518,88 @@ long exp_in_factorization(int64 p, int64 n){
   return exp;
 }
 
+// assume base is a Fermat base but not a Rabin base.  This allows us to split n.
+// both fermat_split and fermat_factor need to be carefully type-analyzed,
+// in development I am not being as careful as I should be.
+int64 fermat_split(int64 n, int64 base){
+  // first write n-1 = 2^r * u where u is odd
+  int64 r = 0;
+  int64 u = n-1;
+  
+  //  repeatedly divide n-1 by 2 until the cofactor is odd
+  while(u % 2 == 0){
+    u = u / 2;
+    r++;
+  }
+
+  // now find x such that x != +/- 1 mod n, but x^2 = 1 mod n
+  bigint x = pow_mod(base, u, n);
+  while(x * x % n != 1){
+    x = x * x % n;
+  }
+
+  return gcd(n, x+1); 
+}
+
+/* This function attempts to fully factor n.  Try to find base a which is a Fermat base 
+ * but not a Rabin base.  This allows us to split n.  Repeat.
+ * If fully factored, return True.  Return False if the correct base is not found at some point
+ */
+bool fermat_factor(int64 n, vector<int64> &factors){
+  bool fully_factored = false;
+
+  // break n-1 into 2^r * u where u is odd
+  int64 r = 0;
+  int64 u = n-1;
+  // repeatedly divide n-1 by 2 until cofactor is odd
+  while(u % 2 == 0){
+    u = u / 2;
+    r++;
+  }
+
+  // loop over potential bases
+  // we seek to identify a base which is a Fermat base but not a Rabin base
+  // going to check bases up to 2 * log(n)^2
+  int64 base_bound = 2 * ceil(log(n) * log(n));
+ 
+  bool fermat, rabin;
+  int64 pow_result;
+
+  for(int64 b = 2; b < base_bound; b++){
+    // assume the base is neither fermat nor rabin, until proven otherwise
+    fermat = false;
+    rabin = false; 
+
+    // compute b^u mod n
+    pow_result = pow_mod(b, u, n);
+    // if it is 1 or -1, we have a Rabin base and hence a fermat base
+    if(pow_result == 1 || pow_result == -1){
+      rabin = true;
+      fermat = true;
+    }else{
+      
+      // now loop over r and continue checking
+      for(int64 i = 1; i < r-1; i++){
+        // square
+        pow_result = pow_result * pow_result % n;
+        if(pow_result == -1){
+          rabin = true;
+          fermat = true;
+        }
+      } // end for over r
+      // square one more time to see if it is a fermat base
+      pow_result = pow_result * pow_result % n;
+      if(pow_result == 1){
+        fermat = true;
+      }
+    }
+
+    // if found a fermat base which is not rabin base, report it
+    if(fermat && !rabin){
+      cout << "base found which is fermat but not rabin: " << b << "\n";
+    }
+  } // end for over base
+
+  return fully_factored;
+}
+

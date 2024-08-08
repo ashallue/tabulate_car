@@ -45,11 +45,12 @@ int main(int argc, char* argv[]) {
   bigint num_billions = 10000000000000000;
   bigint bound = num_billions * 1000000000;
   long X = ceil(pow(bound, 1.0/3));
-
+ 
+  /*
   // testing why we are missing a couple of large preproduct carmichaels
-  //bigint Pq = 343195080512636833;
-  //bigint L = 15120;
-  //bigint r = 29137;
+  bigint Pq = 343195080512636833;
+  bigint L = 15120;
+  /bigint r = 29137;
 
   bigint Pq = 52047109126209997;
   bigint L = 184800;
@@ -73,8 +74,12 @@ int main(int argc, char* argv[]) {
   result = C.find_upper(bound, 3, 4);
   cout << "result = " << result << "\n";
   cout << "size: " << sizeof(bigint) << "\n";
-
-
+  */
+  cout << "\n";
+  cout << "testing fermat factor\n";
+  
+  vector<int64> factors;
+  fermat_factor(561, factors);
   /*
   Pseudosquare ps = Pseudosquare();
   for(long i = 0; i < 20; i++){

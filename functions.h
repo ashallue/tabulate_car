@@ -97,5 +97,13 @@ vector<long> trivial_car_tab(long B);
  */
 long exp_in_factorization(int64 p, int64 n);
 
+// assume base is a Fermat base but not a Rabin base.  This allows us to split n.
+int64 fermat_split(int64 n, int64 base);
+
+/* This function attempts to fully factor n.  Try to find base a which is a Fermat base 
+ * but not a Rabin base.  This allows us to split n.  Repeat.
+ * If fully factored, return True.  Return False if the correct base is not found at some point
+ */
+bool fermat_factor(int64 n, vector<int64> &factors);
 
 #endif
