@@ -28,7 +28,6 @@ using namespace std::chrono;
 
 /* This main meant for testing purposes, and shorter timings
  */
-
 int main(int argc, char* argv[]) {
   std::cout << "Hello World!\n";
 
@@ -42,9 +41,12 @@ int main(int argc, char* argv[]) {
   bigint bound = num_millions * 1000000;
   long X = 70000000;
   */
-  bigint num_billions = 10000000000000000;
-  bigint bound = num_billions * 1000000000;
-  long X = ceil(pow(bound, 1.0/3));
+  // extracting 
+  bigint B = 1'000'000'000'000'000;
+  long X = 100'000;
+  std::string infile = "./datafiles_22/cars_table_10to22.txt";
+  std::string outfile = "test_out.txt";
+  filter_bounded(B, X, infile, outfile);
  
   /*
   // testing why we are missing a couple of large preproduct carmichaels
@@ -75,11 +77,6 @@ int main(int argc, char* argv[]) {
   cout << "result = " << result << "\n";
   cout << "size: " << sizeof(bigint) << "\n";
   */
-  cout << "\n";
-  cout << "testing fermat factor\n";
-  
-  vector<int64> factors;
-  fermat_factor(561, factors);
   /*
   Pseudosquare ps = Pseudosquare();
   for(long i = 0; i < 20; i++){

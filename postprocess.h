@@ -57,6 +57,10 @@ void check_cars_factors(string infilename, string carsfilename, string mistakesf
  */
 void extract(string in_file, string out_file, int64 B, long k);
 
+// given a file of carmichaels with full factorization, 
+// filter out those that are < B, with preproducts < X
+void filter_bounded(bigint B, bigint X, std::string infile, std::string outfile);
+
 /* Solving the inverse problem: given (P q r) with P*q*r Carmichael,
  * print C, D, Delta
  * Recall: q - 1 = (P-1)(P+D)/Delta, r-1 = (P-1)(P+C)/Delta

@@ -429,6 +429,56 @@ void extract(string in_file, string out_file, int64 B, long k){
   output_nums.close();
 }
 
+// given a file of carmichaels with full factorization, 
+// filter out those that are < B, with preproducts < X.  Similar to extract
+void filter_bounded(bigint B, bigint X, std::string infile, std::string outfile){
+    // create file objects and open them
+  ifstream input_nums;
+  input_nums.open(infile);
+
+  ofstream output_nums;
+  output_nums.open(outfile);
+
+  string line;
+  vector<bigint> linenums;
+  bigint num;
+  char c_numstring[128]; 
+  string numstring;
+  bigint Preprod;
+
+  // while there is a line to get, keep getting lines
+  while(getline(input_nums, line)){
+    // access each number in the line and place into a vector
+    // this solution from stackoverflow: reading-line-of-integers-into-a-vector
+    istringstream numbers_stream(line);
+    linenums.clear();
+
+    std::cout << "line read: " << line << "\n";
+      
+    // separate all the numbers in the line
+    while(numbers_stream >> num){
+      linenums.push_back(num);
+    } // end for that reads the line
+      
+    // keep it if n < B (the 0 index num) 
+    if(linenums.at(0) >= B) break;
+
+    // Calculate the preproduct, i.e. with k primes, the product of the first k-2
+    Preprod = 1;
+    for(long i = 1; i < linenums.size() - 2; i++){
+        Preprod *= linenums.at(i);
+    }
+    if(Preprod < X){
+        output_nums << linenums.at(0) << "\n";
+    }
+
+  } // end while
+
+  input_nums.close();
+  output_nums.close();
+}
+
+
 /* Solving the inverse problem: given (P q r) with P*q*r Carmichael,
  * print C, D, Delta
  * Recall: q - 1 = (P-1)(P+D)/Delta, r-1 = (P-1)(P+C)/Delta
