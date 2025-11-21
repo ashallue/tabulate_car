@@ -353,6 +353,96 @@ void LargePreproduct::cars6_threaded(string cars_file, long thread, long num_thr
   output.close();
 }
 
+// version with faster admissability checks
+void LargePreproduct::cars6_threaded_modified(string cars_file, long thread, long num_threads){
+  ofstream output;
+  output.open(cars_file);
+
+  long p1, p2, p3, p4, q;
+  long i1, i2, i3, i4, i5;
+
+  long lower_index;
+  long upper1, upper2, upper3, upper4, upper5;
+
+  // keep running computation of P and lcm_p|P p-1
+  bigint P1, P2, P3, P4, P5;
+  bigint L1, L2, L3, L4, L5;
+  long g;
+  vector<long> rs;
+
+  long num_admissable = 0;
+
+  upper1 = find_upper(B, 1, 6);
+
+
+  i1 = 0;
+  p1 = primes[i1];
+  P1 = p1;
+  do{
+    L1 = p1 - 1;
+    i2 = i1 + 1;
+    upper2 = find_upper(B, p1, 5);
+    p2 = primes[i2];
+    while( p2 % p1 == 1 ) { p2 = primes[ ++i2 ]; }
+    P2 = P1 * p2;
+    do{    
+      if(num_admissable % num_threads == thread){
+        L2 = L1 * ( ( p2 - 1 ) / gcd( L1, p2 - 1 ) );
+        i3 = i2 + 1;
+        upper3 = find_upper(B, P2, 4);
+        p3 = primes[i3];
+        while( p3 % p1 == 1 || p3 % p2 == 1 ){ p3 = primes[ ++i3 ]; }
+        P3 = P2 * p3;
+        do{
+          L3 = L2  * ( (p3 - 1) / gcd(L2, p3 - 1) );
+          i4 = ( P3 * p3 > X ) ? i3 + 1 : find_index_lower( X / P3 ) ;
+          upper4 = find_upper(B, P3, 3);
+          p4 = primes[i4];
+          while( p4 % p1 == 1 || p4 % p2 == 1 || p4 % p3 == 1 ) { p4 = primes[ ++i4 ]; }
+          P4 = P3 * p4;
+          do{
+            L4 = L3 * ( ( p4 - 1 ) / gcd( L3, p4 - 1 ) );
+            upper5 = find_upper(B, P4, 2);
+            i5 = i4 + 1;
+            q = primes[i5];
+            while( q % p1 == 1 || q % p2 == 1 || q % p3 == 1 || q % p4 == 1 ){ q = primes[ ++i5 ]; }
+            P5 = P4 * q;
+            do{
+              L5 = L4 * ( (q - 1) / gcd(L4, q - 1) );
+              inner_loop_work(P5, q, L5, rs);
+              for(long i = 0; i < rs.size(); i++){
+                output << P5 * rs[i] << " ";
+                output << p1 << " " << p2 << " " << p3 << " " << p4 << " " << q << " " << rs[i] << "\n";
+              }
+              do{ q = primes[ ++i5 ]; } while( q % p1 == 1 || q % p2 == 1 || q % p3 == 1 || q % p4 == 1);
+              P5 = P4 * q;
+            } while(q < upper5); // end of do q
+
+            do{ p4 = primes[ ++i4 ]; } while( p4 % p1 == 1 || p4 % p2 == 1 || p4 % p3 == 1 );
+            P4 = P3 * p4;
+
+          }while(p4 < upper4);  // end of do p4
+
+          do{ p3 = primes[ ++i3 ]; } while(  p3 % p1 == 1 || p3 % p2 == 1 );
+          P3 = P2 * p3;
+   
+        }while(p3 < upper3);  // end of do p3
+      } //end of parallelization control block
+      
+      do{ p2 = primes[ ++i2 ]; } while( p2 % p1 == 1 );
+      P2 = P1 * p2;
+      num_admissable++;
+
+    }while(p2 < upper2);  // end of do p2
+
+    p1 = primes[ ++i1 ];
+    P1 = p1;
+  }while(p1 < upper1);  // end of do p1
+
+  output.close();
+}
+
+
 // threaded version of cars7
 void LargePreproduct::cars7_threaded(string cars_file, long thread, long num_threads){
   //setup file
