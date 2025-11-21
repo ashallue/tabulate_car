@@ -1047,6 +1047,117 @@ void LargePreproduct::cars4_threaded(string cars_file, long thread, long num_thr
   output.close();
 }
 
+// faster generation of admissable preproducts
+void LargePreproduct::cars4_threaded_modified(string cars_file, long thread, long num_threads){
+  //setup file
+  ofstream output;
+  output.open(cars_file);
+
+  // primes out of the primes index, their indices
+  long p1, p2, q;
+  long i1, i2, i3;
+  // lower bounds are given in terms of index, uppers in terms of values
+  long lower_index;
+  long upper1, upper2, upper3;
+
+  // keep running computation of P and lcm_p|P p-1
+  bigint P1, P2, P3;
+  bigint L1, L2, L3;
+  long g;
+
+  vector<long> rs;
+
+  // nested for loops
+  // compute first upper bound as B^{1/4}
+  upper1 = find_upper(B, 1, 4);
+  cout << "upper1 = " << upper1 << "\n";
+
+  // start p1 at the prime corresponding to thread number 
+  i1 = thread;
+  p1 = primes[i1];
+  P1 = p1;
+  do{
+
+    // compute L1
+    L1 = p1 - 1;
+
+    // since p1 * p2 > X, and p2 > p1, we need to find i2 that makes both of these true
+    // this is equivalent to saying that p1 > sqrt(X) if and only if i2 = i1 + 1
+    if(p1 * p1 > X){
+      lower_index = i1 + 1;
+    }else{
+      lower_index = find_index_lower(X / p1);
+    }
+    i2 = lower_index;  
+
+    // also need to compute the corresponding upper bound: (B/p1)^{1/3}
+    upper2 = find_upper(B, p1, 3);
+    //cout << "then lower_index = " << lower_index << " and upper2 = " << upper2 << "\n";
+
+    // finding the start index for p2 
+    p2 = primes[i2];
+    // check admissability, bump ahead until found
+    while( p2 % p1 == 1 ){ p2 = primes[ ++i2 ]; }
+    P2 = P1 * p2;
+    do{
+  
+      //update L2
+      L2 = L1 * (p2 - 1);
+      g = gcd(L1, p2 - 1);
+      L2 = L2 / g;
+ 
+      // lower bound for q is just the previous prime, upper is (B/p1p2)^{1/2}
+      upper3 = find_upper(B, P2, 2);
+      //cout << "For p2 = " << p2 << " upper bound is " << upper3 << "\n";
+
+      // finding the start index and prime for q
+      i3 = i2 + 1;
+      q = primes[i3];
+      // check admissability, bump ahead until found
+      while( q % p1 == 1 || q % p2 == 1 ){ q = primes[ ++i3 ]; }
+      P3 = P2 * q;
+
+      do{
+        // update L3
+        L3 = L2 * (q - 1);
+        g = gcd(L2, q - 1);
+        L3 = L3 / g;
+
+        //cout << "Inner loop with p1 = " << p1 << " p2 = " << p2 << " q = " << q << "\n";
+
+        // complicated inner loop work that finds r's that make carmichaels
+        // clears rs vector and refills it
+        inner_loop_work(P3, q, L3, rs);
+  
+        // write to file
+        for(long i = 0; i < rs.size(); i++){
+          // note this next line might attempt to print a bigint and faile
+          output << P3 * rs[i] << " ";
+          output << p1 << " " << p2 << " " << q << " " << rs[i] << "\n";
+        }
+ 
+        // find next q that makes P2 * q admissable
+        do{ q = primes[ ++i3 ]; } while( q % p1 == 1 || q % p2 == 1 );
+        P3 = P2 * q; 
+      
+      } while(q < upper3); // end of do q
+
+      // find next p2 that makes p1*p2 admissable
+      do{ p2 = primes[ ++ i2 ]; } while( p2 % p1 == 1 );
+      P2 = P1 * p2;   
+ 
+    }while(p2 < upper2);  // end of do p2
+
+    // next prime p1
+    i1 += num_threads;
+    p1 = primes[i1]; 
+    P1 = p1;
+  }while(p1 < upper1);  // end of do p1
+
+  output.close();
+}
+
+
 // what follows is two different versions of cars6.  
 void LargePreproduct::cars6_threaded_modified(string cars_file, long thread, long num_threads){
   ofstream output;
@@ -1136,6 +1247,7 @@ void LargePreproduct::cars6_threaded_modified(string cars_file, long thread, lon
   output.close();
 }
 
+// this version doesn't generate the carmichaels I think it should.  It is some version of composite tabulation.
 void LargePreproduct::cars6_threaded_modified_v2(string cars_file, long thread, long num_threads){
   ofstream output;
   output.open(cars_file);

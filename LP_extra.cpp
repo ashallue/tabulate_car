@@ -384,9 +384,9 @@ void LargePreproduct::cars7_threaded(string cars_file, long thread, long num_thr
   long num_admissable = 0;  
 
   // timings test, start not at p1 = 3, but at p1 a large prime
-  i1 = 320;
+  //i1 = 320;
 
-  //i1 = 0;
+  i1 = 0;
   p1 = primes[i1];
   P1 = p1;
   do{

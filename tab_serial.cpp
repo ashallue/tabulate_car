@@ -30,16 +30,29 @@ using namespace std::chrono;
 int main(int argc, char* argv[]) {
   std::cout << "This is tab_serial, a program that tabulates Carmichaels on a single processor\n";
 
-  string cars5_small = "cars15_small.txt";
-  string cars5_large = "cars5_large.txt";
-  string cars6_small = "cars6_small.txt";
-  string cars6_large = "cars6_large.txt";
-  string cars7_small = "cars7_small.txt";
-  string cars7_large = "cars7_large.txt";
+    std::cout << "num args = " << argc << "\n";
+    std::cout << "0th arg is " << argv[0] << "\n";
+    
+    int total_jobs;
+    int job_num;
+    string filename;
+    if(argc >= 2){
+        job_num = atoi(argv[1]);
+        total_jobs = atoi(argv[2]);
+        std::cout << "job " << job_num  << " of a total of " << total_jobs << "\n";
+        filename = "cars6large.txt";
+    }else{
+        filename = "default.txt";
+        job_num = 0;
+        total_jobs = 1;
+    }
+
+  string cars4_large1 = "cars4_large_first.txt";
+  string cars4_large2 = "cars4_large_second.txt";
   string cars_recursive = "cars6_recursive.txt";
 
   // B is the upper bound on Carmichaels constructed
-  bigint num_millions_upper = 1000000000000000000;
+  bigint num_millions_upper = 1000000000;
   bigint upper = num_millions_upper * 1000000;
 
   // for d = 3, I'll take preproduct upper bound to be B^{1/3}, then all are "small"
@@ -165,17 +178,29 @@ int main(int argc, char* argv[]) {
 
   
   // code for large 6 case
-  std::cout << "Starting large preproduct case, limited to Carmichaels with 7 prime factors\n";
+  std::cout << "Starting large preproduct case, limited to Carmichaels with 6 prime factors\n";
 
   LargePreproduct C4 = LargePreproduct(upper, X4);
 
   cout << "starting tabulation\n";
   auto start_large = high_resolution_clock::now();
-  C4.cars7_threaded(cars7_large, 0, 1);
+    
+  C4.cars4_threaded(cars4_large1, job_num, total_jobs);
   auto end_large = high_resolution_clock::now();
 
   auto duration_large = duration_cast<seconds>(end_large - start_large);
-  cout << "Timing for large 7 preproduct case: " << duration_large.count() << "\n\n";
+  cout << "Timing for large preproduct case, file = " << cars4_large1 << " is: " << duration_large.count() << "\n\n";
+
+  LargePreproduct C5 = LargePreproduct(upper, X4);
+
+  cout << "starting tabulation\n";
+  start_large = high_resolution_clock::now();
+    
+  C4.cars4_threaded_modified(cars4_large2, job_num, total_jobs);
+  end_large = high_resolution_clock::now();
+
+  duration_large = duration_cast<seconds>(end_large - start_large);
+  cout << "Timing for large preproduct case, file = " << cars4_large2 << " is: " << duration_large.count() << "\n\n";
 
     /*
   // testing against two other ways of doing the large 6 case

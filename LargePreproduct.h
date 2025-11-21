@@ -67,6 +67,8 @@ class LargePreproduct{
 
     // threaded version.  Embarrasingly parallel, distributes according to residue class of outer prime index
     void cars4_threaded(string cars_file, long thread, long num_threads);
+    // faster generation of admissable preproducts
+    void cars4_threaded_modified(string cars_file, long thread, long num_threads);
 
     // two versions with alternate ways of generating preproducts
     void cars6_threaded_modified(string cars_file, long thread, long num_threads);
