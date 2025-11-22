@@ -88,6 +88,8 @@ class LargePreproduct{
     void cars5_threaded_modified(string cars_file, long thread, long num_threads);
     void cars6_threaded_modified(string cars_file, long thread, long num_threads);
     void cars7_threaded_modified(string cars_file, long thread, long num_threads);
+    void cars8_threaded_modified(string cars_file, long thread, long num_threads);
+    void cars9_threaded_modified(string cars_file, long thread, long num_threads);
 
 
   public:
