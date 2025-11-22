@@ -47,14 +47,16 @@ int main(int argc, char* argv[]) {
         total_jobs = 1;
     }
 
-  string cars8_large1 = "cars8_large_first.txt";
-  string cars8_large2 = "cars8_large_second.txt";
-  string cars9_large1 = "cars9_large_first.txt";
-  string cars9_large2 = "cars9_large_second.txt";
-  string cars_recursive = "cars7_recursive.txt";
+  string cars_large4 = "cars_large4_10to16.txt";
+  string cars_large5 = "cars_large5_10to16.txt";
+  string cars_large6 = "cars_large6_10to16.txt";
+  string cars_large7 = "cars_large7_10to16.txt";
+  string cars_large8 = "cars_large8_10to16.txt"; 
+  string cars_large9 = "cars_large9_10to16.txt";  
+  string cars_recursive = "cars_recursive_10to16.txt";
 
   // B is the upper bound on Carmichaels constructed
-  bigint num_millions_upper = 1000000000;
+  bigint num_millions_upper = 10000000000;
   bigint upper = num_millions_upper * 1000000;
 
   // for d = 3, I'll take preproduct upper bound to be B^{1/3}, then all are "small"
@@ -180,29 +182,35 @@ int main(int argc, char* argv[]) {
 
   
   // code for large 6 case
-  std::cout << "Starting large preproduct case, limited to Carmichaels with 6 prime factors\n";
+  std::cout << "Starting large preproduct case\n";
 
   LargePreproduct C4 = LargePreproduct(upper, X4);
 
   cout << "starting tabulation\n";
   auto start_large = high_resolution_clock::now();
-    
-  C4.cars8_threaded(cars8_large1, job_num, total_jobs);
+
+    C4.cars4_threaded(cars_large4, job_num, total_jobs);
+    C4.cars5_threaded(cars_large5, job_num, total_jobs);
+    C4.cars6_threaded(cars_large6, job_num, total_jobs);
+    C4.cars7_threaded(cars_large7, job_num, total_jobs);
+    C4.cars8_threaded(cars_large8, job_num, total_jobs);
+    C4.cars9_threaded(cars_large9, job_num, total_jobs);
+    C4.cars_rec_threaded(10, cars_recursive, job_num, total_jobs);
+
+    /*
+    C4.cars4_threaded_modified(cars_large4, job_num, total_jobs);
+    C4.cars5_threaded_modified(cars_large5, job_num, total_jobs);
+    C4.cars6_threaded_modified(cars_large6, job_num, total_jobs);
+    C4.cars7_threaded_modified(cars_large7, job_num, total_jobs);
+    C4.cars8_threaded_modified(cars_large8, job_num, total_jobs);
+    C4.cars9_threaded_modified(cars_large9, job_num, total_jobs);
+    C4.cars_rec_threaded_modified(10, cars_recursive, job_num, total_jobs);
+    */
   auto end_large = high_resolution_clock::now();
 
   auto duration_large = duration_cast<seconds>(end_large - start_large);
-  cout << "Timing for large preproduct case, file = " << cars8_large1 << " is: " << duration_large.count() << "\n\n";
+  cout << "Timing for large preproduct case, is: " << duration_large.count() << "\n\n";
 
-  LargePreproduct C5 = LargePreproduct(upper, X4);
-
-  cout << "starting tabulation\n";
-  start_large = high_resolution_clock::now();
-    
-  C4.cars8_threaded_modified(cars8_large2, job_num, total_jobs);
-  end_large = high_resolution_clock::now();
-
-  duration_large = duration_cast<seconds>(end_large - start_large);
-  cout << "Timing for large preproduct case, file = " << cars8_large2 << " is: " << duration_large.count() << "\n\n";
 
     /*
   // testing against two other ways of doing the large 6 case

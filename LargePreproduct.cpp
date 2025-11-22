@@ -1288,11 +1288,115 @@ void LargePreproduct::cars_rec_threaded(long d, string cars_file, long thread, l
   output.close();
 
   // output counts from pinch_inner_loop_work
-  cout << "count1 = " << count1 << " count2 = " << count2 << " count3 = " << count3 << " count 4 = " << count4 << "\n";
+  //cout << "count1 = " << count1 << " count2 = " << count2 << " count3 = " << count3 << " count 4 = " << count4 << "\n";
 
-  cout << "hist1 = " << hist1 << " hist2 = " << hist2 << " hist3 = " << hist3 << " hist4 = " << hist4 << "\n";
+  //cout << "hist1 = " << hist1 << " hist2 = " << hist2 << " hist3 = " << hist3 << " hist4 = " << hist4 << "\n";
 }
 
+// version with faster admissibility checks
+void LargePreproduct::cars_rec_threaded_modified(long d, string cars_file, long thread, long num_threads){
+  if(d < 6){
+    cout << "Error in cars_rec_threaded, d must be 6 or greater\n";
+    return;
+  }
+
+  //setup file
+  ofstream output;
+  output.open(cars_file);
+
+  // primes and indices for initial loops
+  long p1, p2, p3;
+  long i1, i2, i3;
+  long upper1, upper2, upper3;
+
+  // keep running computation of preproduct P, vector of indices making up primes in P, and lcm_p|P p-1
+  bigint P1, P2, P3;
+  bigint L1, L2, L3;
+  vector<long> ps;
+  long g;
+
+  // threading based on number of admissable preproducts p1*p2*p3
+  long num_admissable = 0;
+
+  // first upper bound is B^{1/d}
+  upper1 = find_upper(B, 1, d);
+
+  // start p1 at 3
+  i1 = 0;
+  p1 = primes[i1];
+  P1 = p1;
+  do{
+    // compute L1, initial p2, upper2 = (B/p1)^{1/(d-1)}
+    L1 = p1 - 1;
+    i2 = i1 + 1;
+    p2 = primes[i2];
+    upper2 = find_upper(B, p1, d-1);
+
+    // check admissability, bump ahead until found
+    while( p2 % p1 == 1 ){ p2 = primes[ ++i2 ]; }
+    P2 = P1 * p2;
+  
+    // loop for p2
+    do{
+
+      // compute L2, initial p3, upper3 = (B/p1p2)^{1/(d-2)}
+      L2 = L1 * (p2 - 1);
+      g = gcd(L1, p2 - 1);
+      L2 = L2 / g;
+
+      i3 = i2 + 1;
+      p3 = primes[i3];
+      upper3 = find_upper(B, P2, d-2);
+
+      // check admissability
+      while( p3 % p2 == 1 || p3 % p1 == 1 ){ p3 = primes[ ++i3 ]; }
+      P3 = P2 * p3;
+
+      // loop for p3
+      do{
+
+        // check threading
+        if(num_admissable % num_threads == thread){
+          // compute current L3
+          L3 = L2 * (p3 - 1);
+          g = gcd(L2, p3 - 1);
+          L3 = L3 / g;
+
+          // now call recursive helper function for the rest of the nested loops
+          // note we pass the indices of the primes p1, p2, p3
+          ps.clear();
+          ps.push_back(i1);  ps.push_back(i2);  ps.push_back(i3);
+          cars_rec_helper(d, P3, ps, L3, output);
+
+        } // end if correct threading
+
+        // find next admissable p3
+        do{ p3 = primes[ ++i3 ]; } while( p3 % p1 == 1 || p3 % p2 == 1 );
+        P3 = P2 * p3;
+ 
+        num_admissable++;   // increment admissable counter
+
+      }while(p3 < upper3); // end of do p3
+
+      do{ p2 = primes[ ++i2 ]; } while( p2 % p1 == 1 );
+      P2 = P1 * p2;
+
+    }while(p2 < upper2); // end of do p2
+
+    // next prime p1
+    i1++;
+    p1 = primes[i1];
+    P1 = p1;
+  }while(p1 < upper1); // end do p1
+
+  output.close();
+
+  // output counts from pinch_inner_loop_work
+  //cout << "count1 = " << count1 << " count2 = " << count2 << " count3 = " << count3 << " count 4 = " << count4 << "\n";
+
+  //cout << "hist1 = " << hist1 << " hist2 = " << hist2 << " hist3 = " << hist3 << " hist4 = " << hist4 << "\n";
+}
+    
 // recursive version. This helper function tracks preproduct so far.  k is the factor count for preproduct, 
 // while d is the number of factors in the final carmichael number
 // Also, the vector of primes is actually a vector of indices that point to the corresponding primes
