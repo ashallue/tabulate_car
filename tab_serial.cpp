@@ -47,9 +47,9 @@ int main(int argc, char* argv[]) {
         total_jobs = 1;
     }
 
-  string cars4_large1 = "cars4_large_first.txt";
-  string cars4_large2 = "cars4_large_second.txt";
-  string cars_recursive = "cars6_recursive.txt";
+  string cars5_large1 = "cars5_large_first.txt";
+  string cars5_large2 = "cars5_large_second.txt";
+  string cars_recursive = "cars5_recursive.txt";
 
   // B is the upper bound on Carmichaels constructed
   bigint num_millions_upper = 1000000000;
@@ -185,22 +185,22 @@ int main(int argc, char* argv[]) {
   cout << "starting tabulation\n";
   auto start_large = high_resolution_clock::now();
     
-  C4.cars4_threaded(cars4_large1, job_num, total_jobs);
+  C4.cars5_threaded(cars5_large1, job_num, total_jobs);
   auto end_large = high_resolution_clock::now();
 
   auto duration_large = duration_cast<seconds>(end_large - start_large);
-  cout << "Timing for large preproduct case, file = " << cars4_large1 << " is: " << duration_large.count() << "\n\n";
+  cout << "Timing for large preproduct case, file = " << cars5_large1 << " is: " << duration_large.count() << "\n\n";
 
   LargePreproduct C5 = LargePreproduct(upper, X4);
 
   cout << "starting tabulation\n";
   start_large = high_resolution_clock::now();
     
-  C4.cars4_threaded_modified(cars4_large2, job_num, total_jobs);
+  C4.cars5_threaded_modified(cars5_large2, job_num, total_jobs);
   end_large = high_resolution_clock::now();
 
   duration_large = duration_cast<seconds>(end_large - start_large);
-  cout << "Timing for large preproduct case, file = " << cars4_large2 << " is: " << duration_large.count() << "\n\n";
+  cout << "Timing for large preproduct case, file = " << cars5_large2 << " is: " << duration_large.count() << "\n\n";
 
     /*
   // testing against two other ways of doing the large 6 case

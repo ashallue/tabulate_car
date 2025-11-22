@@ -70,10 +70,6 @@ class LargePreproduct{
     // faster generation of admissable preproducts
     void cars4_threaded_modified(string cars_file, long thread, long num_threads);
 
-    // two versions with alternate ways of generating preproducts
-    void cars6_threaded_modified(string cars_file, long thread, long num_threads);
-    void cars6_threaded_modified_v2(string cars_file, long thread, long num_threads);
-
     // recursive version, creates carmichael numbers with d prime factors
     void cars_rec(long d, string cars_file);
 
@@ -87,6 +83,11 @@ class LargePreproduct{
     void cars7_threaded(string cars_file, long thread, long num_threads);
     void cars8_threaded(string cars_file, long thread, long num_threads); 
     void cars9_threaded(string cars_file, long thread, long num_threads);
+
+    // faster generation of admissable preproducts
+    void cars5_threaded_modified(string cars_file, long thread, long num_threads);
+    void cars6_threaded_modified(string cars_file, long thread, long num_threads);
+    void cars7_threaded_modified(string cars_file, long thread, long num_threads);
 
 
   public:
