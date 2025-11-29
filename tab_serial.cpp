@@ -47,16 +47,19 @@ int main(int argc, char* argv[]) {
         total_jobs = 1;
     }
 
-  string cars_large4 = "cars_large4_10to16.txt";
-  string cars_large5 = "cars_large5_10to16.txt";
-  string cars_large6 = "cars_large6_10to16.txt";
-  string cars_large7 = "cars_large7_10to16.txt";
-  string cars_large8 = "cars_large8_10to16.txt"; 
-  string cars_large9 = "cars_large9_10to16.txt";  
-  string cars_recursive = "cars_recursive_10to16.txt";
+  string cars_large4 = "cars_large4_10to14.txt";
+  string cars_large5 = "cars_large5_10to14.txt";
+  string cars_large6 = "cars_large6_10to14.txt";
+  string cars_large7 = "cars_large7_10to14.txt";
+  string cars_large8 = "cars_large8_10to14.txt"; 
+  string cars_large9 = "cars_large9_10to14.txt";  
+  string cars_recursive10 = "cars_recursive10_10to17.txt";
+  string cars_recursive11 = "cars_recursive11_10to17.txt";
+  string cars_recursive12 = "cars_recursive12_10to17.txt";
+  string cars_recursive13 = "cars_recursive13_10to17.txt";
 
   // B is the upper bound on Carmichaels constructed
-  bigint num_millions_upper = 10000000000;
+  bigint num_millions_upper = 100000000000;
   bigint upper = num_millions_upper * 1000000;
 
   // for d = 3, I'll take preproduct upper bound to be B^{1/3}, then all are "small"
@@ -189,13 +192,18 @@ int main(int argc, char* argv[]) {
   cout << "starting tabulation\n";
   auto start_large = high_resolution_clock::now();
 
+    
     C4.cars4_threaded(cars_large4, job_num, total_jobs);
     C4.cars5_threaded(cars_large5, job_num, total_jobs);
     C4.cars6_threaded(cars_large6, job_num, total_jobs);
     C4.cars7_threaded(cars_large7, job_num, total_jobs);
     C4.cars8_threaded(cars_large8, job_num, total_jobs);
     C4.cars9_threaded(cars_large9, job_num, total_jobs);
-    C4.cars_rec_threaded(10, cars_recursive, job_num, total_jobs);
+    C4.cars_rec_threaded(10, cars_recursive10, job_num, total_jobs);
+    C4.cars_rec_threaded(11, cars_recursive11, job_num, total_jobs);
+    C4.cars_rec_threaded(12, cars_recursive12, job_num, total_jobs);
+    C4.cars_rec_threaded(13, cars_recursive13, job_num, total_jobs);
+    
 
     /*
     C4.cars4_threaded_modified(cars_large4, job_num, total_jobs);
@@ -204,12 +212,15 @@ int main(int argc, char* argv[]) {
     C4.cars7_threaded_modified(cars_large7, job_num, total_jobs);
     C4.cars8_threaded_modified(cars_large8, job_num, total_jobs);
     C4.cars9_threaded_modified(cars_large9, job_num, total_jobs);
-    C4.cars_rec_threaded_modified(10, cars_recursive, job_num, total_jobs);
+    C4.cars_rec_threaded_modified(10, cars_recursive10, job_num, total_jobs);
+    C4.cars_rec_threaded_modified(11, cars_recursive11, job_num, total_jobs);
+    C4.cars_rec_threaded_modified(12, cars_recursive12, job_num, total_jobs);
+    C4.cars_rec_threaded_modified(13, cars_recursive13, job_num, total_jobs);
     */
   auto end_large = high_resolution_clock::now();
 
   auto duration_large = duration_cast<seconds>(end_large - start_large);
-  cout << "Timing for large preproduct case, is: " << duration_large.count() << "\n\n";
+  cout << "Timing for large preproduct case with slower admissibility checks, is: " << duration_large.count() << "\n\n";
 
 
     /*
