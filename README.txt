@@ -2,6 +2,8 @@ Andrew Shallue
 coauthor: Jonathan Webster
 late 2021, early 2022
 
+UPDATE (1/20/2026): Work has continued on Carmichael tabulations.  For code involving the large preproduct case, this codebase is now fully deprecated.  See https://github.com/ashallue/CarmichaelAlgorithms for a faster codebase and a streamlined algorithmic approach.
+
 Project to tabulate Carmichael numbers.
 New algorithm:  "D/Delta method" which tabulates all Carmichael numbers of the form Pqr where P is a pre-product, and q, r are primes generated through divisors of (P-1)(P+D).  
 This is an idea that has been discussed before (e.g. Pinch), our innovation is to push it as far as it can go.
